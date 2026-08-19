@@ -1,0 +1,996 @@
+export type Json =
+  | string
+  | number
+  | boolean
+  | null
+  | { [key: string]: Json | undefined }
+  | Json[]
+
+export type Database = {
+  // Allows to automatically instantiate createClient with right options
+  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
+  __InternalSupabase: {
+    PostgrestVersion: "14.15"
+  }
+  public: {
+    Tables: {
+      blocks: {
+        Row: {
+          blocked_id: string
+          blocker_id: string
+          created_at: string
+        }
+        Insert: {
+          blocked_id: string
+          blocker_id: string
+          created_at?: string
+        }
+        Update: {
+          blocked_id?: string
+          blocker_id?: string
+          created_at?: string
+        }
+        Relationships: []
+      }
+      club_memberships: {
+        Row: {
+          club_id: string
+          joined_at: string
+          role: string
+          status: string
+          user_id: string
+        }
+        Insert: {
+          club_id: string
+          joined_at?: string
+          role?: string
+          status?: string
+          user_id: string
+        }
+        Update: {
+          club_id?: string
+          joined_at?: string
+          role?: string
+          status?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "club_memberships_club_id_fkey"
+            columns: ["club_id"]
+            isOneToOne: false
+            referencedRelation: "clubs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "club_memberships_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      club_rooms: {
+        Row: {
+          audio_provider_room: string | null
+          club_id: string
+          created_at: string
+          ended_at: string | null
+          host_id: string
+          id: string
+          scheduled_for: string | null
+          started_at: string | null
+          status: string
+          title: string
+        }
+        Insert: {
+          audio_provider_room?: string | null
+          club_id: string
+          created_at?: string
+          ended_at?: string | null
+          host_id: string
+          id?: string
+          scheduled_for?: string | null
+          started_at?: string | null
+          status?: string
+          title: string
+        }
+        Update: {
+          audio_provider_room?: string | null
+          club_id?: string
+          created_at?: string
+          ended_at?: string | null
+          host_id?: string
+          id?: string
+          scheduled_for?: string | null
+          started_at?: string | null
+          status?: string
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "club_rooms_club_id_fkey"
+            columns: ["club_id"]
+            isOneToOne: false
+            referencedRelation: "clubs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "club_rooms_host_id_fkey"
+            columns: ["host_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      clubs: {
+        Row: {
+          allow_member_rooms: boolean
+          created_at: string
+          created_by: string | null
+          description: string
+          id: string
+          name: string
+          slug: string
+          topic: string
+        }
+        Insert: {
+          allow_member_rooms?: boolean
+          created_at?: string
+          created_by?: string | null
+          description: string
+          id?: string
+          name: string
+          slug: string
+          topic: string
+        }
+        Update: {
+          allow_member_rooms?: boolean
+          created_at?: string
+          created_by?: string | null
+          description?: string
+          id?: string
+          name?: string
+          slug?: string
+          topic?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "clubs_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      conversation_members: {
+        Row: {
+          conversation_id: string
+          joined_at: string
+          last_read_at: string | null
+          left_at: string | null
+          user_id: string
+        }
+        Insert: {
+          conversation_id: string
+          joined_at?: string
+          last_read_at?: string | null
+          left_at?: string | null
+          user_id: string
+        }
+        Update: {
+          conversation_id?: string
+          joined_at?: string
+          last_read_at?: string | null
+          left_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "conversation_members_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      conversations: {
+        Row: {
+          created_at: string
+          created_by: string
+          id: string
+          kind: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          id?: string
+          kind: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          id?: string
+          kind?: string
+        }
+        Relationships: []
+      }
+      direct_conversations: {
+        Row: {
+          conversation_id: string
+          created_at: string
+          user_high_id: string
+          user_low_id: string
+        }
+        Insert: {
+          conversation_id: string
+          created_at?: string
+          user_high_id: string
+          user_low_id: string
+        }
+        Update: {
+          conversation_id?: string
+          created_at?: string
+          user_high_id?: string
+          user_low_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "direct_conversations_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: true
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "direct_conversations_user_high_id_fkey"
+            columns: ["user_high_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "direct_conversations_user_low_id_fkey"
+            columns: ["user_low_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      follows: {
+        Row: {
+          created_at: string
+          followed_id: string
+          follower_id: string
+        }
+        Insert: {
+          created_at?: string
+          followed_id: string
+          follower_id: string
+        }
+        Update: {
+          created_at?: string
+          followed_id?: string
+          follower_id?: string
+        }
+        Relationships: []
+      }
+      messages: {
+        Row: {
+          body: string
+          client_nonce: string
+          conversation_id: string
+          created_at: string
+          deleted_at: string | null
+          id: string
+          sender_id: string
+        }
+        Insert: {
+          body: string
+          client_nonce?: string
+          conversation_id: string
+          created_at?: string
+          deleted_at?: string | null
+          id?: string
+          sender_id: string
+        }
+        Update: {
+          body?: string
+          client_nonce?: string
+          conversation_id?: string
+          created_at?: string
+          deleted_at?: string | null
+          id?: string
+          sender_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      post_likes: {
+        Row: {
+          created_at: string
+          post_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          post_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          post_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "post_likes_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "posts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "post_likes_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      posts: {
+        Row: {
+          author_id: string
+          body: string
+          created_at: string
+          deleted_at: string | null
+          id: string
+          topic: string | null
+          updated_at: string
+        }
+        Insert: {
+          author_id: string
+          body: string
+          created_at?: string
+          deleted_at?: string | null
+          id?: string
+          topic?: string | null
+          updated_at?: string
+        }
+        Update: {
+          author_id?: string
+          body?: string
+          created_at?: string
+          deleted_at?: string | null
+          id?: string
+          topic?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "posts_author_id_fkey"
+            columns: ["author_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          avatar_path: string | null
+          bio: string
+          country_code: string | null
+          created_at: string
+          display_name: string | null
+          handle: string | null
+          id: string
+          languages: string[]
+          updated_at: string
+        }
+        Insert: {
+          avatar_path?: string | null
+          bio?: string
+          country_code?: string | null
+          created_at?: string
+          display_name?: string | null
+          handle?: string | null
+          id: string
+          languages?: string[]
+          updated_at?: string
+        }
+        Update: {
+          avatar_path?: string | null
+          bio?: string
+          country_code?: string | null
+          created_at?: string
+          display_name?: string | null
+          handle?: string | null
+          id?: string
+          languages?: string[]
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      quick_chat_queue: {
+        Row: {
+          expires_at: string
+          languages: string[]
+          queued_at: string
+          topic: string | null
+          user_id: string
+        }
+        Insert: {
+          expires_at: string
+          languages: string[]
+          queued_at?: string
+          topic?: string | null
+          user_id: string
+        }
+        Update: {
+          expires_at?: string
+          languages?: string[]
+          queued_at?: string
+          topic?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      quick_chat_sessions: {
+        Row: {
+          conversation_id: string
+          end_reason: string | null
+          ended_at: string | null
+          ended_by: string | null
+          id: string
+          started_at: string
+          status: string
+          user_a_id: string
+          user_b_id: string
+        }
+        Insert: {
+          conversation_id: string
+          end_reason?: string | null
+          ended_at?: string | null
+          ended_by?: string | null
+          id?: string
+          started_at?: string
+          status?: string
+          user_a_id: string
+          user_b_id: string
+        }
+        Update: {
+          conversation_id?: string
+          end_reason?: string | null
+          ended_at?: string | null
+          ended_by?: string | null
+          id?: string
+          started_at?: string
+          status?: string
+          user_a_id?: string
+          user_b_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quick_chat_sessions_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: true
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      replies: {
+        Row: {
+          author_id: string
+          body: string
+          created_at: string
+          deleted_at: string | null
+          id: string
+          post_id: string
+          updated_at: string
+        }
+        Insert: {
+          author_id: string
+          body: string
+          created_at?: string
+          deleted_at?: string | null
+          id?: string
+          post_id: string
+          updated_at?: string
+        }
+        Update: {
+          author_id?: string
+          body?: string
+          created_at?: string
+          deleted_at?: string | null
+          id?: string
+          post_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "replies_author_id_fkey"
+            columns: ["author_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "replies_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      reports: {
+        Row: {
+          category: string
+          created_at: string
+          details: string
+          id: string
+          reporter_id: string
+          resolved_at: string | null
+          status: string
+          target_id: string | null
+          target_kind: string
+          target_user_id: string | null
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          details?: string
+          id?: string
+          reporter_id: string
+          resolved_at?: string | null
+          status?: string
+          target_id?: string | null
+          target_kind: string
+          target_user_id?: string | null
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          details?: string
+          id?: string
+          reporter_id?: string
+          resolved_at?: string | null
+          status?: string
+          target_id?: string | null
+          target_kind?: string
+          target_user_id?: string | null
+        }
+        Relationships: []
+      }
+      room_audio_sessions: {
+        Row: {
+          created_at: string
+          id: string
+          provider: string
+          provider_session_id: string
+          provider_track_mid: string | null
+          published_track_name: string | null
+          room_id: string
+          session_kind: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          provider?: string
+          provider_session_id: string
+          provider_track_mid?: string | null
+          published_track_name?: string | null
+          room_id: string
+          session_kind: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          provider?: string
+          provider_session_id?: string
+          provider_track_mid?: string | null
+          published_track_name?: string | null
+          room_id?: string
+          session_kind?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "room_audio_sessions_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "club_rooms"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "room_audio_sessions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      room_participants: {
+        Row: {
+          hand_raised_at: string | null
+          joined_at: string
+          left_at: string | null
+          muted_by_moderator: boolean
+          role: string
+          room_id: string
+          state: string
+          user_id: string
+        }
+        Insert: {
+          hand_raised_at?: string | null
+          joined_at?: string
+          left_at?: string | null
+          muted_by_moderator?: boolean
+          role?: string
+          room_id: string
+          state?: string
+          user_id: string
+        }
+        Update: {
+          hand_raised_at?: string | null
+          joined_at?: string
+          left_at?: string | null
+          muted_by_moderator?: boolean
+          role?: string
+          room_id?: string
+          state?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "room_participants_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "club_rooms"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "room_participants_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_settings: {
+        Row: {
+          age_verified_at: string | null
+          community_guidelines_accepted_at: string | null
+          created_at: string
+          date_of_birth: string | null
+          id: string
+          onboarding_completed_at: string | null
+          terms_accepted_at: string | null
+          updated_at: string
+        }
+        Insert: {
+          age_verified_at?: string | null
+          community_guidelines_accepted_at?: string | null
+          created_at?: string
+          date_of_birth?: string | null
+          id: string
+          onboarding_completed_at?: string | null
+          terms_accepted_at?: string | null
+          updated_at?: string
+        }
+        Update: {
+          age_verified_at?: string | null
+          community_guidelines_accepted_at?: string | null
+          created_at?: string
+          date_of_birth?: string | null
+          id?: string
+          onboarding_completed_at?: string | null
+          terms_accepted_at?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      can_send_message: {
+        Args: { target_conversation_id: string; target_user_id: string }
+        Returns: boolean
+      }
+      cancel_quick_chat_search: { Args: never; Returns: undefined }
+      complete_onboarding: {
+        Args: {
+          onboarding_birth_date: string
+          onboarding_country_code: string
+          onboarding_display_name: string
+          onboarding_handle: string
+          onboarding_languages: string[]
+        }
+        Returns: {
+          avatar_path: string | null
+          bio: string
+          country_code: string | null
+          created_at: string
+          display_name: string | null
+          handle: string | null
+          id: string
+          languages: string[]
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "profiles"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      end_club_room: { Args: { target_room_id: string }; Returns: undefined }
+      get_feed: {
+        Args: { before_created_at?: string; feed_limit?: number }
+        Returns: {
+          author_country_code: string
+          author_display_name: string
+          author_handle: string
+          author_id: string
+          body: string
+          created_at: string
+          like_count: number
+          liked_by_me: boolean
+          post_id: string
+          reply_count: number
+          topic: string
+        }[]
+      }
+      get_or_create_direct_conversation: {
+        Args: { other_user_id: string }
+        Returns: string
+      }
+      get_post_replies: {
+        Args: { target_post_id: string }
+        Returns: {
+          author_display_name: string
+          author_handle: string
+          author_id: string
+          body: string
+          created_at: string
+          reply_id: string
+        }[]
+      }
+      is_blocked_between: {
+        Args: { first_user: string; second_user: string }
+        Returns: boolean
+      }
+      is_conversation_member: {
+        Args: { target_conversation_id: string; target_user_id: string }
+        Returns: boolean
+      }
+      join_club: { Args: { target_club_id: string }; Returns: undefined }
+      join_club_room: { Args: { target_room_id: string }; Returns: undefined }
+      join_quick_chat: {
+        Args: { match_languages: string[]; match_topic?: string }
+        Returns: {
+          conversation_id: string
+          match_status: string
+          matched_profile_id: string
+          session_id: string
+        }[]
+      }
+      leave_club: { Args: { target_club_id: string }; Returns: undefined }
+      leave_club_room: { Args: { target_room_id: string }; Returns: undefined }
+      leave_quick_chat: {
+        Args: { leave_reason?: string; target_session_id: string }
+        Returns: boolean
+      }
+      list_clubs: {
+        Args: never
+        Returns: {
+          club_id: string
+          description: string
+          is_member: boolean
+          live_listener_count: number
+          live_room_id: string
+          live_room_title: string
+          member_count: number
+          name: string
+          slug: string
+          topic: string
+        }[]
+      }
+      list_direct_conversations: {
+        Args: never
+        Returns: {
+          conversation_id: string
+          last_message_at: string
+          last_message_body: string
+          partner_country_code: string
+          partner_display_name: string
+          partner_handle: string
+          partner_id: string
+        }[]
+      }
+      list_room_participants: {
+        Args: { target_room_id: string }
+        Returns: {
+          display_name: string
+          hand_raised_at: string
+          handle: string
+          is_host: boolean
+          role: string
+          user_id: string
+        }[]
+      }
+      moderate_room_participant: {
+        Args: {
+          moderation_action: string
+          target_room_id: string
+          target_user_id: string
+        }
+        Returns: undefined
+      }
+      set_room_hand_raised: {
+        Args: { raised: boolean; target_room_id: string }
+        Returns: undefined
+      }
+      start_club_room: {
+        Args: { room_title: string; target_club_id: string }
+        Returns: string
+      }
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
+  }
+}
+
+type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">
+
+type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">]
+
+export type Tables<
+  DefaultSchemaTableNameOrOptions extends
+    | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+        DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
+    : never = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+      DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
+      Row: infer R
+    }
+    ? R
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema["Tables"] &
+        DefaultSchema["Views"])
+    ? (DefaultSchema["Tables"] &
+        DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
+        Row: infer R
+      }
+      ? R
+      : never
+    : never
+
+export type TablesInsert<
+  DefaultSchemaTableNameOrOptions extends
+    | keyof DefaultSchema["Tables"]
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    : never = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+      Insert: infer I
+    }
+    ? I
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+        Insert: infer I
+      }
+      ? I
+      : never
+    : never
+
+export type TablesUpdate<
+  DefaultSchemaTableNameOrOptions extends
+    | keyof DefaultSchema["Tables"]
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    : never = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+      Update: infer U
+    }
+    ? U
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+        Update: infer U
+      }
+      ? U
+      : never
+    : never
+
+export type Enums<
+  DefaultSchemaEnumNameOrOptions extends
+    | keyof DefaultSchema["Enums"]
+    | { schema: keyof DatabaseWithoutInternals },
+  EnumName extends DefaultSchemaEnumNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
+    : never = never,
+> = DefaultSchemaEnumNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
+  : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
+    ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
+    : never
+
+export type CompositeTypes<
+  PublicCompositeTypeNameOrOptions extends
+    | keyof DefaultSchema["CompositeTypes"]
+    | { schema: keyof DatabaseWithoutInternals },
+  CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
+    : never = never,
+> = PublicCompositeTypeNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
+  : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
+    ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
+    : never
+
+export const Constants = {
+  public: {
+    Enums: {},
+  },
+} as const

@@ -1,0 +1,214 @@
+import { useMemo, useState } from 'react';
+import { Redirect, router } from 'expo-router';
+import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+
+import { Card, Eyebrow, Heading, Muted, Pill, PrimaryButton, Screen } from '@/components/ui';
+import { useSession } from '@/context/SessionContext';
+import { colors, radius, spacing } from '@/theme/tokens';
+
+const languageOptions = ['English', 'Spanish', 'German', 'Italian'];
+
+function isValidAdultBirthDate(value: string) {
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
+  if (!match) return false;
+
+  const year = Number(match[1]);
+  const month = Number(match[2]);
+  const day = Number(match[3]);
+  const birthDate = new Date(year, month - 1, day);
+  if (birthDate.getFullYear() !== year || birthDate.getMonth() !== month - 1 || birthDate.getDate() !== day) return false;
+
+  const today = new Date();
+  const adultCutoff = new Date(today.getFullYear() - 18, today.getMonth(), today.getDate());
+  return birthDate <= adultCutoff;
+}
+
+function readableOnboardingError(error: unknown) {
+  const message = error instanceof Error ? error.message : 'Profile setup failed. Please try again.';
+  if (message.toLowerCase().includes('duplicate') || message.toLowerCase().includes('unique')) {
+    return 'That username is already taken. Try another one.';
+  }
+  return message;
+}
+
+export default function OnboardingScreen() {
+  const { completeOnboarding, isLoading, onboardingComplete, user } = useSession();
+  const [displayName, setDisplayName] = useState('');
+  const [handle, setHandle] = useState('');
+  const [birthDate, setBirthDate] = useState('');
+  const [countryCode, setCountryCode] = useState('');
+  const [language, setLanguage] = useState('English');
+  const [termsAccepted, setTermsAccepted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState('');
+
+  const normalizedHandle = useMemo(
+    () => handle.trim().toLowerCase().replace(/[^a-z0-9_]/g, ''),
+    [handle],
+  );
+  const normalizedCountryCode = countryCode.trim().toUpperCase();
+  const countryCodeValid = normalizedCountryCode.length === 0 || /^[A-Z]{2}$/.test(normalizedCountryCode);
+  const canContinue =
+    displayName.trim().length >= 2 &&
+    normalizedHandle.length >= 3 &&
+    isValidAdultBirthDate(birthDate) &&
+    countryCodeValid &&
+    termsAccepted &&
+    !submitting;
+
+  if (!isLoading && !user) return <Redirect href="/auth" />;
+  if (!isLoading && onboardingComplete) return <Redirect href="/(tabs)/quick-chat" />;
+
+  const finish = async () => {
+    if (!canContinue) return;
+    setSubmitting(true);
+    setError('');
+
+    try {
+      await completeOnboarding({
+        birthDate,
+        countryCode: normalizedCountryCode,
+        displayName: displayName.trim(),
+        handle: normalizedHandle,
+        languages: [language],
+      });
+      router.replace('/(tabs)/quick-chat');
+    } catch (nextError) {
+      setError(readableOnboardingError(nextError));
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <Screen>
+      <View style={styles.topRow}>
+        <Pill label="Account secured" tone="accent" />
+        <Text style={styles.step}>Profile setup</Text>
+      </View>
+      <View style={styles.intro}>
+        <Eyebrow>One last step</Eyebrow>
+        <Heading>Make every conversation feel human.</Heading>
+        <Muted>Your email and birth date stay private. Only the profile details you choose are visible.</Muted>
+      </View>
+
+      <Card style={styles.form}>
+        <Text style={styles.label}>Display name</Text>
+        <TextInput
+          accessibilityLabel="Display name"
+          autoCapitalize="words"
+          onChangeText={setDisplayName}
+          placeholder="Alex"
+          placeholderTextColor={colors.textMuted}
+          style={styles.input}
+          value={displayName}
+        />
+
+        <Text style={styles.label}>Username</Text>
+        <View style={styles.handleRow}>
+          <Text style={styles.at}>@</Text>
+          <TextInput
+            accessibilityLabel="Username"
+            autoCapitalize="none"
+            onChangeText={setHandle}
+            placeholder="alexaroundtheworld"
+            placeholderTextColor={colors.textMuted}
+            style={styles.handleInput}
+            value={handle}
+          />
+        </View>
+
+        <View style={styles.splitRow}>
+          <View style={styles.splitField}>
+            <Text style={styles.label}>Birth date</Text>
+            <TextInput
+              accessibilityLabel="Birth date in year month day format"
+              inputMode="numeric"
+              maxLength={10}
+              onChangeText={setBirthDate}
+              placeholder="YYYY-MM-DD"
+              placeholderTextColor={colors.textMuted}
+              style={styles.input}
+              value={birthDate}
+            />
+          </View>
+          <View style={styles.countryField}>
+            <Text style={styles.label}>Country</Text>
+            <TextInput
+              accessibilityLabel="Optional two-letter country code"
+              autoCapitalize="characters"
+              maxLength={2}
+              onChangeText={setCountryCode}
+              placeholder="DE"
+              placeholderTextColor={colors.textMuted}
+              style={styles.input}
+              value={countryCode}
+            />
+          </View>
+        </View>
+        {birthDate.length === 10 && !isValidAdultBirthDate(birthDate) ? (
+          <Text style={styles.error}>Enter a valid birth date. You must be at least 18.</Text>
+        ) : null}
+
+        <Text style={styles.label}>Main language</Text>
+        <View style={styles.languages}>
+          {languageOptions.map((option) => (
+            <Pressable
+              key={option}
+              accessibilityRole="radio"
+              accessibilityState={{ checked: language === option }}
+              onPress={() => setLanguage(option)}
+              style={[styles.choice, language === option && styles.choiceSelected]}
+            >
+              <Text style={[styles.choiceText, language === option && styles.choiceTextSelected]}>{option}</Text>
+            </Pressable>
+          ))}
+        </View>
+
+        <Pressable
+          accessibilityRole="checkbox"
+          accessibilityState={{ checked: termsAccepted }}
+          onPress={() => setTermsAccepted((current) => !current)}
+          style={styles.ageRow}
+        >
+          <View style={[styles.checkbox, termsAccepted && styles.checkboxChecked]}>
+            {termsAccepted && <Text style={styles.checkmark}>✓</Text>}
+          </View>
+          <Text style={styles.ageText}>I confirm these details are accurate and agree to the Terms and Community Guidelines.</Text>
+        </Pressable>
+
+        {error ? <Text style={styles.error}>{error}</Text> : null}
+      </Card>
+
+      <PrimaryButton disabled={!canContinue} label={submitting ? 'Saving profile…' : 'Enter the community'} onPress={finish} />
+      <Text style={styles.privacy}>Your precise location is never collected or displayed.</Text>
+    </Screen>
+  );
+}
+
+const styles = StyleSheet.create({
+  topRow: { alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between' },
+  step: { color: colors.textMuted, fontSize: 12, fontWeight: '700' },
+  intro: { gap: spacing.md, marginBottom: spacing.xl, marginTop: spacing.xxl },
+  form: { gap: spacing.md, marginBottom: spacing.lg },
+  label: { color: colors.text, fontSize: 13, fontWeight: '700', marginTop: spacing.xs },
+  input: { backgroundColor: colors.background, borderColor: colors.border, borderRadius: radius.md, borderWidth: 1, color: colors.text, fontSize: 16, minHeight: 52, paddingHorizontal: spacing.lg },
+  handleRow: { alignItems: 'center', backgroundColor: colors.background, borderColor: colors.border, borderRadius: radius.md, borderWidth: 1, flexDirection: 'row', minHeight: 52, paddingHorizontal: spacing.lg },
+  at: { color: colors.primary, fontSize: 17, fontWeight: '800' },
+  handleInput: { color: colors.text, flex: 1, fontSize: 16, paddingLeft: spacing.xs },
+  splitRow: { flexDirection: 'row', gap: spacing.md },
+  splitField: { flex: 1 },
+  countryField: { width: 96 },
+  languages: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
+  choice: { borderColor: colors.border, borderRadius: radius.pill, borderWidth: 1, paddingHorizontal: spacing.md, paddingVertical: 9 },
+  choiceSelected: { backgroundColor: colors.primary, borderColor: colors.primary },
+  choiceText: { color: colors.textMuted, fontSize: 13, fontWeight: '700' },
+  choiceTextSelected: { color: colors.primaryInk },
+  ageRow: { alignItems: 'flex-start', flexDirection: 'row', gap: spacing.md, marginTop: spacing.sm },
+  checkbox: { alignItems: 'center', borderColor: colors.border, borderRadius: 7, borderWidth: 1, height: 24, justifyContent: 'center', width: 24 },
+  checkboxChecked: { backgroundColor: colors.primary, borderColor: colors.primary },
+  checkmark: { color: colors.primaryInk, fontWeight: '900' },
+  ageText: { color: colors.textMuted, flex: 1, fontSize: 13, lineHeight: 19 },
+  error: { color: colors.danger, fontSize: 13, lineHeight: 19 },
+  privacy: { color: colors.textMuted, fontSize: 12, lineHeight: 17, marginTop: spacing.md, textAlign: 'center' },
+});
