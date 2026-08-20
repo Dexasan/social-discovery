@@ -31,6 +31,8 @@ export type SendGiftResult = {
   gift_id: string;
 };
 
+export type GiftContextKind = 'club_room' | 'direct_message' | 'profile' | 'quick_chat';
+
 function client() {
   if (!supabase) throw new Error('Supabase is not configured.');
   return supabase;
@@ -59,14 +61,29 @@ export async function loadProfileGifts(profileId: string) {
   return data as ProfileGift[];
 }
 
-export async function sendProfileGift(profileId: string, giftSlug: string) {
+export async function sendVirtualGift({
+  contextId,
+  contextKind,
+  giftSlug,
+  recipientId,
+}: {
+  contextId?: string;
+  contextKind: GiftContextKind;
+  giftSlug: string;
+  recipientId: string;
+}) {
   const { data, error } = await client().rpc('send_virtual_gift', {
-    target_user_id: profileId,
+    target_user_id: recipientId,
     target_gift_slug: giftSlug,
-    gift_context_kind: 'profile',
+    gift_context_kind: contextKind,
+    ...(contextId ? { gift_context_id: contextId } : {}),
   });
   if (error) throw error;
   const result = data[0];
   if (!result) throw new Error('The gift could not be sent.');
   return result as SendGiftResult;
+}
+
+export function sendProfileGift(profileId: string, giftSlug: string) {
+  return sendVirtualGift({ contextKind: 'profile', giftSlug, recipientId: profileId });
 }

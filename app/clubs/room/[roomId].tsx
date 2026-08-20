@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { router, useLocalSearchParams } from 'expo-router';
 import { ActivityIndicator, Alert, AppState, Pressable, StyleSheet, Text, View } from 'react-native';
 
+import { GiftPicker } from '@/components/GiftPicker';
 import { Avatar, Card, Heading, Muted, Pill, Screen } from '@/components/ui';
 import { useSession } from '@/context/SessionContext';
 import {
@@ -32,6 +33,7 @@ export default function ClubRoomScreen() {
   const [participants, setParticipants] = useState<RoomParticipant[]>([]);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
+  const [giftRecipient, setGiftRecipient] = useState<RoomParticipant | null>(null);
   const [error, setError] = useState('');
 
   const refresh = useCallback(async () => {
@@ -71,6 +73,7 @@ export default function ClubRoomScreen() {
   const stage = participants.filter((participant) => participant.role === 'host' || participant.role === 'speaker');
   const audience = participants.filter((participant) => participant.role === 'listener');
   const audio = useClubRoomAudio(room?.status === 'live' ? roomId : undefined, ownParticipant?.role);
+  const giftRecipientName = giftRecipient?.display_name || (giftRecipient?.handle ? `@${giftRecipient.handle}` : 'Speaker');
 
   useEffect(() => {
     if (!roomId || room?.status !== 'live' || !ownParticipant) return;
@@ -246,6 +249,11 @@ export default function ClubRoomScreen() {
                 <Text style={styles.personName}>{name}</Text>
               </Pressable>
               <Pill label={participant.role} tone={participant.role === 'host' ? 'accent' : 'default'} />
+              {participant.user_id !== user?.id ? (
+                <Pressable accessibilityRole="button" onPress={() => setGiftRecipient(participant)} style={styles.giftButton}>
+                  <Text style={styles.giftLabel}>✦ Gift</Text>
+                </Pressable>
+              ) : null}
               {isHost && participant.role === 'speaker' ? (
                 <Pressable accessibilityRole="button" disabled={busy} onPress={() => void moderate(participant, 'move_listener')}>
                   <Text style={styles.moderateAction}>Move to audience</Text>
@@ -295,6 +303,16 @@ export default function ClubRoomScreen() {
           <Text style={[styles.handButtonLabel, raised && styles.handButtonLabelRaised]}>{raised ? 'Lower hand' : 'Raise hand'}</Text>
         </Pressable>
       ) : null}
+      {giftRecipient && roomId ? (
+        <GiftPicker
+          contextId={roomId}
+          contextKind="club_room"
+          onClose={() => setGiftRecipient(null)}
+          recipientId={giftRecipient.user_id}
+          recipientName={giftRecipientName}
+          visible
+        />
+      ) : null}
     </Screen>
   );
 }
@@ -327,6 +345,8 @@ const styles = StyleSheet.create({
   stageProfile: { alignItems: 'center', gap: spacing.sm },
   hostAvatar: { backgroundColor: colors.primarySoft },
   personName: { color: colors.text, fontSize: 13, fontWeight: '900', textAlign: 'center' },
+  giftButton: { backgroundColor: colors.warningSoft, borderColor: '#5C4425', borderRadius: radius.pill, borderWidth: 1, paddingHorizontal: spacing.md, paddingVertical: 7 },
+  giftLabel: { color: colors.warning, fontSize: 10, fontWeight: '900' },
   moderateAction: { color: colors.warning, fontSize: 10, fontWeight: '700', marginTop: spacing.xs },
   audienceList: { gap: spacing.sm },
   audienceRow: { alignItems: 'center', backgroundColor: colors.surfaceSoft, borderColor: colors.border, borderRadius: radius.md, borderWidth: 1, flexDirection: 'row', gap: spacing.md, padding: spacing.md },

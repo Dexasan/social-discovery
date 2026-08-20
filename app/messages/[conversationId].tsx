@@ -3,6 +3,7 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { Alert, FlatList, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { GiftPicker } from '@/components/GiftPicker';
 import { Avatar, Muted } from '@/components/ui';
 import { useSession } from '@/context/SessionContext';
 import {
@@ -28,6 +29,7 @@ export default function DirectConversationScreen() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [draft, setDraft] = useState('');
   const [sending, setSending] = useState(false);
+  const [giftPickerVisible, setGiftPickerVisible] = useState(false);
   const [error, setError] = useState('');
   const listRef = useRef<FlatList<Message>>(null);
 
@@ -137,6 +139,9 @@ export default function DirectConversationScreen() {
 
       {error ? <Text style={styles.error}>{error}</Text> : null}
       <View style={styles.composer}>
+        <Pressable accessibilityLabel="Send a virtual gift" accessibilityRole="button" onPress={() => setGiftPickerVisible(true)} style={styles.giftButton}>
+          <Text style={styles.giftGlyph}>✦</Text>
+        </Pressable>
         <TextInput
           accessibilityLabel="Message"
           maxLength={2000}
@@ -151,6 +156,16 @@ export default function DirectConversationScreen() {
           <Text style={styles.sendLabel}>↑</Text>
         </Pressable>
       </View>
+      {conversationId && partnerId ? (
+        <GiftPicker
+          contextId={conversationId}
+          contextKind="direct_message"
+          onClose={() => setGiftPickerVisible(false)}
+          recipientId={partnerId}
+          recipientName={partnerName}
+          visible={giftPickerVisible}
+        />
+      ) : null}
     </SafeAreaView>
   );
 }
@@ -175,6 +190,8 @@ const styles = StyleSheet.create({
   ownMessageText: { color: colors.primaryInk },
   error: { color: colors.danger, fontSize: 12, paddingHorizontal: spacing.lg, paddingVertical: spacing.sm, textAlign: 'center' },
   composer: { alignItems: 'flex-end', backgroundColor: colors.surfaceSoft, borderTopColor: colors.border, borderTopWidth: StyleSheet.hairlineWidth, flexDirection: 'row', gap: spacing.sm, padding: spacing.md },
+  giftButton: { alignItems: 'center', backgroundColor: colors.warningSoft, borderColor: '#5C4425', borderRadius: 23, borderWidth: 1, height: 46, justifyContent: 'center', width: 46 },
+  giftGlyph: { color: colors.warning, fontSize: 20, fontWeight: '900' },
   input: { backgroundColor: colors.surfaceRaised, borderColor: colors.borderStrong, borderRadius: 23, borderWidth: 1, color: colors.text, flex: 1, fontSize: 15, maxHeight: 120, minHeight: 46, paddingHorizontal: spacing.lg, paddingVertical: 12 },
   sendButton: { alignItems: 'center', backgroundColor: colors.primary, borderRadius: 23, height: 46, justifyContent: 'center', width: 46 },
   sendDisabled: { opacity: 0.4 },
