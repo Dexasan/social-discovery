@@ -85,14 +85,16 @@ export default function ProfileScreen() {
           <View style={styles.balanceBadge}><Text style={styles.balance}>{wallet.balance}</Text><Text style={styles.balanceLabel}>coins</Text></View>
         </Card>
       ) : null}
-      <Card style={styles.safetyCard}>
-        <View style={styles.safetyTop}>
-          <View style={styles.safetyIcon}><Text style={styles.safetyGlyph}>✓</Text></View>
-          <View style={styles.safetyCopy}><Text style={styles.safetyTitle}>Safety & privacy</Text><Muted>Blocks, reports and message controls</Muted></View>
-          <Text style={styles.chevron}>›</Text>
-        </View>
-        <Pill label={isSupabaseConfigured ? 'Protected account' : 'Local preview'} tone="success" />
-      </Card>
+      <Pressable accessibilityRole="button" onPress={() => router.push('/settings/safety')} style={({ pressed }) => pressed && styles.safetyPressed}>
+        <Card style={styles.safetyCard}>
+          <View style={styles.safetyTop}>
+            <View style={styles.safetyIcon}><Text style={styles.safetyGlyph}>✓</Text></View>
+            <View style={styles.safetyCopy}><Text style={styles.safetyTitle}>Safety & privacy</Text><Muted>Blocks, reports and message controls</Muted></View>
+            <Text style={styles.chevron}>›</Text>
+          </View>
+          <Pill label={isSupabaseConfigured ? 'Protected account' : 'Local preview'} tone="success" />
+        </Card>
+      </Pressable>
       <View style={styles.account}>
         <Muted>Signed in as {user?.email ?? 'authenticated user'}</Muted>
         <Pressable accessibilityRole="button" onPress={() => void signOut()} style={styles.signOutButton}>
@@ -131,6 +133,7 @@ const styles = StyleSheet.create({
   balance: { color: colors.warning, fontSize: 19, fontWeight: '900' },
   balanceLabel: { color: colors.textSubtle, fontSize: 9, fontWeight: '800', textTransform: 'uppercase' },
   safetyCard: { gap: spacing.md },
+  safetyPressed: { opacity: 0.72, transform: [{ scale: 0.99 }] },
   safetyTop: { alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between' },
   safetyIcon: { alignItems: 'center', backgroundColor: colors.successSoft, borderRadius: radius.md, height: 44, justifyContent: 'center', width: 44 },
   safetyGlyph: { color: colors.success, fontSize: 19, fontWeight: '900' },

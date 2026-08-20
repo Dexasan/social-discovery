@@ -692,6 +692,7 @@ export type Database = {
           created_at: string
           date_of_birth: string | null
           id: string
+          message_permission: string
           onboarding_completed_at: string | null
           terms_accepted_at: string | null
           updated_at: string
@@ -702,6 +703,7 @@ export type Database = {
           created_at?: string
           date_of_birth?: string | null
           id: string
+          message_permission?: string
           onboarding_completed_at?: string | null
           terms_accepted_at?: string | null
           updated_at?: string
@@ -712,6 +714,7 @@ export type Database = {
           created_at?: string
           date_of_birth?: string | null
           id?: string
+          message_permission?: string
           onboarding_completed_at?: string | null
           terms_accepted_at?: string | null
           updated_at?: string
@@ -787,6 +790,10 @@ export type Database = {
         Args: { other_user_id: string }
         Returns: string
       }
+      get_privacy_settings: {
+        Args: never
+        Returns: { message_permission: string }[]
+      }
       get_post_replies: {
         Args: { target_post_id: string }
         Returns: {
@@ -859,6 +866,16 @@ export type Database = {
           slug: string
         }[]
       }
+      list_blocked_profiles: {
+        Args: never
+        Returns: {
+          blocked_at: string
+          country_code: string | null
+          display_name: string | null
+          handle: string | null
+          user_id: string
+        }[]
+      }
       list_profile_gifts: {
         Args: { gift_limit?: number; target_user_id: string }
         Returns: {
@@ -896,6 +913,10 @@ export type Database = {
         Args: { raised: boolean; target_room_id: string }
         Returns: undefined
       }
+      set_message_permission: {
+        Args: { new_permission: string }
+        Returns: string
+      }
       send_virtual_gift: {
         Args: {
           gift_context_id?: string
@@ -912,6 +933,10 @@ export type Database = {
       start_club_room: {
         Args: { room_title: string; target_club_id: string }
         Returns: string
+      }
+      unblock_profile: {
+        Args: { target_user_id: string }
+        Returns: boolean
       }
     }
     Enums: {
