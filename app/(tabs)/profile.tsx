@@ -4,6 +4,7 @@ import { router, useFocusEffect } from 'expo-router';
 
 import { Avatar, Card, Muted, Pill, Screen } from '@/components/ui';
 import { useSession } from '@/context/SessionContext';
+import { loadCoinWallet, type CoinWallet } from '@/features/gifts/api';
 import { loadOwnSocialStats, type SocialStats } from '@/features/social/api';
 import { isSupabaseConfigured } from '@/lib/supabase';
 import { colors, radius, spacing } from '@/theme/tokens';
@@ -11,6 +12,7 @@ import { colors, radius, spacing } from '@/theme/tokens';
 export default function ProfileScreen() {
   const { profile, signOut, user } = useSession();
   const [stats, setStats] = useState<SocialStats | null>(null);
+  const [wallet, setWallet] = useState<CoinWallet | null>(null);
 
   useFocusEffect(useCallback(() => {
     let active = true;
@@ -23,6 +25,9 @@ export default function ProfileScreen() {
     void loadOwnSocialStats(user.id)
       .then((nextStats) => { if (active) setStats(nextStats); })
       .catch(() => { if (active) setStats({ followers: 0, following: 0, posts: 0 }); });
+    void loadCoinWallet()
+      .then((nextWallet) => { if (active) setWallet(nextWallet); })
+      .catch(() => { if (active) setWallet(null); });
 
     return () => { active = false; };
   }, [user]));
@@ -70,6 +75,16 @@ export default function ProfileScreen() {
         </Pressable>
         <View style={styles.stat}><Text style={styles.statNumber}>{stats?.posts ?? '—'}</Text><Text style={styles.statLabel}>Posts</Text></View>
       </View>
+      {wallet ? (
+        <Card style={styles.walletCard}>
+          <View style={styles.coinIcon}><Text style={styles.coinGlyph}>✦</Text></View>
+          <View style={styles.walletCopy}>
+            <Text style={styles.walletTitle}>Your coin wallet</Text>
+            <Muted>Send virtual gifts to people who make the app better.</Muted>
+          </View>
+          <View style={styles.balanceBadge}><Text style={styles.balance}>{wallet.balance}</Text><Text style={styles.balanceLabel}>coins</Text></View>
+        </Card>
+      ) : null}
       <Card style={styles.safetyCard}>
         <View style={styles.safetyTop}>
           <View style={styles.safetyIcon}><Text style={styles.safetyGlyph}>✓</Text></View>
@@ -107,6 +122,14 @@ const styles = StyleSheet.create({
   stat: { alignItems: 'center', flex: 1, gap: 2 },
   statNumber: { color: colors.text, fontSize: 20, fontWeight: '900', textAlign: 'center' },
   statLabel: { color: colors.textSubtle, fontSize: 10.5, fontWeight: '700' },
+  walletCard: { alignItems: 'center', backgroundColor: colors.primarySoft, borderColor: '#344A88', flexDirection: 'row', gap: spacing.md, marginBottom: spacing.md },
+  coinIcon: { alignItems: 'center', backgroundColor: colors.warningSoft, borderRadius: radius.pill, height: 46, justifyContent: 'center', width: 46 },
+  coinGlyph: { color: colors.warning, fontSize: 22, fontWeight: '900' },
+  walletCopy: { flex: 1, gap: 2 },
+  walletTitle: { color: colors.text, fontSize: 14, fontWeight: '900' },
+  balanceBadge: { alignItems: 'center', backgroundColor: colors.surfaceRaised, borderRadius: radius.md, minWidth: 62, paddingHorizontal: spacing.sm, paddingVertical: 8 },
+  balance: { color: colors.warning, fontSize: 19, fontWeight: '900' },
+  balanceLabel: { color: colors.textSubtle, fontSize: 9, fontWeight: '800', textTransform: 'uppercase' },
   safetyCard: { gap: spacing.md },
   safetyTop: { alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between' },
   safetyIcon: { alignItems: 'center', backgroundColor: colors.successSoft, borderRadius: radius.md, height: 44, justifyContent: 'center', width: 44 },

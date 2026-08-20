@@ -759,6 +759,14 @@ export type Database = {
         Args: { target_room_id: string }
         Returns: undefined
       }
+      get_coin_wallet: {
+        Args: never
+        Returns: {
+          balance: number
+          lifetime_earned: number
+          lifetime_spent: number
+        }[]
+      }
       get_feed: {
         Args: { before_created_at?: string; feed_limit?: number }
         Returns: {
@@ -842,6 +850,29 @@ export type Database = {
           partner_id: string
         }[]
       }
+      list_gift_catalog: {
+        Args: never
+        Returns: {
+          coin_cost: number
+          emoji: string
+          name: string
+          slug: string
+        }[]
+      }
+      list_profile_gifts: {
+        Args: { gift_limit?: number; target_user_id: string }
+        Returns: {
+          coin_cost: number
+          created_at: string
+          gift_emoji: string
+          gift_id: string
+          gift_name: string
+          gift_slug: string
+          sender_display_name: string | null
+          sender_handle: string | null
+          sender_id: string
+        }[]
+      }
       list_room_participants: {
         Args: { target_room_id: string }
         Returns: {
@@ -864,6 +895,19 @@ export type Database = {
       set_room_hand_raised: {
         Args: { raised: boolean; target_room_id: string }
         Returns: undefined
+      }
+      send_virtual_gift: {
+        Args: {
+          gift_context_id?: string
+          gift_context_kind?: string
+          target_gift_slug: string
+          target_user_id: string
+        }
+        Returns: {
+          balance: number
+          coin_cost: number
+          gift_id: string
+        }[]
       }
       start_club_room: {
         Args: { room_title: string; target_club_id: string }

@@ -1,9 +1,18 @@
 import { useCallback, useState } from 'react';
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
-import { ActivityIndicator, Alert, Pressable, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Alert, Modal, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { Avatar, Card, EmptyState, Muted, Pill, Screen, SectionHeader } from '@/components/ui';
 import { useSession } from '@/context/SessionContext';
+import {
+  loadCoinWallet,
+  loadGiftCatalog,
+  loadProfileGifts,
+  sendProfileGift,
+  type CoinWallet,
+  type GiftCatalogItem,
+  type ProfileGift,
+} from '@/features/gifts/api';
 import { blockProfile, loadPublicProfile, reportProfile, type PublicProfile } from '@/features/quick-chat/api';
 import {
   followProfile,
@@ -39,6 +48,13 @@ export default function PublicProfileScreen() {
   const [stats, setStats] = useState<SocialStats | null>(null);
   const [posts, setPosts] = useState<PublicProfilePost[]>([]);
   const [following, setFollowing] = useState(false);
+  const [wallet, setWallet] = useState<CoinWallet | null>(null);
+  const [giftCatalog, setGiftCatalog] = useState<GiftCatalogItem[]>([]);
+  const [profileGifts, setProfileGifts] = useState<ProfileGift[]>([]);
+  const [giftModalVisible, setGiftModalVisible] = useState(false);
+  const [sendingGift, setSendingGift] = useState<string | null>(null);
+  const [giftNotice, setGiftNotice] = useState('');
+  const [giftError, setGiftError] = useState('');
   const [loading, setLoading] = useState(true);
   const [busyAction, setBusyAction] = useState<'follow' | 'message' | null>(null);
   const [reported, setReported] = useState(false);
@@ -71,9 +87,27 @@ export default function PublicProfileScreen() {
     }
   }, [profileId, user]);
 
+  const refreshGifts = useCallback(async () => {
+    if (!profileId) return;
+    setGiftError('');
+    try {
+      const [nextWallet, nextCatalog, nextGifts] = await Promise.all([
+        loadCoinWallet(),
+        loadGiftCatalog(),
+        loadProfileGifts(profileId),
+      ]);
+      setWallet(nextWallet);
+      setGiftCatalog(nextCatalog);
+      setProfileGifts(nextGifts);
+    } catch (nextError) {
+      setGiftError(nextError instanceof Error ? nextError.message : 'Gifts are temporarily unavailable.');
+    }
+  }, [profileId]);
+
   useFocusEffect(useCallback(() => {
     void refresh();
-  }, [refresh]));
+    void refreshGifts();
+  }, [refresh, refreshGifts]));
 
   const toggleFollow = async () => {
     if (!user || !profileId || isOwnProfile || working) return;
@@ -138,6 +172,30 @@ export default function PublicProfileScreen() {
           .catch((nextError: unknown) => setError(nextError instanceof Error ? nextError.message : 'Could not submit this report.')),
       },
     ]);
+  };
+
+  const sendGift = async (gift: GiftCatalogItem) => {
+    if (!profileId || isOwnProfile || sendingGift || !wallet || wallet.balance < gift.coin_cost) return;
+    setSendingGift(gift.slug);
+    setGiftError('');
+    setGiftNotice('');
+    try {
+      const result = await sendProfileGift(profileId, gift.slug);
+      setWallet((current) => current ? { ...current, balance: result.balance, lifetime_spent: current.lifetime_spent + result.coin_cost } : current);
+      setGiftNotice(`${gift.emoji} ${gift.name} sent!`);
+      setProfileGifts(await loadProfileGifts(profileId));
+    } catch (nextError) {
+      setGiftError(nextError instanceof Error ? nextError.message : 'Could not send this gift.');
+    } finally {
+      setSendingGift(null);
+    }
+  };
+
+  const openGiftPicker = () => {
+    setGiftNotice('');
+    setGiftModalVisible(true);
+    if (!wallet || giftCatalog.length === 0) void refreshGifts();
+    else setGiftError('');
   };
 
   if (loading) {
@@ -215,7 +273,43 @@ export default function PublicProfileScreen() {
         </View>
       )}
 
+      {!isOwnProfile ? (
+        <Pressable
+          accessibilityRole="button"
+          onPress={openGiftPicker}
+          style={styles.giftEntry}
+        >
+          <View style={styles.giftEntryIcon}><Text style={styles.giftEntryEmoji}>✦</Text></View>
+          <View style={styles.giftEntryCopy}><Text style={styles.giftEntryTitle}>Send a virtual gift</Text><Muted>Make the moment memorable—never paywalled, never cashable.</Muted></View>
+          <View style={styles.balanceMini}><Text style={styles.balanceMiniValue}>{wallet?.balance ?? '—'}</Text><Text style={styles.balanceMiniLabel}>coins</Text></View>
+        </Pressable>
+      ) : null}
+
       {error ? <Text accessibilityRole="alert" style={styles.error}>{error}</Text> : null}
+      {giftError && !giftModalVisible ? <Text accessibilityRole="alert" style={styles.error}>{giftError}</Text> : null}
+
+      {profileGifts.length > 0 ? (
+        <>
+          <SectionHeader title="Gifts received" />
+          <View style={styles.giftHistory}>
+            {profileGifts.slice(0, 6).map((gift) => {
+              const senderName = gift.sender_display_name || (gift.sender_handle ? `@${gift.sender_handle}` : 'Community member');
+              return (
+                <Pressable
+                  key={gift.gift_id}
+                  accessibilityLabel={`Open ${senderName}'s profile`}
+                  accessibilityRole="button"
+                  onPress={() => router.push({ pathname: '/people/[userId]', params: { userId: gift.sender_id } })}
+                  style={styles.receivedGift}
+                >
+                  <Text style={styles.receivedEmoji}>{gift.gift_emoji}</Text>
+                  <View style={styles.receivedCopy}><Text style={styles.receivedName}>{gift.gift_name}</Text><Text numberOfLines={1} style={styles.receivedSender}>from {senderName}</Text></View>
+                </Pressable>
+              );
+            })}
+          </View>
+        </>
+      ) : null}
 
       <SectionHeader title="Recent posts" />
       {posts.length === 0 ? <EmptyState description="When they share something, it will appear here." glyph="✦" title="Nothing posted yet" /> : null}
@@ -242,6 +336,48 @@ export default function PublicProfileScreen() {
           <Pressable accessibilityRole="button" onPress={confirmBlock} style={styles.safetyAction}><Text style={styles.blockLabel}>Block</Text></Pressable>
         </View>
       ) : null}
+
+      <Modal animationType="fade" onRequestClose={() => setGiftModalVisible(false)} transparent visible={giftModalVisible}>
+        <View style={styles.modalRoot}>
+          <Pressable accessibilityLabel="Close gift picker" accessibilityRole="button" onPress={() => setGiftModalVisible(false)} style={styles.modalBackdrop} />
+          <View style={styles.giftSheet}>
+            <View style={styles.sheetHandle} />
+            <View style={styles.sheetHeader}>
+              <View><Text style={styles.sheetTitle}>Send a little signal</Text><Text style={styles.sheetSubtitle}>to {profileName}</Text></View>
+              <View style={styles.sheetBalance}><Text style={styles.sheetBalanceValue}>{wallet?.balance ?? '—'}</Text><Text style={styles.sheetBalanceLabel}>coins</Text></View>
+            </View>
+
+            {giftCatalog.length === 0 && !giftError ? <ActivityIndicator color={colors.primary} style={styles.giftLoading} /> : null}
+            <View style={styles.giftGrid}>
+              {giftCatalog.map((gift) => {
+                const unavailable = !wallet || wallet.balance < gift.coin_cost;
+                const busy = sendingGift === gift.slug;
+                return (
+                  <Pressable
+                    key={gift.slug}
+                    accessibilityLabel={`Send ${gift.name} for ${gift.coin_cost} coins`}
+                    accessibilityRole="button"
+                    accessibilityState={{ disabled: unavailable || Boolean(sendingGift) }}
+                    disabled={unavailable || Boolean(sendingGift)}
+                    onPress={() => void sendGift(gift)}
+                    style={[styles.giftChoice, unavailable && styles.giftChoiceUnavailable, busy && styles.giftChoiceBusy]}
+                  >
+                    <Text style={styles.giftEmoji}>{gift.emoji}</Text>
+                    <Text style={styles.giftName}>{busy ? 'Sending…' : gift.name}</Text>
+                    <Text style={styles.giftCost}>{gift.coin_cost} coins</Text>
+                  </Pressable>
+                );
+              })}
+            </View>
+
+            {giftNotice ? <Text accessibilityRole="alert" style={styles.giftSuccess}>{giftNotice}</Text> : null}
+            {giftError ? <Text accessibilityRole="alert" style={styles.giftModalError}>{giftError}</Text> : null}
+            {giftError && giftCatalog.length === 0 ? <Pressable accessibilityRole="button" onPress={() => void refreshGifts()} style={styles.giftRetry}><Text style={styles.giftRetryLabel}>Retry gifts</Text></Pressable> : null}
+            <Text style={styles.giftFootnote}>Virtual gifts are social status items only. They cannot be withdrawn or converted to money.</Text>
+            <Pressable accessibilityRole="button" onPress={() => setGiftModalVisible(false)} style={styles.doneButton}><Text style={styles.doneLabel}>Done</Text></Pressable>
+          </View>
+        </View>
+      </Modal>
     </Screen>
   );
 }
@@ -273,7 +409,21 @@ const styles = StyleSheet.create({
   actionDisabled: { opacity: 0.55 },
   secondaryAction: { alignItems: 'center', backgroundColor: colors.surfaceRaised, borderColor: colors.borderStrong, borderRadius: radius.md, borderWidth: 1, flex: 1, justifyContent: 'center', minHeight: 52, paddingHorizontal: spacing.lg },
   secondaryActionLabel: { color: colors.text, fontSize: 14, fontWeight: '900' },
+  giftEntry: { alignItems: 'center', backgroundColor: colors.warningSoft, borderColor: '#5C4425', borderRadius: radius.lg, borderWidth: 1, flexDirection: 'row', gap: spacing.md, marginTop: spacing.md, padding: spacing.md },
+  giftEntryIcon: { alignItems: 'center', backgroundColor: colors.surfaceRaised, borderRadius: radius.md, height: 46, justifyContent: 'center', width: 46 },
+  giftEntryEmoji: { color: colors.warning, fontSize: 23, fontWeight: '900' },
+  giftEntryCopy: { flex: 1, gap: 2 },
+  giftEntryTitle: { color: colors.text, fontSize: 14, fontWeight: '900' },
+  balanceMini: { alignItems: 'center', backgroundColor: colors.surfaceRaised, borderRadius: radius.md, minWidth: 58, paddingHorizontal: spacing.sm, paddingVertical: 7 },
+  balanceMiniValue: { color: colors.warning, fontSize: 17, fontWeight: '900' },
+  balanceMiniLabel: { color: colors.textSubtle, fontSize: 8, fontWeight: '800', textTransform: 'uppercase' },
   error: { color: colors.danger, fontSize: 13, marginTop: spacing.md, textAlign: 'center' },
+  giftHistory: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
+  receivedGift: { alignItems: 'center', backgroundColor: colors.surfaceSoft, borderColor: colors.border, borderRadius: radius.md, borderWidth: 1, flexDirection: 'row', gap: spacing.sm, padding: spacing.md, width: '48%' },
+  receivedEmoji: { fontSize: 28 },
+  receivedCopy: { flex: 1 },
+  receivedName: { color: colors.text, fontSize: 12, fontWeight: '900' },
+  receivedSender: { color: colors.textSubtle, fontSize: 9, marginTop: 2 },
   posts: { gap: spacing.md },
   postCard: { backgroundColor: colors.surfaceSoft, gap: spacing.md },
   postMeta: { alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between' },
@@ -287,4 +437,29 @@ const styles = StyleSheet.create({
   blockLabel: { color: colors.danger, fontSize: 12, fontWeight: '800' },
   retryButton: { alignItems: 'center', alignSelf: 'center', backgroundColor: colors.primary, borderRadius: radius.md, marginTop: spacing.lg, paddingHorizontal: spacing.xl, paddingVertical: spacing.md },
   retryLabel: { color: colors.primaryInk, fontSize: 13, fontWeight: '900' },
+  modalRoot: { flex: 1, justifyContent: 'flex-end' },
+  modalBackdrop: { backgroundColor: 'rgba(3, 4, 8, 0.76)', bottom: 0, left: 0, position: 'absolute', right: 0, top: 0 },
+  giftSheet: { backgroundColor: colors.surface, borderColor: colors.borderStrong, borderTopLeftRadius: radius.xl, borderTopRightRadius: radius.xl, borderWidth: 1, gap: spacing.lg, paddingBottom: 34, paddingHorizontal: spacing.lg, paddingTop: spacing.md },
+  sheetHandle: { alignSelf: 'center', backgroundColor: colors.borderStrong, borderRadius: radius.pill, height: 4, width: 44 },
+  sheetHeader: { alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between' },
+  sheetTitle: { color: colors.text, fontSize: 23, fontWeight: '900', letterSpacing: -0.7 },
+  sheetSubtitle: { color: colors.textMuted, fontSize: 12, marginTop: 2 },
+  sheetBalance: { alignItems: 'center', backgroundColor: colors.warningSoft, borderRadius: radius.md, minWidth: 68, paddingHorizontal: spacing.md, paddingVertical: 8 },
+  sheetBalanceValue: { color: colors.warning, fontSize: 20, fontWeight: '900' },
+  sheetBalanceLabel: { color: colors.textSubtle, fontSize: 8, fontWeight: '800', letterSpacing: 0.7, textTransform: 'uppercase' },
+  giftGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
+  giftLoading: { marginVertical: spacing.xl },
+  giftChoice: { alignItems: 'center', backgroundColor: colors.surfaceRaised, borderColor: colors.borderStrong, borderRadius: radius.lg, borderWidth: 1, gap: 3, paddingHorizontal: spacing.sm, paddingVertical: spacing.md, width: '31%' },
+  giftChoiceUnavailable: { opacity: 0.35 },
+  giftChoiceBusy: { backgroundColor: colors.primarySoft, borderColor: '#344A88' },
+  giftEmoji: { fontSize: 31, marginBottom: 2 },
+  giftName: { color: colors.text, fontSize: 11, fontWeight: '900' },
+  giftCost: { color: colors.warning, fontSize: 9, fontWeight: '800' },
+  giftSuccess: { color: colors.success, fontSize: 14, fontWeight: '900', textAlign: 'center' },
+  giftModalError: { color: colors.danger, fontSize: 12, textAlign: 'center' },
+  giftRetry: { alignItems: 'center', alignSelf: 'center', backgroundColor: colors.surfaceRaised, borderColor: colors.borderStrong, borderRadius: radius.pill, borderWidth: 1, paddingHorizontal: spacing.lg, paddingVertical: spacing.sm },
+  giftRetryLabel: { color: colors.primary, fontSize: 11, fontWeight: '900' },
+  giftFootnote: { color: colors.textSubtle, fontSize: 10, lineHeight: 15, textAlign: 'center' },
+  doneButton: { alignItems: 'center', backgroundColor: colors.primary, borderRadius: radius.md, minHeight: 48, justifyContent: 'center' },
+  doneLabel: { color: colors.primaryInk, fontSize: 14, fontWeight: '900' },
 });
