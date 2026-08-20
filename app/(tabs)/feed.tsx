@@ -99,7 +99,13 @@ export default function FeedScreen() {
         <View style={styles.composerRule} />
         <View style={styles.topics}>
           {topics.map((option) => (
-            <Pressable key={option} onPress={() => setTopic(option)} style={[styles.topicChoice, topic === option && styles.topicSelected]}>
+            <Pressable
+              key={option}
+              accessibilityRole="radio"
+              accessibilityState={{ checked: topic === option }}
+              onPress={() => setTopic(option)}
+              style={[styles.topicChoice, topic === option && styles.topicSelected]}
+            >
               <Text style={[styles.topicText, topic === option && styles.topicTextSelected]}>{option}</Text>
             </Pressable>
           ))}
@@ -125,11 +131,18 @@ export default function FeedScreen() {
           return (
             <Card key={post.post_id}>
               <View style={styles.authorRow}>
-                <Avatar label={authorName} size={42} />
-                <View style={styles.authorCopy}>
-                  <Text style={styles.name}>{authorName}</Text>
-                  <Text style={styles.meta}>@{post.author_handle ?? 'member'} · {relativeTime(post.created_at)}</Text>
-                </View>
+                <Pressable
+                  accessibilityLabel={`Open ${authorName}'s profile`}
+                  accessibilityRole="button"
+                  onPress={() => router.push({ pathname: '/people/[userId]', params: { userId: post.author_id } })}
+                  style={styles.authorLink}
+                >
+                  <Avatar label={authorName} size={42} />
+                  <View style={styles.authorCopy}>
+                    <Text style={styles.name}>{authorName}</Text>
+                    <Text style={styles.meta}>@{post.author_handle ?? 'member'} · {relativeTime(post.created_at)}</Text>
+                  </View>
+                </Pressable>
                 {post.topic ? <Pill label={post.topic} /> : null}
               </View>
               <Text style={styles.postBody}>{post.body}</Text>
@@ -140,7 +153,7 @@ export default function FeedScreen() {
                 </Pressable>
                 <Pressable
                   accessibilityRole="button"
-                  onPress={() => router.push({ pathname: '/post/[postId]', params: { postId: post.post_id, body: post.body, author: authorName } })}
+                  onPress={() => router.push({ pathname: '/post/[postId]', params: { postId: post.post_id, body: post.body, author: authorName, authorId: post.author_id } })}
                   style={styles.actionButton}
                 >
                   <Text style={styles.actionIcon}>◌</Text><Text style={styles.action}>{post.reply_count}</Text>
@@ -177,6 +190,7 @@ const styles = StyleSheet.create({
   error: { color: colors.danger, fontSize: 13, marginTop: spacing.md, textAlign: 'center' },
   list: { gap: spacing.md },
   authorRow: { alignItems: 'center', flexDirection: 'row', gap: spacing.md },
+  authorLink: { alignItems: 'center', flex: 1, flexDirection: 'row', gap: spacing.md },
   authorCopy: { flex: 1 },
   name: { color: colors.text, fontSize: 15, fontWeight: '900', letterSpacing: -0.2 },
   meta: { color: colors.textSubtle, fontSize: 12, marginTop: 2 },

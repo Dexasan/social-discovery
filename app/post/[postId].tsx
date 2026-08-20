@@ -12,10 +12,11 @@ function first(value: string | string[] | undefined) {
 }
 
 export default function PostDetailScreen() {
-  const params = useLocalSearchParams<{ postId: string; body?: string; author?: string }>();
+  const params = useLocalSearchParams<{ postId: string; body?: string; author?: string; authorId?: string }>();
   const postId = first(params.postId);
   const body = first(params.body) ?? 'Conversation';
   const author = first(params.author) ?? 'Community member';
+  const authorId = first(params.authorId);
   const { user } = useSession();
   const [replies, setReplies] = useState<FeedReply[]>([]);
   const [draft, setDraft] = useState('');
@@ -55,15 +56,21 @@ export default function PostDetailScreen() {
 
   return (
     <Screen>
-      <Pressable accessibilityLabel="Back to feed" onPress={() => router.back()} style={styles.back}>
+      <Pressable accessibilityLabel="Back to feed" accessibilityRole="button" onPress={() => router.back()} style={styles.back}>
         <Text style={styles.backText}>‹ Feed</Text>
       </Pressable>
       <Heading compact>Replies</Heading>
       <Card style={styles.postCard}>
-        <View style={styles.authorRow}>
+        <Pressable
+          accessibilityLabel={`Open ${author}'s profile`}
+          accessibilityRole="button"
+          disabled={!authorId}
+          onPress={() => authorId && router.push({ pathname: '/people/[userId]', params: { userId: authorId } })}
+          style={styles.authorRow}
+        >
           <Avatar label={author} size={42} />
           <Text style={styles.author}>{author}</Text>
-        </View>
+        </Pressable>
         <Text style={styles.body}>{body}</Text>
       </Card>
 
@@ -89,9 +96,17 @@ export default function PostDetailScreen() {
           const name = item.author_display_name || (item.author_handle ? `@${item.author_handle}` : 'Community member');
           return (
             <Card key={item.reply_id} style={styles.replyCard}>
-              <Avatar label={name} size={38} />
+              <Pressable
+                accessibilityLabel={`Open ${name}'s profile`}
+                accessibilityRole="button"
+                onPress={() => router.push({ pathname: '/people/[userId]', params: { userId: item.author_id } })}
+              >
+                <Avatar label={name} size={38} />
+              </Pressable>
               <View style={styles.replyCopy}>
-                <Text style={styles.author}>{name}</Text>
+                <Pressable accessibilityRole="button" onPress={() => router.push({ pathname: '/people/[userId]', params: { userId: item.author_id } })}>
+                  <Text style={styles.author}>{name}</Text>
+                </Pressable>
                 <Text style={styles.replyBody}>{item.body}</Text>
               </View>
             </Card>

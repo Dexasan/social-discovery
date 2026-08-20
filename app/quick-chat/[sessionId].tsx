@@ -156,11 +156,19 @@ export default function QuickChatConversationScreen() {
           <Pressable accessibilityLabel="Leave conversation" onPress={() => void endChat('left')} style={styles.headerAction}>
             <Text style={styles.headerActionText}>‹</Text>
           </Pressable>
-          <Avatar label={partnerName} size={42} />
-          <View style={styles.headerIdentity}>
-            <Text style={styles.partnerName}>{partnerName}</Text>
-            <Muted>Connected now</Muted>
-          </View>
+          <Pressable
+            accessibilityLabel={`Open ${partnerName}'s profile`}
+            accessibilityRole="button"
+            disabled={!partnerId}
+            onPress={() => partnerId && router.push({ pathname: '/people/[userId]', params: { userId: partnerId } })}
+            style={styles.profileLink}
+          >
+            <Avatar label={partnerName} size={42} />
+            <View style={styles.headerIdentity}>
+              <Text style={styles.partnerName}>{partnerName}</Text>
+              <Muted>Connected now · View profile</Muted>
+            </View>
+          </Pressable>
           <Pressable accessibilityRole="button" onPress={confirmReport} style={styles.textAction}>
             <Text style={styles.textActionLabel}>Report</Text>
           </Pressable>
@@ -225,6 +233,7 @@ const styles = StyleSheet.create({
   headerAction: { alignItems: 'center', height: 42, justifyContent: 'center', width: 30 },
   headerActionText: { color: colors.text, fontSize: 36, fontWeight: '300', lineHeight: 38 },
   headerIdentity: { flex: 1 },
+  profileLink: { alignItems: 'center', flex: 1, flexDirection: 'row', gap: spacing.sm },
   partnerName: { color: colors.text, fontSize: 15, fontWeight: '900', letterSpacing: -0.2 },
   textAction: { paddingHorizontal: 5, paddingVertical: spacing.sm },
   textActionLabel: { color: colors.warning, fontSize: 11, fontWeight: '800' },

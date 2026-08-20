@@ -102,13 +102,21 @@ export default function DirectConversationScreen() {
         <Pressable accessibilityLabel="Back to messages" onPress={() => router.back()} style={styles.backButton}>
           <Text style={styles.backText}>‹</Text>
         </Pressable>
-        <Avatar label={partnerName} size={42} />
-        <View style={styles.identity}>
-          <Text style={styles.name}>{partnerName}</Text>
-          <Muted>Direct message</Muted>
-        </View>
-        <Pressable onPress={confirmReport} style={styles.action}><Text style={styles.report}>Report</Text></Pressable>
-        <Pressable onPress={confirmBlock} style={styles.action}><Text style={styles.block}>Block</Text></Pressable>
+        <Pressable
+          accessibilityLabel={`Open ${partnerName}'s profile`}
+          accessibilityRole="button"
+          disabled={!partnerId}
+          onPress={() => partnerId && router.push({ pathname: '/people/[userId]', params: { userId: partnerId } })}
+          style={styles.profileLink}
+        >
+          <Avatar label={partnerName} size={42} />
+          <View style={styles.identity}>
+            <Text style={styles.name}>{partnerName}</Text>
+            <Muted>View profile</Muted>
+          </View>
+        </Pressable>
+        <Pressable accessibilityRole="button" onPress={confirmReport} style={styles.action}><Text style={styles.report}>Report</Text></Pressable>
+        <Pressable accessibilityRole="button" onPress={confirmBlock} style={styles.action}><Text style={styles.block}>Block</Text></Pressable>
       </View>
 
       <FlatList
@@ -139,7 +147,7 @@ export default function DirectConversationScreen() {
           style={styles.input}
           value={draft}
         />
-        <Pressable disabled={!draft.trim() || sending} onPress={() => void send()} style={[styles.sendButton, (!draft.trim() || sending) && styles.sendDisabled]}>
+        <Pressable accessibilityLabel="Send message" accessibilityRole="button" disabled={!draft.trim() || sending} onPress={() => void send()} style={[styles.sendButton, (!draft.trim() || sending) && styles.sendDisabled]}>
           <Text style={styles.sendLabel}>↑</Text>
         </Pressable>
       </View>
@@ -153,6 +161,7 @@ const styles = StyleSheet.create({
   backButton: { alignItems: 'center', height: 42, justifyContent: 'center', width: 30 },
   backText: { color: colors.text, fontSize: 36, fontWeight: '300' },
   identity: { flex: 1 },
+  profileLink: { alignItems: 'center', flex: 1, flexDirection: 'row', gap: spacing.sm },
   name: { color: colors.text, fontSize: 15, fontWeight: '900', letterSpacing: -0.2 },
   action: { paddingHorizontal: 5, paddingVertical: spacing.sm },
   report: { color: colors.warning, fontSize: 11, fontWeight: '800' },

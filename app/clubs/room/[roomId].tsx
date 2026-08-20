@@ -236,11 +236,18 @@ export default function ClubRoomScreen() {
           const name = participant.display_name || (participant.handle ? `@${participant.handle}` : 'Speaker');
           return (
             <Card key={participant.user_id} style={styles.personCard}>
-              <View style={[styles.stageAvatar, participant.role === 'host' && styles.hostAvatar]}><Avatar label={name} size={64} /></View>
-              <Text style={styles.personName}>{name}</Text>
+              <Pressable
+                accessibilityLabel={`Open ${name}'s profile`}
+                accessibilityRole="button"
+                onPress={() => router.push({ pathname: '/people/[userId]', params: { userId: participant.user_id } })}
+                style={styles.stageProfile}
+              >
+                <View style={[styles.stageAvatar, participant.role === 'host' && styles.hostAvatar]}><Avatar label={name} size={64} /></View>
+                <Text style={styles.personName}>{name}</Text>
+              </Pressable>
               <Pill label={participant.role} tone={participant.role === 'host' ? 'accent' : 'default'} />
               {isHost && participant.role === 'speaker' ? (
-                <Pressable disabled={busy} onPress={() => void moderate(participant, 'move_listener')}>
+                <Pressable accessibilityRole="button" disabled={busy} onPress={() => void moderate(participant, 'move_listener')}>
                   <Text style={styles.moderateAction}>Move to audience</Text>
                 </Pressable>
               ) : null}
@@ -256,18 +263,25 @@ export default function ClubRoomScreen() {
           const name = participant.display_name || (participant.handle ? `@${participant.handle}` : 'Listener');
           return (
             <View key={participant.user_id} style={styles.audienceRow}>
-              <Avatar label={name} size={42} />
-              <View style={styles.audienceCopy}>
-                <Text style={styles.personName}>{name}</Text>
-                {participant.hand_raised_at ? <Text style={styles.hand}>Hand raised</Text> : <Muted>Listening</Muted>}
-              </View>
+              <Pressable
+                accessibilityLabel={`Open ${name}'s profile`}
+                accessibilityRole="button"
+                onPress={() => router.push({ pathname: '/people/[userId]', params: { userId: participant.user_id } })}
+                style={styles.audienceProfile}
+              >
+                <Avatar label={name} size={42} />
+                <View style={styles.audienceCopy}>
+                  <Text style={styles.personName}>{name}</Text>
+                  {participant.hand_raised_at ? <Text style={styles.hand}>Hand raised</Text> : <Muted>Listening</Muted>}
+                </View>
+              </Pressable>
               {isHost && participant.hand_raised_at ? (
-                <Pressable disabled={busy} onPress={() => void moderate(participant, 'invite_speaker')} style={styles.inviteButton}>
+                <Pressable accessibilityRole="button" disabled={busy} onPress={() => void moderate(participant, 'invite_speaker')} style={styles.inviteButton}>
                   <Text style={styles.inviteLabel}>Invite</Text>
                 </Pressable>
               ) : null}
               {isHost ? (
-                <Pressable disabled={busy} onPress={() => void moderate(participant, 'remove')} style={styles.removeButton}>
+                <Pressable accessibilityRole="button" disabled={busy} onPress={() => void moderate(participant, 'remove')} style={styles.removeButton}>
                   <Text style={styles.removeLabel}>Remove</Text>
                 </Pressable>
               ) : null}
@@ -277,7 +291,7 @@ export default function ClubRoomScreen() {
       </View>
 
       {ownParticipant?.role === 'listener' && room?.status === 'live' ? (
-        <Pressable disabled={busy} onPress={() => void toggleHand()} style={[styles.handButton, raised && styles.handButtonRaised]}>
+        <Pressable accessibilityRole="button" accessibilityState={{ selected: raised, disabled: busy }} disabled={busy} onPress={() => void toggleHand()} style={[styles.handButton, raised && styles.handButtonRaised]}>
           <Text style={[styles.handButtonLabel, raised && styles.handButtonLabelRaised]}>{raised ? 'Lower hand' : 'Raise hand'}</Text>
         </Pressable>
       ) : null}
@@ -310,12 +324,14 @@ const styles = StyleSheet.create({
   peopleGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.md },
   personCard: { alignItems: 'center', backgroundColor: colors.surfaceSoft, gap: spacing.sm, paddingVertical: spacing.xl, width: '47%' },
   stageAvatar: { backgroundColor: colors.surfaceRaised, borderRadius: 46, padding: 5 },
+  stageProfile: { alignItems: 'center', gap: spacing.sm },
   hostAvatar: { backgroundColor: colors.primarySoft },
   personName: { color: colors.text, fontSize: 13, fontWeight: '900', textAlign: 'center' },
   moderateAction: { color: colors.warning, fontSize: 10, fontWeight: '700', marginTop: spacing.xs },
   audienceList: { gap: spacing.sm },
   audienceRow: { alignItems: 'center', backgroundColor: colors.surfaceSoft, borderColor: colors.border, borderRadius: radius.md, borderWidth: 1, flexDirection: 'row', gap: spacing.md, padding: spacing.md },
   audienceCopy: { flex: 1 },
+  audienceProfile: { alignItems: 'center', flex: 1, flexDirection: 'row', gap: spacing.md },
   hand: { color: colors.warning, fontSize: 11, fontWeight: '800' },
   inviteButton: { backgroundColor: colors.primary, borderRadius: radius.pill, paddingHorizontal: spacing.md, paddingVertical: 8 },
   inviteLabel: { color: colors.primaryInk, fontSize: 11, fontWeight: '800' },
