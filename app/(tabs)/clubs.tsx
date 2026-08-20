@@ -97,7 +97,7 @@ export default function ClubsScreen() {
       </View>
 
       {!loading && clubs.length === 0 ? <EmptyState description="New communities will show up here." glyph="◎" title="No clubs yet" /> : null}
-      {clubs.length ? <SectionHeader title="Explore communities" /> : null}
+      {clubs.length > 0 ? <SectionHeader title="Explore communities" /> : null}
       <View style={styles.list}>
         {clubs.map((club) => (
           <Card key={club.club_id} style={styles.clubCard}>

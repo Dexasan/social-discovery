@@ -49,7 +49,7 @@ export default function MessagesScreen() {
       {!loading && conversations.length === 0 ? (
         <EmptyState description="Follow someone after Quick Chat and your conversation will live here." glyph="⌁" title="Turn a moment into a connection" />
       ) : null}
-      {conversations.length ? <SectionHeader title="Recent conversations" /> : null}
+      {conversations.length > 0 ? <SectionHeader title="Recent conversations" /> : null}
       <View style={styles.list}>
         {conversations.map((chat) => {
           const name = chat.partner_display_name || (chat.partner_handle ? `@${chat.partner_handle}` : 'Connection');

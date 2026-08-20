@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react';
 import { router, useFocusEffect } from 'expo-router';
-import { ActivityIndicator, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { ActivityIndicator, Pressable, RefreshControl, Share, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import { Avatar, Card, EmptyState, Eyebrow, Heading, Muted, Pill, PrimaryButton, Screen, SectionHeader } from '@/components/ui';
 import { useSession } from '@/context/SessionContext';
@@ -25,17 +25,24 @@ export default function FeedScreen() {
   const [body, setBody] = useState('');
   const [topic, setTopic] = useState('Random Thoughts');
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
 
-  const refresh = useCallback(async () => {
+  const refresh = useCallback(async (showRefreshIndicator = false) => {
+    if (showRefreshIndicator) setRefreshing(true);
     setError('');
     try {
-      setPosts(await loadFeed());
+      const nextPosts = await loadFeed();
+      setPosts(nextPosts);
+      setHasMore(nextPosts.length === 30);
     } catch (nextError) {
       setError(nextError instanceof Error ? nextError.message : 'Could not load the feed.');
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
   }, []);
 
@@ -72,8 +79,35 @@ export default function FeedScreen() {
     }
   };
 
+  const loadMore = async () => {
+    const oldestPost = posts.at(-1);
+    if (!oldestPost || !hasMore || loadingMore) return;
+    setLoadingMore(true);
+    setError('');
+    try {
+      const olderPosts = await loadFeed(oldestPost.created_at);
+      setPosts((current) => {
+        const existingIds = new Set(current.map((item) => item.post_id));
+        return [...current, ...olderPosts.filter((item) => !existingIds.has(item.post_id))];
+      });
+      setHasMore(olderPosts.length === 30);
+    } catch (nextError) {
+      setError(nextError instanceof Error ? nextError.message : 'Could not load older posts.');
+    } finally {
+      setLoadingMore(false);
+    }
+  };
+
+  const sharePost = async (post: FeedPost, authorName: string) => {
+    try {
+      await Share.share({ message: `${post.body}\n\n— ${authorName} on Social Discovery` });
+    } catch (nextError) {
+      setError(nextError instanceof Error ? nextError.message : 'Could not open the share menu.');
+    }
+  };
+
   return (
-    <Screen>
+    <Screen refreshControl={<RefreshControl colors={[colors.primary]} onRefresh={() => void refresh(true)} progressBackgroundColor={colors.surfaceRaised} refreshing={refreshing} tintColor={colors.primary} />}>
       <View style={styles.pageHeader}>
         <View>
           <Eyebrow>World feed</Eyebrow>
@@ -118,13 +152,16 @@ export default function FeedScreen() {
         </View>
       </Card>
 
-      {error ? <Text style={styles.error}>{error}</Text> : null}
+      {error ? <Text accessibilityRole="alert" style={styles.error}>{error}</Text> : null}
       {loading ? <ActivityIndicator color={colors.primary} style={styles.loading} /> : null}
-      {!loading && posts.length === 0 ? (
+      {!loading && error && posts.length === 0 ? (
+        <Pressable accessibilityRole="button" onPress={() => { setLoading(true); void refresh(); }} style={styles.retryButton}><Text style={styles.retryLabel}>Try again</Text></Pressable>
+      ) : null}
+      {!loading && !error && posts.length === 0 ? (
         <EmptyState description="Break the silence with the first thought." glyph="✦" title="A fresh corner of the internet" />
       ) : null}
 
-      {posts.length ? <SectionHeader title="Happening now" /> : null}
+      {posts.length > 0 ? <SectionHeader title="Happening now" /> : null}
       <View style={styles.list}>
         {posts.map((post) => {
           const authorName = post.author_display_name || (post.author_handle ? `@${post.author_handle}` : 'Community member');
@@ -159,12 +196,20 @@ export default function FeedScreen() {
                   <Text style={styles.actionIcon}>◌</Text><Text style={styles.action}>{post.reply_count}</Text>
                 </Pressable>
                 <View style={styles.actionSpacer} />
-                <Text style={styles.more}>•••</Text>
+                <Pressable accessibilityLabel="Share post" accessibilityRole="button" onPress={() => void sharePost(post, authorName)} style={styles.shareButton}>
+                  <Text style={styles.shareIcon}>↗</Text><Text style={styles.shareLabel}>Share</Text>
+                </Pressable>
               </View>
             </Card>
           );
         })}
       </View>
+      {posts.length > 0 && hasMore ? (
+        <Pressable accessibilityRole="button" disabled={loadingMore} onPress={() => void loadMore()} style={[styles.loadMoreButton, loadingMore && styles.loadMoreDisabled]}>
+          {loadingMore ? <ActivityIndicator color={colors.primary} size="small" /> : <Text style={styles.loadMoreLabel}>Load older conversations</Text>}
+        </Pressable>
+      ) : null}
+      {posts.length > 0 && !hasMore ? <Text style={styles.feedEnd}>You’re all caught up.</Text> : null}
     </Screen>
   );
 }
@@ -188,6 +233,8 @@ const styles = StyleSheet.create({
   publishButton: { minWidth: 138 },
   loading: { marginVertical: spacing.xl },
   error: { color: colors.danger, fontSize: 13, marginTop: spacing.md, textAlign: 'center' },
+  retryButton: { alignItems: 'center', alignSelf: 'center', backgroundColor: colors.primary, borderRadius: radius.md, marginTop: spacing.lg, paddingHorizontal: spacing.xl, paddingVertical: spacing.md },
+  retryLabel: { color: colors.primaryInk, fontSize: 13, fontWeight: '900' },
   list: { gap: spacing.md },
   authorRow: { alignItems: 'center', flexDirection: 'row', gap: spacing.md },
   authorLink: { alignItems: 'center', flex: 1, flexDirection: 'row', gap: spacing.md },
@@ -202,5 +249,11 @@ const styles = StyleSheet.create({
   action: { color: colors.textMuted, fontSize: 12, fontWeight: '800' },
   actionActive: { color: colors.danger },
   actionSpacer: { flex: 1 },
-  more: { color: colors.textSubtle, fontSize: 13, letterSpacing: 1 },
+  shareButton: { alignItems: 'center', flexDirection: 'row', gap: 5, paddingHorizontal: spacing.sm, paddingVertical: 7 },
+  shareIcon: { color: colors.primary, fontSize: 15, fontWeight: '900' },
+  shareLabel: { color: colors.textMuted, fontSize: 11, fontWeight: '800' },
+  loadMoreButton: { alignItems: 'center', alignSelf: 'center', backgroundColor: colors.surfaceRaised, borderColor: colors.borderStrong, borderRadius: radius.pill, borderWidth: 1, marginTop: spacing.xl, minWidth: 210, paddingHorizontal: spacing.xl, paddingVertical: spacing.md },
+  loadMoreDisabled: { opacity: 0.6 },
+  loadMoreLabel: { color: colors.primary, fontSize: 12, fontWeight: '900' },
+  feedEnd: { color: colors.textSubtle, fontSize: 11, fontWeight: '700', marginTop: spacing.xl, textAlign: 'center' },
 });

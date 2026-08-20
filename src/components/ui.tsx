@@ -1,4 +1,4 @@
-import { PropsWithChildren, ReactNode } from 'react';
+import { PropsWithChildren, ReactElement, ReactNode } from 'react';
 import {
   Pressable,
   ScrollView,
@@ -9,6 +9,7 @@ import {
   View,
   ViewStyle,
 } from 'react-native';
+import type { RefreshControlProps } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { colors, radius, shadows, spacing } from '@/theme/tokens';
@@ -16,12 +17,14 @@ import { colors, radius, shadows, spacing } from '@/theme/tokens';
 export function Screen({
   children,
   contentStyle,
+  refreshControl,
   scroll = true,
-}: PropsWithChildren<{ contentStyle?: StyleProp<ViewStyle>; scroll?: boolean }>) {
+}: PropsWithChildren<{ contentStyle?: StyleProp<ViewStyle>; refreshControl?: ReactElement<RefreshControlProps>; scroll?: boolean }>) {
   const content = scroll ? (
     <ScrollView
       contentContainerStyle={[styles.screenContent, contentStyle]}
       keyboardShouldPersistTaps="handled"
+      refreshControl={refreshControl}
       showsVerticalScrollIndicator={false}
     >
       {children}
