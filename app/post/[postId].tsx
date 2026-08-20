@@ -104,17 +104,17 @@ export default function PostDetailScreen() {
 
 const styles = StyleSheet.create({
   back: { alignSelf: 'flex-start', paddingVertical: spacing.sm },
-  backText: { color: colors.primary, fontSize: 14, fontWeight: '800' },
-  postCard: { gap: spacing.lg, marginTop: spacing.lg },
+  backText: { color: colors.primary, fontSize: 13, fontWeight: '900' },
+  postCard: { backgroundColor: colors.surfaceSoft, gap: spacing.lg, marginTop: spacing.lg },
   authorRow: { alignItems: 'center', flexDirection: 'row', gap: spacing.md },
   author: { color: colors.text, fontSize: 14, fontWeight: '800' },
-  body: { color: colors.text, fontSize: 20, fontWeight: '700', lineHeight: 28 },
-  composer: { gap: spacing.md, marginTop: spacing.lg },
-  input: { backgroundColor: colors.background, borderColor: colors.border, borderRadius: radius.md, borderWidth: 1, color: colors.text, fontSize: 15, minHeight: 82, padding: spacing.md, textAlignVertical: 'top' },
+  body: { color: colors.text, fontSize: 20, fontWeight: '800', letterSpacing: -0.35, lineHeight: 28 },
+  composer: { backgroundColor: colors.surfaceSoft, gap: spacing.md, marginTop: spacing.lg },
+  input: { backgroundColor: colors.surfaceRaised, borderColor: colors.borderStrong, borderRadius: radius.md, borderWidth: 1, color: colors.text, fontSize: 15, minHeight: 82, padding: spacing.md, textAlignVertical: 'top' },
   error: { color: colors.danger, fontSize: 13, marginVertical: spacing.md, textAlign: 'center' },
   loading: { marginVertical: spacing.xl },
   replies: { gap: spacing.md, marginTop: spacing.lg },
-  replyCard: { alignItems: 'flex-start', flexDirection: 'row', gap: spacing.md },
+  replyCard: { alignItems: 'flex-start', backgroundColor: colors.surfaceSoft, flexDirection: 'row', gap: spacing.md },
   replyCopy: { flex: 1, gap: spacing.sm },
   replyBody: { color: colors.text, fontSize: 15, lineHeight: 21 },
 });

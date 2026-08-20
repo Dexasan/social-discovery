@@ -62,13 +62,21 @@ export default function AuthScreen() {
   return (
     <Screen>
       <View style={styles.topRow}>
-        <Pill label="Android private beta" tone="accent" />
-        <Text style={styles.mark}>◎</Text>
+        <View style={styles.wordmark}><View style={styles.logoMark}><View style={styles.logoCore} /></View><Text style={styles.wordmarkText}>SOCIAL / WORLD</Text></View>
+        <Pill label="Private beta" tone="accent" />
       </View>
       <View style={styles.intro}>
-        <Eyebrow>{mode === 'sign-up' ? 'Join the conversation' : 'Welcome back'}</Eyebrow>
-        <Heading>{mode === 'sign-up' ? 'Meet people beyond your usual circle.' : 'Your world is waiting.'}</Heading>
-        <Muted>Authenticated accounts keep conversations personal and make safety controls enforceable.</Muted>
+        <Eyebrow>{mode === 'sign-up' ? 'Your world gets bigger here' : 'Good to see you again'}</Eyebrow>
+        <Heading>{mode === 'sign-up' ? 'Talk first. Discover the person.' : 'Jump back into the conversation.'}</Heading>
+        <Muted>Quick chats, public thoughts and live rooms—all built around people, not swipes.</Muted>
+      </View>
+
+      <View style={styles.promiseRow}>
+        <View style={styles.promise}><Text style={styles.promiseValue}>∞</Text><Text style={styles.promiseLabel}>No limits</Text></View>
+        <View style={styles.promiseDivider} />
+        <View style={styles.promise}><Text style={styles.promiseValue}>1 tap</Text><Text style={styles.promiseLabel}>Meet someone</Text></View>
+        <View style={styles.promiseDivider} />
+        <View style={styles.promise}><Text style={styles.promiseValue}>Global</Text><Text style={styles.promiseLabel}>By default</Text></View>
       </View>
 
       <Card style={styles.form}>
@@ -120,16 +128,23 @@ export default function AuthScreen() {
 
 const styles = StyleSheet.create({
   topRow: { alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between' },
-  mark: { color: colors.primary, fontSize: 32 },
-  intro: { gap: spacing.md, marginBottom: spacing.xl, marginTop: spacing.xxl },
-  form: { gap: spacing.md },
-  label: { color: colors.text, fontSize: 13, fontWeight: '700', marginTop: spacing.xs },
-  input: { backgroundColor: colors.background, borderColor: colors.border, borderRadius: radius.md, borderWidth: 1, color: colors.text, fontSize: 16, minHeight: 54, paddingHorizontal: spacing.lg },
+  wordmark: { alignItems: 'center', flexDirection: 'row', gap: 9 },
+  logoMark: { alignItems: 'center', borderColor: colors.primary, borderRadius: 11, borderWidth: 2, height: 22, justifyContent: 'center', transform: [{ rotate: '-12deg' }], width: 22 },
+  logoCore: { backgroundColor: colors.accent, borderRadius: 3, height: 6, width: 6 },
+  wordmarkText: { color: colors.text, fontSize: 10, fontWeight: '900', letterSpacing: 1.3 },
+  intro: { gap: spacing.md, marginTop: spacing.hero },
+  promiseRow: { alignItems: 'center', backgroundColor: colors.surfaceSoft, borderColor: colors.border, borderRadius: radius.lg, borderWidth: 1, flexDirection: 'row', marginVertical: spacing.xl, paddingVertical: spacing.md },
+  promise: { alignItems: 'center', flex: 1, gap: 2 },
+  promiseValue: { color: colors.text, fontSize: 13, fontWeight: '900' },
+  promiseLabel: { color: colors.textSubtle, fontSize: 9.5, fontWeight: '700' },
+  promiseDivider: { backgroundColor: colors.border, height: 26, width: 1 },
+  form: { backgroundColor: colors.surfaceSoft, gap: spacing.md },
+  label: { color: colors.textMuted, fontSize: 12, fontWeight: '800', marginTop: spacing.xs },
+  input: { backgroundColor: colors.surfaceRaised, borderColor: colors.borderStrong, borderRadius: radius.md, borderWidth: 1, color: colors.text, fontSize: 16, minHeight: 54, paddingHorizontal: spacing.lg },
   error: { color: colors.danger, fontSize: 13, lineHeight: 19 },
-  notice: { backgroundColor: '#18392D', borderRadius: radius.sm, color: colors.primary, fontSize: 13, lineHeight: 19, padding: spacing.md },
+  notice: { backgroundColor: colors.successSoft, borderRadius: radius.sm, color: colors.success, fontSize: 13, lineHeight: 19, padding: spacing.md },
   switchButton: { alignItems: 'center', flexDirection: 'row', justifyContent: 'center', marginTop: spacing.xl },
   switchMuted: { color: colors.textMuted, fontSize: 14 },
   switchAction: { color: colors.primary, fontSize: 14, fontWeight: '800' },
-  privacy: { color: colors.textMuted, fontSize: 11, lineHeight: 17, marginTop: spacing.xl, textAlign: 'center' },
+  privacy: { color: colors.textSubtle, fontSize: 10.5, lineHeight: 16, marginTop: spacing.xl, textAlign: 'center' },
 });
-

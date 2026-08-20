@@ -196,18 +196,23 @@ export default function ClubRoomScreen() {
   return (
     <Screen>
       <View style={styles.topRow}>
-        <Pressable accessibilityRole="button" onPress={confirmLeave}>
-          <Text style={styles.leave}>{isHost ? 'End room' : 'Leave'}</Text>
+        <Pressable accessibilityRole="button" onPress={confirmLeave} style={styles.leaveButton}>
+          <Text style={styles.leaveGlyph}>‹</Text><Text style={styles.leave}>{isHost ? 'End room' : 'Leave quietly'}</Text>
         </Pressable>
         <Pill label={room?.status === 'live' ? `Live · ${participants.length}` : 'Ended'} tone={room?.status === 'live' ? 'live' : 'default'} />
       </View>
-      <Text style={styles.clubName}>{room?.clubs?.name ?? 'Club room'}</Text>
-      <Heading compact>{room?.title ?? 'Live conversation'}</Heading>
+      <View style={styles.roomHeader}>
+        <Text style={styles.clubName}>{room?.clubs?.name ?? 'Club room'}</Text>
+        <Heading compact>{room?.title ?? 'Live conversation'}</Heading>
+        <Text style={styles.roomMeta}>{stage.length} on stage · {audience.length} listening</Text>
+      </View>
       {error ? <Text style={styles.error}>{error}</Text> : null}
 
       <Card style={styles.audioNotice}>
-        <Text style={styles.audioTitle}>{audioTitle}</Text>
-        <Muted>{audioDescription}</Muted>
+        <View style={styles.audioTop}>
+          <View style={[styles.audioIndicator, audio.isConnected && styles.audioIndicatorConnected]}><Text style={styles.audioWave}>≋</Text></View>
+          <View style={styles.audioCopy}><Text style={styles.audioTitle}>{audioTitle}</Text><Muted>{audioDescription}</Muted></View>
+        </View>
         {audio.isConnected && (ownParticipant?.role === 'host' || ownParticipant?.role === 'speaker') ? (
           <Pressable
             accessibilityRole="button"
@@ -231,7 +236,7 @@ export default function ClubRoomScreen() {
           const name = participant.display_name || (participant.handle ? `@${participant.handle}` : 'Speaker');
           return (
             <Card key={participant.user_id} style={styles.personCard}>
-              <Avatar label={name} size={58} />
+              <View style={[styles.stageAvatar, participant.role === 'host' && styles.hostAvatar]}><Avatar label={name} size={64} /></View>
               <Text style={styles.personName}>{name}</Text>
               <Pill label={participant.role} tone={participant.role === 'host' ? 'accent' : 'default'} />
               {isHost && participant.role === 'speaker' ? (
@@ -283,30 +288,41 @@ export default function ClubRoomScreen() {
 const styles = StyleSheet.create({
   loading: { marginTop: 120 },
   topRow: { alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between' },
-  leave: { color: colors.danger, fontSize: 13, fontWeight: '800' },
-  clubName: { color: colors.primary, fontSize: 12, fontWeight: '800', letterSpacing: 1.2, marginTop: spacing.xl, textTransform: 'uppercase' },
+  leaveButton: { alignItems: 'center', backgroundColor: colors.surfaceRaised, borderColor: colors.border, borderRadius: radius.pill, borderWidth: 1, flexDirection: 'row', gap: 5, paddingHorizontal: 12, paddingVertical: 7 },
+  leaveGlyph: { color: colors.textMuted, fontSize: 20, fontWeight: '400', lineHeight: 20 },
+  leave: { color: colors.textMuted, fontSize: 11, fontWeight: '800' },
+  roomHeader: { gap: spacing.sm, marginTop: spacing.xl },
+  clubName: { color: colors.primary, fontSize: 11, fontWeight: '900', letterSpacing: 1.5, textTransform: 'uppercase' },
+  roomMeta: { color: colors.textSubtle, fontSize: 12, fontWeight: '700' },
   error: { color: colors.danger, fontSize: 13, marginTop: spacing.md, textAlign: 'center' },
-  audioNotice: { gap: spacing.sm, marginTop: spacing.xl },
-  audioTitle: { color: colors.warning, fontSize: 15, fontWeight: '800' },
-  micButton: { alignItems: 'center', backgroundColor: colors.primary, borderRadius: radius.md, marginTop: spacing.sm, padding: spacing.md },
-  micButtonLive: { backgroundColor: colors.danger },
-  micButtonLabel: { color: colors.primaryInk, fontSize: 13, fontWeight: '800' },
-  micButtonLabelLive: { color: colors.text },
-  section: { color: colors.text, fontSize: 17, fontWeight: '800', marginBottom: spacing.md, marginTop: spacing.xl },
+  audioNotice: { backgroundColor: colors.surfaceSoft, gap: spacing.md, marginTop: spacing.xl },
+  audioTop: { alignItems: 'center', flexDirection: 'row', gap: spacing.md },
+  audioIndicator: { alignItems: 'center', backgroundColor: colors.warningSoft, borderRadius: radius.md, height: 46, justifyContent: 'center', width: 46 },
+  audioIndicatorConnected: { backgroundColor: colors.successSoft },
+  audioWave: { color: colors.primary, fontSize: 24, fontWeight: '900', transform: [{ rotate: '90deg' }] },
+  audioCopy: { flex: 1, gap: 2 },
+  audioTitle: { color: colors.text, fontSize: 14, fontWeight: '900' },
+  micButton: { alignItems: 'center', backgroundColor: colors.primarySoft, borderColor: '#344A88', borderRadius: radius.md, borderWidth: 1, marginTop: spacing.sm, padding: spacing.md },
+  micButtonLive: { backgroundColor: colors.accentSoft, borderColor: '#592635' },
+  micButtonLabel: { color: colors.primary, fontSize: 13, fontWeight: '800' },
+  micButtonLabelLive: { color: colors.accent },
+  section: { color: colors.text, fontSize: 17, fontWeight: '900', letterSpacing: -0.35, marginBottom: spacing.md, marginTop: spacing.xl },
   peopleGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.md },
-  personCard: { alignItems: 'center', gap: spacing.sm, width: '47%' },
-  personName: { color: colors.text, fontSize: 13, fontWeight: '800', textAlign: 'center' },
+  personCard: { alignItems: 'center', backgroundColor: colors.surfaceSoft, gap: spacing.sm, paddingVertical: spacing.xl, width: '47%' },
+  stageAvatar: { backgroundColor: colors.surfaceRaised, borderRadius: 46, padding: 5 },
+  hostAvatar: { backgroundColor: colors.primarySoft },
+  personName: { color: colors.text, fontSize: 13, fontWeight: '900', textAlign: 'center' },
   moderateAction: { color: colors.warning, fontSize: 10, fontWeight: '700', marginTop: spacing.xs },
   audienceList: { gap: spacing.sm },
-  audienceRow: { alignItems: 'center', backgroundColor: colors.surface, borderColor: colors.border, borderRadius: radius.md, borderWidth: 1, flexDirection: 'row', gap: spacing.md, padding: spacing.md },
+  audienceRow: { alignItems: 'center', backgroundColor: colors.surfaceSoft, borderColor: colors.border, borderRadius: radius.md, borderWidth: 1, flexDirection: 'row', gap: spacing.md, padding: spacing.md },
   audienceCopy: { flex: 1 },
   hand: { color: colors.warning, fontSize: 11, fontWeight: '800' },
   inviteButton: { backgroundColor: colors.primary, borderRadius: radius.pill, paddingHorizontal: spacing.md, paddingVertical: 8 },
   inviteLabel: { color: colors.primaryInk, fontSize: 11, fontWeight: '800' },
   removeButton: { paddingHorizontal: spacing.sm, paddingVertical: 8 },
   removeLabel: { color: colors.danger, fontSize: 10, fontWeight: '700' },
-  handButton: { alignItems: 'center', backgroundColor: colors.primary, borderRadius: radius.md, marginTop: spacing.xl, padding: spacing.lg },
-  handButtonRaised: { backgroundColor: colors.surfaceRaised, borderColor: colors.primary, borderWidth: 1 },
+  handButton: { alignItems: 'center', backgroundColor: colors.primary, borderRadius: radius.lg, elevation: 5, marginTop: spacing.xl, padding: spacing.lg },
+  handButtonRaised: { backgroundColor: colors.primarySoft, borderColor: '#344A88', borderWidth: 1 },
   handButtonLabel: { color: colors.primaryInk, fontSize: 15, fontWeight: '800' },
   handButtonLabelRaised: { color: colors.primary },
 });

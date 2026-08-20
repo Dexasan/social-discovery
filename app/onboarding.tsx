@@ -83,13 +83,13 @@ export default function OnboardingScreen() {
   return (
     <Screen>
       <View style={styles.topRow}>
-        <Pill label="Account secured" tone="accent" />
-        <Text style={styles.step}>Profile setup</Text>
+        <View style={styles.progressTrack}><View style={styles.progressFill} /></View>
+        <Text style={styles.step}>Almost there</Text>
       </View>
       <View style={styles.intro}>
-        <Eyebrow>One last step</Eyebrow>
-        <Heading>Make every conversation feel human.</Heading>
-        <Muted>Your email and birth date stay private. Only the profile details you choose are visible.</Muted>
+        <Eyebrow>Build your public vibe</Eyebrow>
+        <Heading>Give people something real to remember.</Heading>
+        <Muted>Your email and birth date stay private. The rest helps the right conversations find you.</Muted>
       </View>
 
       <Card style={styles.form}>
@@ -188,22 +188,24 @@ export default function OnboardingScreen() {
 
 const styles = StyleSheet.create({
   topRow: { alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between' },
-  step: { color: colors.textMuted, fontSize: 12, fontWeight: '700' },
+  progressTrack: { backgroundColor: colors.surfaceRaised, borderRadius: radius.pill, height: 6, overflow: 'hidden', width: 104 },
+  progressFill: { backgroundColor: colors.primary, borderRadius: radius.pill, height: '100%', width: '82%' },
+  step: { color: colors.textSubtle, fontSize: 11, fontWeight: '800', letterSpacing: 0.5, textTransform: 'uppercase' },
   intro: { gap: spacing.md, marginBottom: spacing.xl, marginTop: spacing.xxl },
-  form: { gap: spacing.md, marginBottom: spacing.lg },
-  label: { color: colors.text, fontSize: 13, fontWeight: '700', marginTop: spacing.xs },
-  input: { backgroundColor: colors.background, borderColor: colors.border, borderRadius: radius.md, borderWidth: 1, color: colors.text, fontSize: 16, minHeight: 52, paddingHorizontal: spacing.lg },
-  handleRow: { alignItems: 'center', backgroundColor: colors.background, borderColor: colors.border, borderRadius: radius.md, borderWidth: 1, flexDirection: 'row', minHeight: 52, paddingHorizontal: spacing.lg },
+  form: { backgroundColor: colors.surfaceSoft, gap: spacing.md, marginBottom: spacing.lg },
+  label: { color: colors.textMuted, fontSize: 12, fontWeight: '800', marginTop: spacing.xs },
+  input: { backgroundColor: colors.surfaceRaised, borderColor: colors.borderStrong, borderRadius: radius.md, borderWidth: 1, color: colors.text, fontSize: 16, minHeight: 52, paddingHorizontal: spacing.lg },
+  handleRow: { alignItems: 'center', backgroundColor: colors.surfaceRaised, borderColor: colors.borderStrong, borderRadius: radius.md, borderWidth: 1, flexDirection: 'row', minHeight: 52, paddingHorizontal: spacing.lg },
   at: { color: colors.primary, fontSize: 17, fontWeight: '800' },
   handleInput: { color: colors.text, flex: 1, fontSize: 16, paddingLeft: spacing.xs },
   splitRow: { flexDirection: 'row', gap: spacing.md },
   splitField: { flex: 1 },
   countryField: { width: 96 },
   languages: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
-  choice: { borderColor: colors.border, borderRadius: radius.pill, borderWidth: 1, paddingHorizontal: spacing.md, paddingVertical: 9 },
-  choiceSelected: { backgroundColor: colors.primary, borderColor: colors.primary },
+  choice: { backgroundColor: colors.surfaceRaised, borderColor: colors.border, borderRadius: radius.pill, borderWidth: 1, paddingHorizontal: spacing.md, paddingVertical: 9 },
+  choiceSelected: { backgroundColor: colors.primarySoft, borderColor: '#344A88' },
   choiceText: { color: colors.textMuted, fontSize: 13, fontWeight: '700' },
-  choiceTextSelected: { color: colors.primaryInk },
+  choiceTextSelected: { color: colors.primary },
   ageRow: { alignItems: 'flex-start', flexDirection: 'row', gap: spacing.md, marginTop: spacing.sm },
   checkbox: { alignItems: 'center', borderColor: colors.border, borderRadius: 7, borderWidth: 1, height: 24, justifyContent: 'center', width: 24 },
   checkboxChecked: { backgroundColor: colors.primary, borderColor: colors.primary },

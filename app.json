@@ -2,18 +2,26 @@
   "expo": {
     "name": "Social Discovery",
     "slug": "social-discovery",
-    "version": "0.1.1",
+    "version": "0.1.2",
     "orientation": "portrait",
     "userInterfaceStyle": "dark",
     "scheme": "socialdiscovery",
     "newArchEnabled": true,
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/3708b603-811a-4757-a013-f99e42f52076",
+      "checkAutomatically": "ON_LOAD",
+      "fallbackToCacheTimeout": 0
+    },
     "plugins": [
       "expo-router",
       "@cloudflare/react-native-webrtc"
     ],
     "android": {
       "package": "com.socialdiscovery.app",
-      "versionCode": 2,
+      "versionCode": 3,
       "permissions": [
         "android.permission.RECORD_AUDIO",
         "android.permission.MODIFY_AUDIO_SETTINGS",

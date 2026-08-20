@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { router } from 'expo-router';
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { Avatar, Card, Eyebrow, Heading, Muted, Pill, PrimaryButton, Screen } from '@/components/ui';
+import { Avatar, Card, Eyebrow, Heading, Muted, Pill, PrimaryButton, Screen, SectionHeader } from '@/components/ui';
 import { useSession } from '@/context/SessionContext';
 import {
   cancelQuickChatSearch,
@@ -104,19 +104,22 @@ export default function QuickChatScreen() {
     <Screen>
       <View style={styles.headerRow}>
         <View>
-          <Eyebrow>Worldwide now</Eyebrow>
-          <Heading compact>Quick Chat</Heading>
+          <Eyebrow>Quick chat · worldwide</Eyebrow>
+          <Heading compact>Meet someone new.</Heading>
         </View>
         <View style={styles.online}>
           <View style={styles.onlineDot} />
-          <Text style={styles.onlineText}>Secure matching</Text>
+          <Text style={styles.onlineText}>Online</Text>
         </View>
       </View>
 
       {matchState === 'matched' ? (
         <Card style={styles.matchCard}>
-          <Pill label="Connected" tone="accent" />
-          <Avatar label={partnerName} size={86} />
+          <View style={styles.matchTop}>
+            <Pill label="New connection" tone="success" />
+            <Text style={styles.spark}>✦</Text>
+          </View>
+          <View style={styles.avatarHalo}><Avatar label={partnerName} size={92} /></View>
           <View style={styles.centered}>
             <Text style={styles.matchName}>{partnerName}</Text>
             <Muted>{partner?.country_code ?? 'Worldwide'} · {partner?.languages.join(', ') || 'Shared language'}</Muted>
@@ -131,18 +134,28 @@ export default function QuickChatScreen() {
         </Card>
       ) : (
         <Card style={styles.discoveryCard}>
+          <View style={styles.discoveryTop}>
+            <Pill label={matchState === 'searching' ? 'Searching live' : 'Global discovery'} tone={matchState === 'searching' ? 'live' : 'accent'} />
+            <Text style={styles.noLimits}>No limits</Text>
+          </View>
           <View style={styles.orbit}>
-            <View style={styles.orbitRing} />
-            {matchState === 'searching' ? <ActivityIndicator color={colors.primary} size="large" /> : <Text style={styles.globe}>◎</Text>}
+            <View style={[styles.orbitRing, styles.orbitOuter]} />
+            <View style={[styles.orbitRing, styles.orbitMiddle]} />
+            <View style={styles.satelliteOne} />
+            <View style={styles.satelliteTwo} />
+            <View style={styles.satelliteThree} />
+            <View style={styles.orbitCore}>
+              {matchState === 'searching' ? <ActivityIndicator color={colors.primary} size="large" /> : <Text style={styles.globe}>◎</Text>}
+            </View>
           </View>
           <View style={styles.centered}>
             <Text style={styles.discoveryTitle}>
-              {matchState === 'searching' ? 'Looking worldwide…' : 'Someone interesting is one tap away.'}
+              {matchState === 'searching' ? 'Scanning the world…' : 'One tap. A real person.'}
             </Text>
             <Muted>
               {matchState === 'searching'
-                ? 'Matching by language while keeping blocked accounts apart.'
-                : 'Text first. You choose whether to follow and keep talking.'}
+                ? 'Finding someone who shares your language right now.'
+                : 'Start with a conversation, not a profile. Keep the connection only if it clicks.'}
             </Muted>
           </View>
           {matchState === 'searching' ? (
@@ -153,13 +166,22 @@ export default function QuickChatScreen() {
             <PrimaryButton label="Find someone" onPress={beginSearch} />
           )}
           {error ? <Text style={styles.error}>{error}</Text> : null}
-          <Text style={styles.safetyNote}>Profiles are authenticated. Block and report stay available throughout the conversation.</Text>
+          <View style={styles.safetyRow}>
+            <Text style={styles.safetyIcon}>✓</Text>
+            <Text style={styles.safetyNote}>Authenticated profiles · Block and report anytime</Text>
+          </View>
         </Card>
       )}
 
-      <View style={styles.preferenceHeader}>
-        <Text style={styles.sectionTitle}>Matching preferences</Text>
+      <View style={styles.quickFacts}>
+        <View style={styles.fact}><Text style={styles.factValue}>∞</Text><Text style={styles.factLabel}>Unlimited</Text></View>
+        <View style={styles.factDivider} />
+        <View style={styles.fact}><Text style={styles.factValue}>1:1</Text><Text style={styles.factLabel}>Private</Text></View>
+        <View style={styles.factDivider} />
+        <View style={styles.fact}><Text style={styles.factValue}>24/7</Text><Text style={styles.factLabel}>Worldwide</Text></View>
       </View>
+
+      <SectionHeader title="Your matching lane" />
       <View style={styles.preferenceRow}>
         {(profile?.languages ?? ['English']).map((language) => <Pill key={language} label={language} />)}
         <Pill label="Any country" />
@@ -169,24 +191,40 @@ export default function QuickChatScreen() {
 }
 
 const styles = StyleSheet.create({
-  headerRow: { alignItems: 'flex-start', flexDirection: 'row', justifyContent: 'space-between', marginBottom: spacing.xl },
-  online: { alignItems: 'center', backgroundColor: colors.surface, borderRadius: radius.pill, flexDirection: 'row', gap: 7, paddingHorizontal: 10, paddingVertical: 7 },
-  onlineDot: { backgroundColor: colors.primary, borderRadius: 4, height: 8, width: 8 },
-  onlineText: { color: colors.textMuted, fontSize: 11, fontWeight: '700' },
-  discoveryCard: { gap: spacing.xl, paddingVertical: spacing.xxl },
-  orbit: { alignItems: 'center', alignSelf: 'center', height: 126, justifyContent: 'center', width: 126 },
-  orbitRing: { borderColor: colors.border, borderRadius: 63, borderStyle: 'dashed', borderWidth: 1, height: 126, position: 'absolute', width: 126 },
-  globe: { color: colors.primary, fontSize: 62, fontWeight: '200' },
+  headerRow: { alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between', marginBottom: spacing.xl },
+  online: { alignItems: 'center', backgroundColor: colors.successSoft, borderColor: '#285241', borderRadius: radius.pill, borderWidth: 1, flexDirection: 'row', gap: 7, paddingHorizontal: 11, paddingVertical: 7 },
+  onlineDot: { backgroundColor: colors.success, borderRadius: 4, height: 7, width: 7 },
+  onlineText: { color: colors.success, fontSize: 10, fontWeight: '800', letterSpacing: 0.5, textTransform: 'uppercase' },
+  discoveryCard: { backgroundColor: colors.surfaceSoft, gap: spacing.xl, overflow: 'hidden', paddingVertical: spacing.xl },
+  discoveryTop: { alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between' },
+  noLimits: { color: colors.textSubtle, fontSize: 11, fontWeight: '800', letterSpacing: 0.7, textTransform: 'uppercase' },
+  orbit: { alignItems: 'center', alignSelf: 'center', height: 176, justifyContent: 'center', marginVertical: spacing.xs, width: 176 },
+  orbitRing: { borderColor: colors.borderStrong, borderRadius: 99, borderStyle: 'dashed', borderWidth: 1, position: 'absolute' },
+  orbitOuter: { height: 176, width: 176 },
+  orbitMiddle: { borderColor: '#283456', height: 126, width: 126 },
+  orbitCore: { alignItems: 'center', backgroundColor: colors.primarySoft, borderColor: '#344A88', borderRadius: 42, borderWidth: 1, height: 84, justifyContent: 'center', width: 84 },
+  satelliteOne: { backgroundColor: colors.accent, borderColor: '#FFC0CA', borderRadius: 7, borderWidth: 2, height: 14, position: 'absolute', right: 19, top: 35, width: 14 },
+  satelliteTwo: { backgroundColor: colors.success, borderColor: '#B9F3DC', borderRadius: 6, borderWidth: 2, bottom: 24, height: 12, left: 29, position: 'absolute', width: 12 },
+  satelliteThree: { backgroundColor: colors.warning, borderColor: '#FFE2AF', borderRadius: 5, borderWidth: 2, height: 10, left: 12, position: 'absolute', top: 57, width: 10 },
+  globe: { color: colors.primary, fontSize: 46, fontWeight: '200' },
   centered: { alignItems: 'center', gap: spacing.sm },
-  discoveryTitle: { color: colors.text, fontSize: 23, fontWeight: '800', lineHeight: 29, textAlign: 'center' },
-  safetyNote: { color: colors.textMuted, fontSize: 11, textAlign: 'center' },
-  preferenceHeader: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: spacing.md, marginTop: spacing.xl },
-  sectionTitle: { color: colors.text, fontSize: 16, fontWeight: '800' },
+  discoveryTitle: { color: colors.text, fontSize: 24, fontWeight: '900', letterSpacing: -0.7, lineHeight: 29, textAlign: 'center' },
+  safetyRow: { alignItems: 'center', alignSelf: 'center', flexDirection: 'row', gap: spacing.sm },
+  safetyIcon: { color: colors.success, fontSize: 12, fontWeight: '900' },
+  safetyNote: { color: colors.textSubtle, fontSize: 10.5, fontWeight: '600', textAlign: 'center' },
   preferenceRow: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
-  matchCard: { alignItems: 'center', gap: spacing.lg, paddingVertical: spacing.xl },
-  matchName: { color: colors.text, fontSize: 24, fontWeight: '800' },
+  quickFacts: { alignItems: 'center', backgroundColor: colors.surface, borderColor: colors.border, borderRadius: radius.lg, borderWidth: 1, flexDirection: 'row', justifyContent: 'space-evenly', marginTop: spacing.lg, paddingVertical: spacing.lg },
+  fact: { alignItems: 'center', flex: 1, gap: 3 },
+  factDivider: { backgroundColor: colors.border, height: 28, width: 1 },
+  factValue: { color: colors.text, fontSize: 16, fontWeight: '900' },
+  factLabel: { color: colors.textSubtle, fontSize: 10, fontWeight: '700', textTransform: 'uppercase' },
+  matchCard: { gap: spacing.lg, paddingVertical: spacing.xl },
+  matchTop: { alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between', width: '100%' },
+  spark: { color: colors.primary, fontSize: 24 },
+  avatarHalo: { alignSelf: 'center', backgroundColor: colors.primarySoft, borderRadius: 64, padding: 12 },
+  matchName: { color: colors.text, fontSize: 26, fontWeight: '900', letterSpacing: -0.7 },
   sharedRow: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm, justifyContent: 'center' },
-  secondaryButton: { alignItems: 'center', borderColor: colors.border, borderRadius: radius.md, borderWidth: 1, padding: spacing.md, width: '100%' },
-  secondaryText: { color: colors.text, fontSize: 14, fontWeight: '700' },
+  secondaryButton: { alignItems: 'center', backgroundColor: colors.surfaceRaised, borderColor: colors.borderStrong, borderRadius: radius.md, borderWidth: 1, padding: spacing.md, width: '100%' },
+  secondaryText: { color: colors.text, fontSize: 14, fontWeight: '800' },
   error: { color: colors.danger, fontSize: 13, lineHeight: 19, textAlign: 'center' },
 });
