@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/supabase';
+import type { Tables } from '@/types/database';
 
 function client() {
   if (!supabase) throw new Error('Supabase is not configured.');
@@ -47,6 +48,15 @@ export type PublicProfilePost = {
   created_at: string;
   id: string;
   topic: string | null;
+};
+
+export type ConnectionMode = 'followers' | 'following';
+
+export type ConnectionProfile = Pick<
+  Tables<'profiles'>,
+  'id' | 'handle' | 'display_name' | 'country_code' | 'languages' | 'bio' | 'avatar_path'
+> & {
+  viewer_follows: boolean;
 };
 
 export type UpdateProfileInput = {
@@ -103,4 +113,52 @@ export async function loadProfilePosts(userId: string) {
     .limit(12);
   if (error) throw error;
   return data as PublicProfilePost[];
+}
+
+export async function loadProfileConnections(profileId: string, viewerId: string, mode: ConnectionMode) {
+  const db = client();
+  let profileIds: string[];
+
+  if (mode === 'followers') {
+    const { data, error } = await db
+      .from('follows')
+      .select('follower_id, created_at')
+      .eq('followed_id', profileId)
+      .order('created_at', { ascending: false });
+    if (error) throw error;
+    profileIds = data.map((item) => item.follower_id);
+  } else {
+    const { data, error } = await db
+      .from('follows')
+      .select('followed_id, created_at')
+      .eq('follower_id', profileId)
+      .order('created_at', { ascending: false });
+    if (error) throw error;
+    profileIds = data.map((item) => item.followed_id);
+  }
+
+  if (profileIds.length === 0) return [];
+
+  const [profilesResult, viewerFollowsResult] = await Promise.all([
+    db
+      .from('profiles')
+      .select('id, handle, display_name, country_code, languages, bio, avatar_path')
+      .in('id', profileIds),
+    db
+      .from('follows')
+      .select('followed_id')
+      .eq('follower_id', viewerId)
+      .in('followed_id', profileIds),
+  ]);
+
+  if (profilesResult.error) throw profilesResult.error;
+  if (viewerFollowsResult.error) throw viewerFollowsResult.error;
+
+  const viewerFollows = new Set(viewerFollowsResult.data.map((item) => item.followed_id));
+  const profileById = new Map(profilesResult.data.map((item) => [item.id, item]));
+
+  return profileIds
+    .map((id) => profileById.get(id))
+    .filter((profile): profile is NonNullable<typeof profile> => Boolean(profile))
+    .map((profile) => ({ ...profile, viewer_follows: viewerFollows.has(profile.id) })) as ConnectionProfile[];
 }

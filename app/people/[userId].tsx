@@ -179,8 +179,22 @@ export default function PublicProfileScreen() {
       <Text style={styles.bio}>{profile.bio || 'Here for good conversations and unexpected connections.'}</Text>
 
       <View style={styles.stats}>
-        <View style={styles.stat}><Text style={styles.statNumber}>{stats?.following ?? '—'}</Text><Text style={styles.statLabel}>Following</Text></View>
-        <View style={styles.stat}><Text style={styles.statNumber}>{stats?.followers ?? '—'}</Text><Text style={styles.statLabel}>Followers</Text></View>
+        <Pressable
+          accessibilityLabel={`View people ${profileName} follows`}
+          accessibilityRole="button"
+          onPress={() => router.push({ pathname: '/people/connections', params: { userId: profile.id, mode: 'following', name: profileName } })}
+          style={styles.stat}
+        >
+          <Text style={styles.statNumber}>{stats?.following ?? '—'}</Text><Text style={styles.statLabel}>Following</Text>
+        </Pressable>
+        <Pressable
+          accessibilityLabel={`View ${profileName}'s followers`}
+          accessibilityRole="button"
+          onPress={() => router.push({ pathname: '/people/connections', params: { userId: profile.id, mode: 'followers', name: profileName } })}
+          style={styles.stat}
+        >
+          <Text style={styles.statNumber}>{stats?.followers ?? '—'}</Text><Text style={styles.statLabel}>Followers</Text>
+        </Pressable>
         <View style={styles.stat}><Text style={styles.statNumber}>{stats?.posts ?? '—'}</Text><Text style={styles.statLabel}>Posts</Text></View>
       </View>
 
