@@ -638,6 +638,7 @@ export type Database = {
         Row: {
           hand_raised_at: string | null
           joined_at: string
+          last_seen_at: string
           left_at: string | null
           muted_by_moderator: boolean
           role: string
@@ -648,6 +649,7 @@ export type Database = {
         Insert: {
           hand_raised_at?: string | null
           joined_at?: string
+          last_seen_at?: string
           left_at?: string | null
           muted_by_moderator?: boolean
           role?: string
@@ -658,6 +660,7 @@ export type Database = {
         Update: {
           hand_raised_at?: string | null
           joined_at?: string
+          last_seen_at?: string
           left_at?: string | null
           muted_by_moderator?: boolean
           role?: string
@@ -752,6 +755,10 @@ export type Database = {
         }
       }
       end_club_room: { Args: { target_room_id: string }; Returns: undefined }
+      heartbeat_club_room: {
+        Args: { target_room_id: string }
+        Returns: undefined
+      }
       get_feed: {
         Args: { before_created_at?: string; feed_limit?: number }
         Returns: {

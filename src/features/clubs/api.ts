@@ -72,6 +72,11 @@ export async function leaveClubRoom(roomId: string) {
   if (error) throw error;
 }
 
+export async function heartbeatClubRoom(roomId: string) {
+  const { error } = await client().rpc('heartbeat_club_room', { target_room_id: roomId });
+  if (error) throw error;
+}
+
 export async function setRoomHandRaised(roomId: string, raised: boolean) {
   const { error } = await client().rpc('set_room_hand_raised', { target_room_id: roomId, raised });
   if (error) throw error;

@@ -93,6 +93,9 @@ async function main() {
       return data;
     };
 
+    const { error: heartbeatError } = await userClient.rpc('heartbeat_club_room', { target_room_id: roomId });
+    if (heartbeatError) throw heartbeatError;
+
     const opened = await gateway({ action: 'create_session', room_id: roomId, session_kind: 'subscriber' });
     if (!opened.mediaSessionId) throw new Error('The gateway did not return a media session ID.');
     const closed = await gateway({ action: 'close_session', media_session_id: opened.mediaSessionId });
@@ -107,7 +110,20 @@ async function main() {
       throw sessionError ?? new Error('The stored media session was not closed.');
     }
 
-    console.log('Cloudflare audio gateway smoke test passed.');
+    const disconnectSession = await gateway({ action: 'create_session', room_id: roomId, session_kind: 'subscriber' });
+    const disconnected = await gateway({ action: 'disconnect', room_id: roomId });
+    if (!disconnected.closed) throw new Error('The gateway did not disconnect the room participant.');
+
+    const [{ data: disconnectedSession }, { data: endedRoom }, { data: leftParticipant }] = await Promise.all([
+      admin.from('room_audio_sessions').select('status').eq('id', disconnectSession.mediaSessionId).single(),
+      admin.from('club_rooms').select('status').eq('id', roomId).single(),
+      admin.from('room_participants').select('state').eq('room_id', roomId).eq('user_id', userId).single(),
+    ]);
+    if (disconnectedSession?.status !== 'closed' || endedRoom?.status !== 'ended' || leftParticipant?.state !== 'left') {
+      throw new Error('Disconnect did not close the session, participant, and hosted room state.');
+    }
+
+    console.log('Cloudflare audio gateway and disconnect lifecycle smoke test passed.');
   } finally {
     if (roomId) await admin.from('club_rooms').delete().eq('id', roomId);
     if (clubId) await admin.from('clubs').delete().eq('id', clubId);

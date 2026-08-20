@@ -1,11 +1,12 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { router, useLocalSearchParams } from 'expo-router';
-import { ActivityIndicator, Alert, Pressable, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Alert, AppState, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { Avatar, Card, Heading, Muted, Pill, Screen } from '@/components/ui';
 import { useSession } from '@/context/SessionContext';
 import {
   endClubRoom,
+  heartbeatClubRoom,
   joinClubRoom,
   leaveClubRoom,
   loadClubRoom,
@@ -16,7 +17,7 @@ import {
   type ClubRoom,
   type RoomParticipant,
 } from '@/features/clubs/api';
-import { closeRoomAudio, revokeRoomAudioPublisher, useClubRoomAudio } from '@/features/clubs/audio';
+import { closeRoomAudio, disconnectRoomAudio, revokeRoomAudioPublisher, useClubRoomAudio } from '@/features/clubs/audio';
 import { colors, radius, spacing } from '@/theme/tokens';
 
 function first(value: string | string[] | undefined) {
@@ -33,7 +34,7 @@ export default function ClubRoomScreen() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
 
-  const refresh = async () => {
+  const refresh = useCallback(async () => {
     if (!roomId) return;
     try {
       const [nextRoom, nextParticipants] = await Promise.all([loadClubRoom(roomId), loadRoomParticipants(roomId)]);
@@ -44,7 +45,7 @@ export default function ClubRoomScreen() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [roomId]);
 
   useEffect(() => {
     if (!roomId) return;
@@ -62,7 +63,7 @@ export default function ClubRoomScreen() {
       active = false;
       unsubscribe();
     };
-  }, [roomId]);
+  }, [refresh, roomId]);
 
   const ownParticipant = participants.find((participant) => participant.user_id === user?.id);
   const isHost = ownParticipant?.role === 'host';
@@ -70,6 +71,46 @@ export default function ClubRoomScreen() {
   const stage = participants.filter((participant) => participant.role === 'host' || participant.role === 'speaker');
   const audience = participants.filter((participant) => participant.role === 'listener');
   const audio = useClubRoomAudio(room?.status === 'live' ? roomId : undefined, ownParticipant?.role);
+
+  useEffect(() => {
+    if (!roomId || room?.status !== 'live' || !ownParticipant) return;
+    let active = true;
+    const heartbeat = () => {
+      void heartbeatClubRoom(roomId).catch(() => {
+        if (active) void refresh();
+      });
+    };
+    heartbeat();
+    const interval = setInterval(heartbeat, 20_000);
+    return () => {
+      active = false;
+      clearInterval(interval);
+    };
+  }, [ownParticipant?.user_id, refresh, room?.status, roomId]);
+
+  useEffect(() => {
+    if (!roomId || room?.status !== 'live') return;
+    let previousState = AppState.currentState;
+    let transition = Promise.resolve();
+    const enqueue = (task: () => Promise<unknown>) => {
+      transition = transition.then(task, task).then(() => undefined, () => undefined);
+    };
+    const subscription = AppState.addEventListener('change', (nextState) => {
+      if (previousState === 'active' && nextState !== 'active') {
+        enqueue(() => disconnectRoomAudio(roomId));
+      } else if (previousState !== 'active' && nextState === 'active') {
+        enqueue(async () => {
+          await joinClubRoom(roomId);
+          await refresh();
+        });
+      }
+      previousState = nextState;
+    });
+    return () => {
+      subscription.remove();
+      enqueue(() => disconnectRoomAudio(roomId));
+    };
+  }, [refresh, room?.status, roomId]);
 
   const audioTitle = !audio.isConfigured
     ? 'Live audio needs Cloudflare credentials'
@@ -97,7 +138,10 @@ export default function ClubRoomScreen() {
         await endClubRoom(roomId);
         await closeRoomAudio(roomId);
       }
-      else await leaveClubRoom(roomId);
+      else {
+        await disconnectRoomAudio(roomId);
+        await leaveClubRoom(roomId);
+      }
       router.replace('/(tabs)/clubs');
     } catch (nextError) {
       setError(nextError instanceof Error ? nextError.message : 'Could not leave this room.');

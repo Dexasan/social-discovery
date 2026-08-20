@@ -3,7 +3,7 @@ import { createClient } from 'npm:@supabase/supabase-js@2.112.3';
 type SessionDescription = { sdp: string; type: 'offer' | 'answer' };
 
 type RequestBody = {
-  action?: 'create_session' | 'publish' | 'pull' | 'renegotiate' | 'close_session' | 'revoke_publisher' | 'close_room';
+  action?: 'create_session' | 'publish' | 'pull' | 'renegotiate' | 'close_session' | 'revoke_publisher' | 'close_room' | 'disconnect';
   media_session_id?: string;
   room_id?: string;
   session_description?: SessionDescription;
@@ -127,6 +127,17 @@ Deno.serve(async (request) => {
         return response({ error: 'Only users on stage can publish audio.' }, 403);
       }
 
+      const { data: existingSessions } = await admin
+        .from('room_audio_sessions')
+        .select('id, provider_session_id, provider_track_mid, session_kind')
+        .eq('room_id', body.room_id)
+        .eq('user_id', userData.user.id)
+        .eq('session_kind', body.session_kind)
+        .eq('status', 'active');
+
+      if (body.session_kind === 'publisher') {
+        await Promise.allSettled((existingSessions ?? []).map((session) => forceCloseProviderTrack(session)));
+      }
       await admin
         .from('room_audio_sessions')
         .update({ status: 'closed' })
@@ -149,6 +160,57 @@ Deno.serve(async (request) => {
         .single();
       if (insertError) throw insertError;
       return response({ mediaSessionId: mediaSession.id });
+    }
+
+    if (body.action === 'disconnect') {
+      if (!body.room_id) return response({ error: 'room_id is required.' }, 400);
+      const { data: ownedSessions } = await admin
+        .from('room_audio_sessions')
+        .select('id, provider_session_id, provider_track_mid, session_kind')
+        .eq('room_id', body.room_id)
+        .eq('user_id', userData.user.id)
+        .eq('status', 'active');
+      const results = await Promise.allSettled(
+        (ownedSessions ?? [])
+          .filter((session) => session.session_kind === 'publisher')
+          .map((session) => forceCloseProviderTrack(session)),
+      );
+      await admin
+        .from('room_audio_sessions')
+        .update({ status: 'closed' })
+        .eq('room_id', body.room_id)
+        .eq('user_id', userData.user.id)
+        .eq('status', 'active');
+
+      const { data: room } = await admin
+        .from('club_rooms')
+        .select('host_id, status')
+        .eq('id', body.room_id)
+        .maybeSingle();
+      const disconnectedAt = new Date().toISOString();
+      if (room?.host_id === userData.user.id && room.status === 'live') {
+        await admin
+          .from('club_rooms')
+          .update({ status: 'ended', ended_at: disconnectedAt })
+          .eq('id', body.room_id)
+          .eq('status', 'live');
+        await admin
+          .from('room_participants')
+          .update({ state: 'left', left_at: disconnectedAt, hand_raised_at: null })
+          .eq('room_id', body.room_id)
+          .eq('state', 'active');
+      } else {
+        await admin
+          .from('room_participants')
+          .update({ state: 'left', left_at: disconnectedAt, hand_raised_at: null })
+          .eq('room_id', body.room_id)
+          .eq('user_id', userData.user.id)
+          .eq('state', 'active');
+      }
+      return response({
+        closed: true,
+        failedTrackCount: results.filter((result) => result.status === 'rejected').length,
+      });
     }
 
     const mediaSession = body.media_session_id && body.action !== 'close_session'
@@ -240,6 +302,7 @@ Deno.serve(async (request) => {
         .eq('room_id', mediaSession.room_id)
         .eq('session_kind', 'publisher')
         .eq('status', 'active')
+        .neq('user_id', userData.user.id)
         .not('published_track_name', 'is', null);
       const publisherIds = [...new Set((publishers ?? []).map((publisher) => publisher.user_id))];
       const { data: currentSpeakers } = publisherIds.length

@@ -6,7 +6,7 @@ import {
   RTCSessionDescription,
   type MediaStream,
   type MediaStreamTrack,
-} from 'react-native-webrtc';
+} from '@cloudflare/react-native-webrtc';
 
 import { supabase } from '@/lib/supabase';
 
@@ -23,6 +23,12 @@ type GatewayResponse = {
     tracks?: Array<{ mid?: string; trackName?: string }>;
   } | null;
   trackCount?: number;
+};
+
+type AudioSessionRecord = {
+  published_track_name?: unknown;
+  session_kind?: unknown;
+  status?: unknown;
 };
 
 export type ClubRoomAudioState = {
@@ -57,6 +63,11 @@ async function closeMediaSession(mediaSessionId: string) {
   await gateway({ action: 'close_session', media_session_id: mediaSessionId });
 }
 
+export async function disconnectRoomAudio(roomId: string) {
+  if (!isCloudflareConfigured) return;
+  await gateway({ action: 'disconnect', room_id: roomId });
+}
+
 export async function revokeRoomAudioPublisher(roomId: string, targetUserId: string) {
   if (!isCloudflareConfigured) return;
   await gateway({ action: 'revoke_publisher', room_id: roomId, target_user_id: targetUserId });
@@ -78,17 +89,59 @@ async function requestMicrophonePermission() {
   return result === PermissionsAndroid.RESULTS.GRANTED;
 }
 
-function description(value: { sdp?: string; type?: string } | null) {
+function description(value: { sdp?: string; type?: string | null } | null) {
   if (!value?.sdp || (value.type !== 'offer' && value.type !== 'answer')) {
     throw new Error('Cloudflare returned an invalid WebRTC description.');
   }
   return { sdp: value.sdp, type: value.type } as SessionDescription;
 }
 
+async function waitForIceGathering(peer: RTCPeerConnection) {
+  if (peer.iceGatheringState === 'complete') return;
+  await new Promise<void>((resolve) => {
+    const eventPeer = peer as unknown as {
+      addEventListener: (type: string, listener: () => void) => void;
+      removeEventListener: (type: string, listener: () => void) => void;
+    };
+    let settled = false;
+    const finish = () => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timeout);
+      eventPeer.removeEventListener('icegatheringstatechange', onStateChange);
+      resolve();
+    };
+    const onStateChange = () => {
+      if (peer.iceGatheringState === 'complete' || peer.signalingState === 'closed') finish();
+    };
+    const timeout = setTimeout(finish, 3_000);
+    eventPeer.addEventListener('icegatheringstatechange', onStateChange);
+  });
+}
+
+async function createLocalOffer(peer: RTCPeerConnection) {
+  const offer = description(await peer.createOffer({}));
+  await peer.setLocalDescription(offer);
+  await waitForIceGathering(peer);
+  return description(peer.localDescription);
+}
+
+async function createLocalAnswer(peer: RTCPeerConnection) {
+  const answer = description(await peer.createAnswer());
+  await peer.setLocalDescription(answer);
+  await waitForIceGathering(peer);
+  return description(peer.localDescription);
+}
+
+function affectsPublishedTracks(value: AudioSessionRecord | null) {
+  return value?.session_kind === 'publisher'
+    && (value.status !== 'active' || typeof value.published_track_name === 'string');
+}
+
 export function useClubRoomAudio(roomId: string | undefined, role: RoomRole | undefined): ClubRoomAudioState {
   const localTrackRef = useRef<MediaStreamTrack | null>(null);
   const localStreamRef = useRef<MediaStream | null>(null);
-  const remoteTracksRef = useRef<MediaStreamTrack[]>([]);
+  const remoteStreamsRef = useRef<MediaStream[]>([]);
   const [publisherReady, setPublisherReady] = useState(false);
   const [subscriberReady, setSubscriberReady] = useState(false);
   const [audioRevision, setAudioRevision] = useState(0);
@@ -99,21 +152,21 @@ export function useClubRoomAudio(roomId: string | undefined, role: RoomRole | un
   useEffect(() => {
     if (!roomId || !role || !isCloudflareConfigured || !supabase) return;
     const client = supabase;
+    let revisionTimer: ReturnType<typeof setTimeout> | null = null;
     const channel = client
       .channel(`room:${roomId}:audio-tracks`)
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'room_audio_sessions', filter: `room_id=eq.${roomId}` },
         (payload) => {
-          const next = payload.new as Record<string, unknown>;
-          const previous = payload.old as Record<string, unknown>;
-          if (next.session_kind === 'publisher' || previous.session_kind === 'publisher') {
-            setAudioRevision((revision) => revision + 1);
-          }
+          if (!affectsPublishedTracks(payload.new as AudioSessionRecord)) return;
+          if (revisionTimer) clearTimeout(revisionTimer);
+          revisionTimer = setTimeout(() => setAudioRevision((revision) => revision + 1), 400);
         },
       )
       .subscribe();
     return () => {
+      if (revisionTimer) clearTimeout(revisionTimer);
       void client.removeChannel(channel);
     };
   }, [role, roomId]);
@@ -149,8 +202,7 @@ export function useClubRoomAudio(roomId: string | undefined, role: RoomRole | un
       if (!active) return;
       peer = new RTCPeerConnection(peerConfiguration);
       peer.addTransceiver(track, { direction: 'sendonly', streams: [stream] });
-      const offer = description(await peer.createOffer());
-      await peer.setLocalDescription(offer);
+      const offer = await createLocalOffer(peer);
       const result = await gateway({
         action: 'publish',
         media_session_id: mediaSessionId,
@@ -177,7 +229,7 @@ export function useClubRoomAudio(roomId: string | undefined, role: RoomRole | un
 
   useEffect(() => {
     setSubscriberReady(false);
-    remoteTracksRef.current = [];
+    remoteStreamsRef.current = [];
     if (!roomId || !role || !isCloudflareConfigured) return;
     let active = true;
     let peer: RTCPeerConnection | null = null;
@@ -187,13 +239,23 @@ export function useClubRoomAudio(roomId: string | undefined, role: RoomRole | un
       mediaSessionId = await createMediaSession(roomId, 'subscriber');
       if (!active) return;
       peer = new RTCPeerConnection(peerConfiguration);
-      peer.ontrack = (event: unknown) => {
-        const remoteTrack = (event as unknown as { track: MediaStreamTrack | null }).track;
-        if (remoteTrack && !remoteTracksRef.current.some((track) => track.id === remoteTrack.id)) {
-          remoteTrack.enabled = true;
-          remoteTracksRef.current = [...remoteTracksRef.current, remoteTrack];
-        }
+      const eventPeer = peer as unknown as {
+        addEventListener: (
+          type: string,
+          listener: (event: { streams: MediaStream[]; track: MediaStreamTrack | null }) => void,
+        ) => void;
       };
+      eventPeer.addEventListener('track', (event) => {
+        const remoteTrack = event.track;
+        if (remoteTrack) {
+          remoteTrack.enabled = true;
+        }
+        for (const stream of event.streams) {
+          if (!remoteStreamsRef.current.some((existing) => existing.id === stream.id)) {
+            remoteStreamsRef.current = [...remoteStreamsRef.current, stream];
+          }
+        }
+      });
       const result = await gateway({ action: 'pull', media_session_id: mediaSessionId });
       if (!result?.trackCount) {
         peer.close();
@@ -206,8 +268,7 @@ export function useClubRoomAudio(roomId: string | undefined, role: RoomRole | un
 
       const offer = description(result.provider?.sessionDescription ?? null);
       await peer.setRemoteDescription(new RTCSessionDescription(offer));
-      const answer = description(await peer.createAnswer());
-      await peer.setLocalDescription(answer);
+      const answer = await createLocalAnswer(peer);
       await gateway({
         action: 'renegotiate',
         media_session_id: mediaSessionId,
@@ -222,8 +283,9 @@ export function useClubRoomAudio(roomId: string | undefined, role: RoomRole | un
 
     return () => {
       active = false;
+      remoteStreamsRef.current.forEach((stream) => stream.release(false));
       peer?.close();
-      remoteTracksRef.current = [];
+      remoteStreamsRef.current = [];
       if (mediaSessionId) void closeMediaSession(mediaSessionId).catch(() => undefined);
     };
   }, [audioRevision, role, roomId]);
