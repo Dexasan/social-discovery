@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { Redirect, router } from 'expo-router';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
+import { BrandLockup } from '@/components/Brand';
 import { Card, Eyebrow, Heading, Muted, PrimaryButton, Screen } from '@/components/ui';
 import { useSession } from '@/context/SessionContext';
 import { colors, radius, spacing } from '@/theme/tokens';
@@ -83,13 +84,14 @@ export default function OnboardingScreen() {
 
   return (
     <Screen>
+      <BrandLockup compact />
       <View style={styles.topRow}>
         <View style={styles.progressTrack}><View style={styles.progressFill} /></View>
         <Text style={styles.step}>Almost there</Text>
       </View>
       <View style={styles.intro}>
-        <Eyebrow>Build your public vibe</Eyebrow>
-        <Heading>Give people something real to remember.</Heading>
+        <Eyebrow>Make your first impression</Eyebrow>
+        <Heading>Give strangers a reason to say hey.</Heading>
         <Muted>Your email and birth date stay private. The rest helps the right conversations find you.</Muted>
       </View>
 
@@ -194,19 +196,19 @@ export default function OnboardingScreen() {
         {error ? <Text style={styles.error}>{error}</Text> : null}
       </Card>
 
-      <PrimaryButton disabled={!canContinue} label={submitting ? 'Saving profile…' : 'Enter the community'} onPress={finish} />
+      <PrimaryButton disabled={!canContinue} label={submitting ? 'Saving profile…' : 'Start yapping'} onPress={finish} />
       <Text style={styles.privacy}>Your precise location is never collected or displayed.</Text>
     </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  topRow: { alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between' },
+  topRow: { alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between', marginTop: spacing.xl },
   progressTrack: { backgroundColor: colors.surfaceRaised, borderRadius: radius.pill, height: 6, overflow: 'hidden', width: 104 },
   progressFill: { backgroundColor: colors.primary, borderRadius: radius.pill, height: '100%', width: '82%' },
   step: { color: colors.textSubtle, fontSize: 11, fontWeight: '800', letterSpacing: 0.5, textTransform: 'uppercase' },
   intro: { gap: spacing.md, marginBottom: spacing.xl, marginTop: spacing.xxl },
-  form: { backgroundColor: colors.surfaceSoft, gap: spacing.md, marginBottom: spacing.lg },
+  form: { backgroundColor: colors.surface, gap: spacing.md, marginBottom: spacing.lg },
   label: { color: colors.textMuted, fontSize: 12, fontWeight: '800', marginTop: spacing.xs },
   labelRow: { alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between' },
   helper: { color: colors.textSubtle, fontSize: 10.5, fontWeight: '700' },
@@ -219,7 +221,7 @@ const styles = StyleSheet.create({
   countryField: { width: 96 },
   languages: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
   choice: { backgroundColor: colors.surfaceRaised, borderColor: colors.border, borderRadius: radius.pill, borderWidth: 1, paddingHorizontal: spacing.md, paddingVertical: 9 },
-  choiceSelected: { backgroundColor: colors.primarySoft, borderColor: '#344A88' },
+  choiceSelected: { backgroundColor: colors.primarySoft, borderColor: '#F3B5E8' },
   choiceDisabled: { opacity: 0.4 },
   choiceText: { color: colors.textMuted, fontSize: 13, fontWeight: '700' },
   choiceTextSelected: { color: colors.primary },

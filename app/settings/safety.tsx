@@ -157,6 +157,6 @@ const styles = StyleSheet.create({
   unblockButton: { backgroundColor: colors.surfaceRaised, borderColor: colors.borderStrong, borderRadius: radius.pill, borderWidth: 1, paddingHorizontal: spacing.md, paddingVertical: 8 },
   unblockLabel: { color: colors.primary, fontSize: 11, fontWeight: '900' },
   inactive: { opacity: 0.5 },
-  noteCard: { backgroundColor: colors.primarySoft, borderColor: '#344A88', gap: spacing.xs, marginTop: spacing.xl },
+  noteCard: { backgroundColor: colors.primarySoft, borderColor: '#F3B5E8', gap: spacing.xs, marginTop: spacing.xl },
   noteTitle: { color: colors.text, fontSize: 14, fontWeight: '900' },
 });

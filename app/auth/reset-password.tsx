@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Redirect, router } from 'expo-router';
 import { StyleSheet, Text, TextInput, View } from 'react-native';
 
+import { BrandLockup } from '@/components/Brand';
 import { Card, Eyebrow, Heading, Muted, PrimaryButton, Screen } from '@/components/ui';
 import { useSession } from '@/context/SessionContext';
 import { colors, radius, spacing } from '@/theme/tokens';
@@ -35,6 +36,7 @@ export default function ResetPasswordScreen() {
 
   return (
     <Screen>
+      <BrandLockup compact />
       <View style={styles.hero}>
         <Eyebrow>Account recovery</Eyebrow>
         <Heading>Choose a new password.</Heading>
@@ -74,8 +76,8 @@ export default function ResetPasswordScreen() {
 }
 
 const styles = StyleSheet.create({
-  hero: { gap: spacing.md, marginBottom: spacing.xl, marginTop: spacing.hero },
-  form: { backgroundColor: colors.surfaceSoft, gap: spacing.md },
+  hero: { gap: spacing.md, marginBottom: spacing.xl, marginTop: spacing.xxl },
+  form: { backgroundColor: colors.surface, gap: spacing.md },
   label: { color: colors.textMuted, fontSize: 12, fontWeight: '800', marginTop: spacing.xs },
   input: { backgroundColor: colors.surfaceRaised, borderColor: colors.borderStrong, borderRadius: radius.md, borderWidth: 1, color: colors.text, fontSize: 16, minHeight: 54, paddingHorizontal: spacing.lg },
   error: { color: colors.danger, fontSize: 13, lineHeight: 19 },

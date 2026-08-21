@@ -51,8 +51,8 @@ export default function MessagesScreen() {
     <Screen refreshControl={<RefreshControl colors={[colors.primary]} onRefresh={() => void refresh(true)} progressBackgroundColor={colors.surfaceRaised} refreshing={refreshing} />}>
       <View style={styles.headerRow}>
         <View>
-          <Eyebrow>Your people</Eyebrow>
-          <Heading compact>Messages</Heading>
+          <Eyebrow>YOUR YAPPIES</Eyebrow>
+          <Heading compact>Keep talking.</Heading>
         </View>
         <Pressable accessibilityLabel="Start a new message" accessibilityRole="button" onPress={() => router.push('/messages/new')} style={styles.composeMark}>
           <Text style={styles.composeGlyph}>＋</Text>
@@ -98,13 +98,13 @@ export default function MessagesScreen() {
 
 const styles = StyleSheet.create({
   headerRow: { alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between' },
-  composeMark: { alignItems: 'center', backgroundColor: colors.primarySoft, borderColor: '#304377', borderRadius: 20, borderWidth: 1, height: 44, justifyContent: 'center', width: 44 },
-  composeGlyph: { color: colors.primary, fontSize: 23, fontWeight: '500' },
+  composeMark: { alignItems: 'center', backgroundColor: colors.primary, borderRadius: 22, height: 44, justifyContent: 'center', width: 44 },
+  composeGlyph: { color: colors.primaryInk, fontSize: 23, fontWeight: '700' },
   loading: { marginVertical: spacing.xl },
   error: { color: colors.danger, fontSize: 13, marginTop: spacing.lg, textAlign: 'center' },
   list: { gap: spacing.sm },
-  chat: { alignItems: 'center', backgroundColor: colors.surfaceSoft, flexDirection: 'row', gap: spacing.md, paddingVertical: 14 },
-  unreadChat: { backgroundColor: colors.primarySoft, borderColor: '#344A88' },
+  chat: { alignItems: 'center', backgroundColor: colors.surface, flexDirection: 'row', gap: spacing.md, paddingVertical: 14 },
+  unreadChat: { backgroundColor: colors.primarySoft, borderColor: '#F3B5E8' },
   copy: { flex: 1, gap: 3 },
   name: { color: colors.text, fontSize: 15, fontWeight: '900', letterSpacing: -0.2 },
   preview: { color: colors.textSubtle, fontSize: 13, lineHeight: 19 },

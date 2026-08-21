@@ -33,7 +33,7 @@ export default function RootLayout() {
     <SafeAreaProvider>
       <UpdatePrompt />
       <SessionProvider>
-        <StatusBar style="light" />
+        <StatusBar style="dark" />
         <Stack screenOptions={{ contentStyle: { backgroundColor: colors.background }, headerShown: false }} />
       </SessionProvider>
     </SafeAreaProvider>

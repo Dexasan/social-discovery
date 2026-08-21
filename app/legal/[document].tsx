@@ -15,7 +15,7 @@ const documents: Record<LegalDocument, {
   terms: {
     eyebrow: 'The agreement',
     title: 'Terms of Use',
-    summary: 'Plain-language rules for using Social Discovery during its beta period.',
+    summary: 'Plain-language rules for using YAPPIE during its beta period.',
     sections: [
       { heading: 'Who can use the app', body: 'You must be at least 18 years old, provide accurate account information, and be legally able to accept these terms. One person should control each account.' },
       { heading: 'Your conduct', body: 'You may meet strangers, publish posts, join clubs, and message people. You may not harass, exploit, threaten, impersonate, spam, or use the service for illegal activity. The Community Guidelines are part of these terms.' },

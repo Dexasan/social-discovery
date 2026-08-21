@@ -103,7 +103,7 @@ export default function FeedScreen() {
 
   const sharePost = async (post: FeedPost, authorName: string) => {
     try {
-      await Share.share({ message: `${post.body}\n\n— ${authorName} on Social Discovery` });
+      await Share.share({ message: `${post.body}\n\n— ${authorName} on YAPPIE` });
     } catch (nextError) {
       setError(nextError instanceof Error ? nextError.message : 'Could not open the share menu.');
     }
@@ -113,8 +113,8 @@ export default function FeedScreen() {
     <Screen refreshControl={<RefreshControl colors={[colors.primary]} onRefresh={() => void refresh(true)} progressBackgroundColor={colors.surfaceRaised} refreshing={refreshing} tintColor={colors.primary} />}>
       <View style={styles.pageHeader}>
         <View>
-          <Eyebrow>World feed</Eyebrow>
-          <Heading compact>What’s on your mind?</Heading>
+          <Eyebrow>YAPPIE · THE WORLD IS TALKING</Eyebrow>
+          <Heading compact>What’s everybody saying?</Heading>
         </View>
         <View style={styles.livePulse}><View style={styles.liveDot} /><Text style={styles.liveText}>Live</Text></View>
       </View>
@@ -133,7 +133,7 @@ export default function FeedScreen() {
             }}
             style={[styles.feedModeButton, feedMode === mode && styles.feedModeSelected]}
           >
-            <Text style={[styles.feedModeLabel, feedMode === mode && styles.feedModeLabelSelected]}>{mode === 'global' ? 'For everyone' : 'Following'}</Text>
+            <Text style={[styles.feedModeLabel, feedMode === mode && styles.feedModeLabelSelected]}>{mode === 'global' ? 'Everyone' : 'My people'}</Text>
           </Pressable>
         ))}
       </View>
@@ -146,7 +146,7 @@ export default function FeedScreen() {
             maxLength={500}
             multiline
             onChangeText={setBody}
-            placeholder="Share a thought with the world…"
+            placeholder="Start a conversation…"
             placeholderTextColor={colors.textMuted}
             style={styles.composeInput}
             value={body}
@@ -242,21 +242,21 @@ export default function FeedScreen() {
 
 const styles = StyleSheet.create({
   pageHeader: { alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between' },
-  livePulse: { alignItems: 'center', backgroundColor: colors.accentSoft, borderRadius: radius.pill, flexDirection: 'row', gap: 6, paddingHorizontal: 11, paddingVertical: 7 },
+  livePulse: { alignItems: 'center', backgroundColor: colors.accentSoft, borderColor: '#FFC4B9', borderRadius: radius.pill, borderWidth: 1, flexDirection: 'row', gap: 6, paddingHorizontal: 11, paddingVertical: 7 },
   liveDot: { backgroundColor: colors.accent, borderRadius: 4, height: 7, width: 7 },
   liveText: { color: colors.accent, fontSize: 10, fontWeight: '900', letterSpacing: 0.8, textTransform: 'uppercase' },
-  feedModeRow: { backgroundColor: colors.surfaceSoft, borderColor: colors.border, borderRadius: radius.pill, borderWidth: 1, flexDirection: 'row', marginTop: spacing.xl, padding: 4 },
+  feedModeRow: { backgroundColor: colors.surface, borderColor: colors.border, borderRadius: radius.pill, borderWidth: 1, flexDirection: 'row', marginTop: spacing.xl, padding: 4 },
   feedModeButton: { alignItems: 'center', borderRadius: radius.pill, flex: 1, paddingVertical: 10 },
-  feedModeSelected: { backgroundColor: colors.surfaceRaised },
+  feedModeSelected: { backgroundColor: colors.primarySoft },
   feedModeLabel: { color: colors.textSubtle, fontSize: 12, fontWeight: '800' },
-  feedModeLabelSelected: { color: colors.text },
-  composerCard: { backgroundColor: colors.surfaceSoft, gap: spacing.md, marginTop: spacing.xl },
+  feedModeLabelSelected: { color: colors.primaryPressed },
+  composerCard: { backgroundColor: '#FFF0EB', borderColor: '#FFD2C8', gap: spacing.md, marginTop: spacing.xl },
   composeTop: { alignItems: 'flex-start', flexDirection: 'row', gap: spacing.md },
   composeInput: { color: colors.text, flex: 1, fontSize: 16, lineHeight: 23, minHeight: 78, paddingTop: spacing.sm, textAlignVertical: 'top' },
   composerRule: { backgroundColor: colors.border, height: StyleSheet.hairlineWidth },
   topics: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
   topicChoice: { backgroundColor: colors.surfaceRaised, borderColor: colors.border, borderRadius: radius.pill, borderWidth: 1, paddingHorizontal: 10, paddingVertical: 7 },
-  topicSelected: { backgroundColor: colors.primarySoft, borderColor: '#344A88' },
+  topicSelected: { backgroundColor: colors.primarySoft, borderColor: '#F3B5E8' },
   topicText: { color: colors.textMuted, fontSize: 11, fontWeight: '700' },
   topicTextSelected: { color: colors.primary },
   publishRow: { alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between' },
@@ -275,7 +275,7 @@ const styles = StyleSheet.create({
   postBody: { color: colors.text, fontSize: 17, fontWeight: '600', letterSpacing: -0.15, lineHeight: 25, marginVertical: spacing.lg },
   actions: { alignItems: 'center', borderTopColor: colors.border, borderTopWidth: StyleSheet.hairlineWidth, flexDirection: 'row', gap: spacing.sm, paddingTop: spacing.md },
   actionButton: { alignItems: 'center', backgroundColor: colors.surfaceRaised, borderRadius: radius.pill, flexDirection: 'row', gap: 6, minWidth: 54, paddingHorizontal: 11, paddingVertical: 7 },
-  actionButtonActive: { backgroundColor: colors.accentSoft },
+  actionButtonActive: { backgroundColor: colors.primarySoft },
   actionIcon: { color: colors.textMuted, fontSize: 15, fontWeight: '700' },
   action: { color: colors.textMuted, fontSize: 12, fontWeight: '800' },
   actionActive: { color: colors.danger },

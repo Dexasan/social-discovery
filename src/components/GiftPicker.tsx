@@ -128,7 +128,7 @@ const styles = StyleSheet.create({
   giftGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
   giftChoice: { alignItems: 'center', backgroundColor: colors.surfaceRaised, borderColor: colors.borderStrong, borderRadius: radius.lg, borderWidth: 1, gap: 3, paddingHorizontal: spacing.sm, paddingVertical: spacing.md, width: '31%' },
   giftChoiceUnavailable: { opacity: 0.35 },
-  giftChoiceBusy: { backgroundColor: colors.primarySoft, borderColor: '#344A88' },
+  giftChoiceBusy: { backgroundColor: colors.primarySoft, borderColor: '#F3B5E8' },
   giftEmoji: { fontSize: 31, marginBottom: 2 },
   giftName: { color: colors.text, fontSize: 11, fontWeight: '900' },
   giftCost: { color: colors.warning, fontSize: 9, fontWeight: '800' },

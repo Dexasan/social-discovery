@@ -2,7 +2,8 @@ import { useEffect, useRef, useState } from 'react';
 import { router } from 'expo-router';
 import { ActivityIndicator, AppState, Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { Avatar, Card, Eyebrow, Heading, Muted, Pill, PrimaryButton, Screen, SectionHeader } from '@/components/ui';
+import { BrandLockup, BrandMark } from '@/components/Brand';
+import { Avatar, Card, Muted, Pill, PrimaryButton, Screen, SectionHeader } from '@/components/ui';
 import { useSession } from '@/context/SessionContext';
 import {
   cancelQuickChatSearch,
@@ -133,9 +134,9 @@ export default function QuickChatScreen() {
   return (
     <Screen>
       <View style={styles.headerRow}>
-        <View>
-          <Eyebrow>Quick chat · worldwide</Eyebrow>
-          <Heading compact>Meet someone new.</Heading>
+        <View style={styles.headerBrand}>
+          <BrandLockup compact />
+          <Text style={styles.headerPrompt}>Who will you meet today?</Text>
         </View>
         <View style={styles.online}>
           <View style={styles.onlineDot} />
@@ -175,17 +176,17 @@ export default function QuickChatScreen() {
             <View style={styles.satelliteTwo} />
             <View style={styles.satelliteThree} />
             <View style={styles.orbitCore}>
-              {matchState === 'searching' ? <ActivityIndicator color={colors.primary} size="large" /> : <Text style={styles.globe}>◎</Text>}
+              {matchState === 'searching' ? <ActivityIndicator color={colors.primaryPressed} size="large" /> : <BrandMark size={62} />}
             </View>
           </View>
           <View style={styles.centered}>
             <Text style={styles.discoveryTitle}>
-              {matchState === 'searching' ? 'Scanning the world…' : 'One tap. A real person.'}
+              {matchState === 'searching' ? 'Finding your next yap…' : 'Tap in. Meet somebody.'}
             </Text>
             <Muted>
               {matchState === 'searching'
                 ? 'Finding someone who shares your language right now.'
-                : 'Start with a conversation, not a profile. Keep the connection only if it clicks.'}
+                  : 'No swipes and no waiting for a match. Say hello first and decide later.'}
             </Muted>
           </View>
           <View style={styles.topicSection}>
@@ -210,7 +211,7 @@ export default function QuickChatScreen() {
               <Text style={styles.secondaryText}>Cancel search</Text>
             </Pressable>
           ) : (
-            <PrimaryButton label="Find someone" onPress={beginSearch} />
+            <PrimaryButton label="Start a random chat" onPress={beginSearch} />
           )}
           {error ? <Text style={styles.error}>{error}</Text> : null}
           <View style={styles.safetyRow}>
@@ -240,21 +241,22 @@ export default function QuickChatScreen() {
 
 const styles = StyleSheet.create({
   headerRow: { alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between', marginBottom: spacing.xl },
-  online: { alignItems: 'center', backgroundColor: colors.successSoft, borderColor: '#285241', borderRadius: radius.pill, borderWidth: 1, flexDirection: 'row', gap: 7, paddingHorizontal: 11, paddingVertical: 7 },
+  headerBrand: { gap: 3 },
+  headerPrompt: { color: colors.textMuted, fontSize: 11, fontWeight: '700', marginLeft: 50 },
+  online: { alignItems: 'center', backgroundColor: colors.successSoft, borderColor: '#B9E2D4', borderRadius: radius.pill, borderWidth: 1, flexDirection: 'row', gap: 7, paddingHorizontal: 11, paddingVertical: 7 },
   onlineDot: { backgroundColor: colors.success, borderRadius: 4, height: 7, width: 7 },
   onlineText: { color: colors.success, fontSize: 10, fontWeight: '800', letterSpacing: 0.5, textTransform: 'uppercase' },
-  discoveryCard: { backgroundColor: colors.surfaceSoft, gap: spacing.xl, overflow: 'hidden', paddingVertical: spacing.xl },
+  discoveryCard: { backgroundColor: '#FFF0EB', borderColor: '#FFD0C5', gap: spacing.xl, overflow: 'hidden', paddingVertical: spacing.xl },
   discoveryTop: { alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between' },
   noLimits: { color: colors.textSubtle, fontSize: 11, fontWeight: '800', letterSpacing: 0.7, textTransform: 'uppercase' },
   orbit: { alignItems: 'center', alignSelf: 'center', height: 176, justifyContent: 'center', marginVertical: spacing.xs, width: 176 },
   orbitRing: { borderColor: colors.borderStrong, borderRadius: 99, borderStyle: 'dashed', borderWidth: 1, position: 'absolute' },
   orbitOuter: { height: 176, width: 176 },
-  orbitMiddle: { borderColor: '#283456', height: 126, width: 126 },
-  orbitCore: { alignItems: 'center', backgroundColor: colors.primarySoft, borderColor: '#344A88', borderRadius: 42, borderWidth: 1, height: 84, justifyContent: 'center', width: 84 },
+  orbitMiddle: { borderColor: '#F3B5E8', height: 126, width: 126 },
+  orbitCore: { alignItems: 'center', backgroundColor: colors.white, borderColor: '#F3B5E8', borderRadius: 42, borderWidth: 1, height: 84, justifyContent: 'center', width: 84 },
   satelliteOne: { backgroundColor: colors.accent, borderColor: '#FFC0CA', borderRadius: 7, borderWidth: 2, height: 14, position: 'absolute', right: 19, top: 35, width: 14 },
   satelliteTwo: { backgroundColor: colors.success, borderColor: '#B9F3DC', borderRadius: 6, borderWidth: 2, bottom: 24, height: 12, left: 29, position: 'absolute', width: 12 },
   satelliteThree: { backgroundColor: colors.warning, borderColor: '#FFE2AF', borderRadius: 5, borderWidth: 2, height: 10, left: 12, position: 'absolute', top: 57, width: 10 },
-  globe: { color: colors.primary, fontSize: 46, fontWeight: '200' },
   centered: { alignItems: 'center', gap: spacing.sm },
   discoveryTitle: { color: colors.text, fontSize: 24, fontWeight: '900', letterSpacing: -0.7, lineHeight: 29, textAlign: 'center' },
   safetyRow: { alignItems: 'center', alignSelf: 'center', flexDirection: 'row', gap: spacing.sm },
@@ -264,7 +266,7 @@ const styles = StyleSheet.create({
   topicLabel: { color: colors.textMuted, fontSize: 11, fontWeight: '800', textAlign: 'center', textTransform: 'uppercase' },
   topicChoices: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm, justifyContent: 'center' },
   topicChoice: { backgroundColor: colors.surfaceRaised, borderColor: colors.border, borderRadius: radius.pill, borderWidth: 1, paddingHorizontal: 11, paddingVertical: 7 },
-  topicChoiceSelected: { backgroundColor: colors.primarySoft, borderColor: '#344A88' },
+  topicChoiceSelected: { backgroundColor: colors.primarySoft, borderColor: '#F3B5E8' },
   topicChoiceText: { color: colors.textMuted, fontSize: 10.5, fontWeight: '800' },
   topicChoiceTextSelected: { color: colors.primary },
   preferenceRow: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },

@@ -195,7 +195,7 @@ const styles = StyleSheet.create({
   handleInput: { color: colors.text, flex: 1, fontSize: 16, paddingLeft: spacing.xs },
   languages: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
   choice: { backgroundColor: colors.surfaceRaised, borderColor: colors.border, borderRadius: radius.pill, borderWidth: 1, paddingHorizontal: spacing.md, paddingVertical: 9 },
-  choiceSelected: { backgroundColor: colors.primarySoft, borderColor: '#344A88' },
+  choiceSelected: { backgroundColor: colors.primarySoft, borderColor: '#F3B5E8' },
   choiceDisabled: { opacity: 0.4 },
   choiceText: { color: colors.textMuted, fontSize: 13, fontWeight: '700' },
   choiceTextSelected: { color: colors.primary },

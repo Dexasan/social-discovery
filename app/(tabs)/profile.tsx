@@ -154,7 +154,7 @@ export default function ProfileScreen() {
 }
 
 const styles = StyleSheet.create({
-  cover: { backgroundColor: colors.surfaceSoft, borderColor: colors.border, borderRadius: radius.xl, borderWidth: 1, gap: spacing.md, marginTop: spacing.xs, overflow: 'hidden', padding: spacing.xl },
+  cover: { backgroundColor: '#FFF0EB', borderColor: '#FFD2C8', borderRadius: radius.xl, borderWidth: 1, gap: spacing.md, marginTop: spacing.xs, overflow: 'hidden', padding: spacing.xl },
   coverOrbOne: { backgroundColor: colors.primaryGlow, borderRadius: 90, height: 150, position: 'absolute', right: -30, top: -70, width: 150 },
   coverOrbTwo: { backgroundColor: colors.accentGlow, borderRadius: 60, bottom: -50, height: 110, left: -35, position: 'absolute', width: 110 },
   profileTop: { alignItems: 'flex-start', flexDirection: 'row', justifyContent: 'space-between' },
@@ -172,7 +172,7 @@ const styles = StyleSheet.create({
   stat: { alignItems: 'center', flex: 1, gap: 2 },
   statNumber: { color: colors.text, fontSize: 20, fontWeight: '900', textAlign: 'center' },
   statLabel: { color: colors.textSubtle, fontSize: 10.5, fontWeight: '700' },
-  walletCard: { alignItems: 'center', backgroundColor: colors.primarySoft, borderColor: '#344A88', flexDirection: 'row', gap: spacing.md, marginBottom: spacing.md },
+  walletCard: { alignItems: 'center', backgroundColor: '#FFF0CF', borderColor: '#F2D89D', flexDirection: 'row', gap: spacing.md, marginBottom: spacing.md },
   coinIcon: { alignItems: 'center', backgroundColor: colors.warningSoft, borderRadius: radius.pill, height: 46, justifyContent: 'center', width: 46 },
   coinGlyph: { color: colors.warning, fontSize: 22, fontWeight: '900' },
   walletCopy: { flex: 1, gap: 2 },
@@ -188,7 +188,7 @@ const styles = StyleSheet.create({
   policyIcon: { alignItems: 'center', backgroundColor: colors.surfaceRaised, borderRadius: radius.md, height: 44, justifyContent: 'center', width: 44 },
   policyGlyph: { color: colors.textMuted, fontSize: 18, fontWeight: '900' },
   activityCard: { marginBottom: spacing.md },
-  activityCardUnread: { backgroundColor: colors.primarySoft, borderColor: '#344A88' },
+  activityCardUnread: { backgroundColor: colors.primarySoft, borderColor: '#F3B5E8' },
   activityIcon: { alignItems: 'center', backgroundColor: colors.primarySoft, borderRadius: radius.md, height: 44, justifyContent: 'center', width: 44 },
   activityGlyph: { color: colors.primary, fontSize: 19, fontWeight: '900' },
   activityBadge: { alignItems: 'center', backgroundColor: colors.primary, borderRadius: 14, height: 28, justifyContent: 'center', minWidth: 28, paddingHorizontal: 7 },
@@ -201,6 +201,6 @@ const styles = StyleSheet.create({
   safetyTitle: { color: colors.text, fontSize: 15, fontWeight: '900' },
   chevron: { color: colors.textSubtle, fontSize: 24 },
   account: { alignItems: 'center', gap: spacing.md, marginTop: spacing.xl },
-  signOutButton: { backgroundColor: colors.dangerSoft, borderColor: '#54242D', borderRadius: radius.md, borderWidth: 1, paddingHorizontal: spacing.xl, paddingVertical: spacing.md },
+  signOutButton: { backgroundColor: colors.dangerSoft, borderColor: '#F2B8C5', borderRadius: radius.pill, borderWidth: 1, paddingHorizontal: spacing.xl, paddingVertical: spacing.md },
   signOutText: { color: colors.danger, fontSize: 14, fontWeight: '800' },
 });

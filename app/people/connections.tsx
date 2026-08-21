@@ -187,7 +187,7 @@ const styles = StyleSheet.create({
   handle: { color: colors.textSubtle, fontSize: 11, marginTop: 2 },
   bio: { fontSize: 11, lineHeight: 16, marginTop: spacing.xs },
   followButton: { alignItems: 'center', backgroundColor: colors.primary, borderRadius: radius.pill, minWidth: 82, paddingHorizontal: spacing.md, paddingVertical: 9 },
-  followingButton: { backgroundColor: colors.successSoft, borderColor: '#285241', borderWidth: 1 },
+  followingButton: { backgroundColor: colors.successSoft, borderColor: '#B9E2D4', borderWidth: 1 },
   inactiveButton: { opacity: 0.55 },
   followLabel: { color: colors.primaryInk, fontSize: 11, fontWeight: '900' },
   followingLabel: { color: colors.success },

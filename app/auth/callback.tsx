@@ -1,6 +1,7 @@
 import { Redirect } from 'expo-router';
 import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 
+import { BrandLockup } from '@/components/Brand';
 import { useSession } from '@/context/SessionContext';
 import { colors, spacing } from '@/theme/tokens';
 
@@ -16,13 +17,14 @@ export default function AuthCallbackScreen() {
 
   return (
     <View style={styles.container}>
+      <BrandLockup />
       <ActivityIndicator color={colors.primary} size="large" />
-      <Text style={styles.text}>Confirming your account…</Text>
+      <Text style={styles.text}>Opening your YAPPIE account…</Text>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { alignItems: 'center', backgroundColor: colors.background, flex: 1, gap: spacing.lg, justifyContent: 'center' },
+  container: { alignItems: 'center', backgroundColor: colors.background, flex: 1, gap: spacing.xl, justifyContent: 'center' },
   text: { color: colors.textMuted, fontSize: 14, fontWeight: '700' },
 });

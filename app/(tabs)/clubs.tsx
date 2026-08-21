@@ -70,9 +70,9 @@ export default function ClubsScreen() {
     <Screen>
       <View style={styles.pageHeader}>
         <View style={styles.headerCopy}>
-          <Eyebrow>Clubs · live audio</Eyebrow>
-          <Heading compact>Find your room.</Heading>
-          <Muted>Drop into conversations happening around the world.</Muted>
+          <Eyebrow>YAPPIE CLUBS · LIVE AUDIO</Eyebrow>
+          <Heading compact>Walk into the conversation.</Heading>
+          <Muted>Drop into live rooms, meet the regulars, and become one.</Muted>
         </View>
         <Pressable accessibilityLabel="Create a club" accessibilityRole="button" onPress={() => router.push('/clubs/create')} style={styles.createButton}>
           <Text style={styles.createGlyph}>＋</Text>
@@ -185,16 +185,16 @@ export default function ClubsScreen() {
 const styles = StyleSheet.create({
   pageHeader: { alignItems: 'center', flexDirection: 'row', gap: spacing.lg },
   headerCopy: { flex: 1, gap: spacing.sm },
-  createButton: { alignItems: 'center', backgroundColor: colors.primarySoft, borderColor: '#304377', borderRadius: 22, borderWidth: 1, height: 50, justifyContent: 'center', width: 50 },
-  createGlyph: { color: colors.primary, fontSize: 26, fontWeight: '500' },
-  searchWrap: { alignItems: 'center', backgroundColor: colors.surfaceSoft, borderColor: colors.border, borderRadius: radius.md, borderWidth: 1, flexDirection: 'row', gap: spacing.sm, marginTop: spacing.xl, paddingHorizontal: spacing.md },
+  createButton: { alignItems: 'center', backgroundColor: colors.primary, borderRadius: 25, height: 50, justifyContent: 'center', width: 50 },
+  createGlyph: { color: colors.primaryInk, fontSize: 26, fontWeight: '700' },
+  searchWrap: { alignItems: 'center', backgroundColor: colors.surface, borderColor: colors.border, borderRadius: radius.pill, borderWidth: 1, flexDirection: 'row', gap: spacing.sm, marginTop: spacing.xl, paddingHorizontal: spacing.lg },
   searchGlyph: { color: colors.textSubtle, fontSize: 20 },
   searchInput: { color: colors.text, flex: 1, fontSize: 14, minHeight: 50 },
   clearSearch: { color: colors.textMuted, fontSize: 22, paddingHorizontal: spacing.xs },
   loading: { marginVertical: spacing.xl },
   error: { color: colors.danger, fontSize: 13, marginTop: spacing.md, textAlign: 'center' },
   list: { gap: spacing.md },
-  liveCard: { backgroundColor: colors.surfaceSoft, gap: spacing.lg, overflow: 'hidden', paddingLeft: spacing.xl },
+  liveCard: { backgroundColor: colors.primarySoft, borderColor: '#F3B5E8', gap: spacing.lg, overflow: 'hidden', paddingLeft: spacing.xl },
   liveRail: { backgroundColor: colors.accent, bottom: 18, borderRadius: 3, left: 0, position: 'absolute', top: 18, width: 4 },
   clubCard: { gap: spacing.md },
   cardTop: { alignItems: 'center', flexDirection: 'row', gap: spacing.md, justifyContent: 'space-between' },
@@ -203,18 +203,18 @@ const styles = StyleSheet.create({
   roomTitle: { color: colors.text, fontSize: 23, fontWeight: '900', letterSpacing: -0.6, lineHeight: 29 },
   listenerStack: { alignItems: 'center', flexDirection: 'row', minHeight: 24 },
   listenerDot: { borderColor: colors.surfaceSoft, borderRadius: 12, borderWidth: 2, height: 24, width: 24 },
-  listenerOne: { backgroundColor: '#39518C' },
-  listenerTwo: { backgroundColor: '#74394A', marginLeft: -7 },
-  listenerThree: { backgroundColor: '#386559', marginLeft: -7 },
+  listenerOne: { backgroundColor: '#F05BD6' },
+  listenerTwo: { backgroundColor: '#FF8B79', marginLeft: -7 },
+  listenerThree: { backgroundColor: '#65BFA6', marginLeft: -7 },
   listenerCopy: { color: colors.textSubtle, fontSize: 11, fontWeight: '700', marginLeft: spacing.sm },
-  clubMark: { alignItems: 'center', backgroundColor: colors.primarySoft, borderColor: '#304377', borderRadius: radius.md, borderWidth: 1, height: 46, justifyContent: 'center', width: 46 },
+  clubMark: { alignItems: 'center', backgroundColor: colors.primarySoft, borderColor: '#F3B5E8', borderRadius: radius.md, borderWidth: 1, height: 46, justifyContent: 'center', width: 46 },
   clubMarkText: { color: colors.primary, fontSize: 18, fontWeight: '900' },
   clubIdentity: { flex: 1, gap: 3 },
   clubName: { color: colors.text, fontSize: 17, fontWeight: '900', letterSpacing: -0.3 },
   clubMeta: { color: colors.textSubtle, fontSize: 11.5, fontWeight: '600' },
   description: { paddingLeft: 58 },
   joinButton: { backgroundColor: colors.primary, borderRadius: radius.pill, paddingHorizontal: spacing.lg, paddingVertical: 9 },
-  joinedButton: { backgroundColor: colors.primarySoft, borderColor: '#304377', borderWidth: 1 },
+  joinedButton: { backgroundColor: colors.primarySoft, borderColor: '#F3B5E8', borderWidth: 1 },
   joinLabel: { color: colors.primaryInk, fontSize: 12, fontWeight: '800' },
   joinedLabel: { color: colors.primary },
   hostButton: { alignItems: 'center', backgroundColor: colors.surfaceRaised, borderColor: colors.border, borderRadius: radius.md, borderWidth: 1, padding: spacing.md },

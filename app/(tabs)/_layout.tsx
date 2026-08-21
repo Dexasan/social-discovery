@@ -54,7 +54,7 @@ export default function TabsLayout() {
       initialRouteName="quick-chat"
       screenOptions={({ route }) => ({
         headerShown: false,
-        tabBarActiveTintColor: colors.primary,
+        tabBarActiveTintColor: colors.primaryPressed,
         tabBarInactiveTintColor: colors.textMuted,
         tabBarIcon: ({ focused }) => <TabIcon focused={focused} name={route.name} />,
         tabBarItemStyle: styles.tabItem,
@@ -62,21 +62,21 @@ export default function TabsLayout() {
         tabBarStyle: styles.tabBar,
       })}
     >
-      <Tabs.Screen name="quick-chat" options={{ title: 'Quick Chat' }} />
-      <Tabs.Screen name="feed" options={{ title: 'Feed' }} />
+      <Tabs.Screen name="quick-chat" options={{ title: 'Yap' }} />
+      <Tabs.Screen name="feed" options={{ title: 'Discover' }} />
       <Tabs.Screen name="clubs" options={{ title: 'Clubs' }} />
-      <Tabs.Screen name="messages" options={{ title: 'Messages' }} />
-      <Tabs.Screen name="profile" options={{ title: 'Profile' }} />
+      <Tabs.Screen name="messages" options={{ title: 'Inbox' }} />
+      <Tabs.Screen name="profile" options={{ title: 'Me' }} />
     </Tabs>
   );
 }
 
 const styles = StyleSheet.create({
-  tabBar: { ...shadows.floating, backgroundColor: 'rgba(20, 23, 32, 0.97)', borderColor: colors.border, borderRadius: 26, borderTopColor: colors.border, borderTopWidth: 1, bottom: 14, height: 76, left: 14, paddingBottom: 9, paddingHorizontal: 7, paddingTop: 8, position: 'absolute', right: 14 },
-  tabItem: { borderRadius: 20 },
-  label: { fontSize: 9.5, fontWeight: '800', letterSpacing: -0.1, marginTop: 1 },
+  tabBar: { ...shadows.floating, backgroundColor: 'rgba(255, 255, 255, 0.98)', borderColor: colors.border, borderRadius: 29, borderTopColor: colors.border, borderTopWidth: 1, bottom: 14, height: 78, left: 12, paddingBottom: 9, paddingHorizontal: 6, paddingTop: 8, position: 'absolute', right: 12 },
+  tabItem: { borderRadius: 22 },
+  label: { fontSize: 9.5, fontWeight: '900', letterSpacing: 0.1, marginTop: 1 },
   iconWrap: { alignItems: 'center', borderRadius: 15, height: 30, justifyContent: 'center', width: 42 },
-  iconWrapFocused: { backgroundColor: colors.primarySoft },
+  iconWrapFocused: { backgroundColor: colors.primarySoft, transform: [{ scale: 1.05 }] },
   chatIcon: { height: 20, position: 'relative', width: 22 },
   chatBubble: { borderRadius: 7, borderWidth: 1.8, height: 13, left: 0, position: 'absolute', top: 1, width: 16 },
   chatBubbleSmall: { borderRadius: 6, borderWidth: 1.8, bottom: 0, height: 11, position: 'absolute', right: 0, width: 14 },

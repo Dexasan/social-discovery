@@ -181,7 +181,7 @@ const styles = StyleSheet.create({
   error: { color: colors.danger, fontSize: 13, marginTop: spacing.lg, textAlign: 'center' },
   list: { gap: spacing.sm },
   event: { alignItems: 'center', backgroundColor: colors.surfaceSoft, borderColor: colors.border, borderRadius: radius.lg, borderWidth: StyleSheet.hairlineWidth, flexDirection: 'row', gap: spacing.md, padding: spacing.md },
-  unreadEvent: { backgroundColor: colors.primarySoft, borderColor: '#344A88' },
+  unreadEvent: { backgroundColor: colors.primarySoft, borderColor: '#F3B5E8' },
   eventCopy: { flex: 1, gap: 3 },
   eventTitle: { color: colors.textMuted, fontSize: 13, lineHeight: 18 },
   actorName: { color: colors.text, fontWeight: '900' },

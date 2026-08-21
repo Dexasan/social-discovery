@@ -1,10 +1,11 @@
 {
   "expo": {
-    "name": "Social Discovery",
+    "name": "YAPPIE",
     "slug": "social-discovery",
     "version": "0.1.2",
     "orientation": "portrait",
-    "userInterfaceStyle": "dark",
+    "userInterfaceStyle": "light",
+    "icon": "./assets/brand/yappie-logo-transparent.png",
     "scheme": "socialdiscovery",
     "runtimeVersion": {
       "policy": "appVersion"
@@ -16,11 +17,24 @@
     },
     "plugins": [
       "expo-router",
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#FFF8F6",
+          "image": "./assets/brand/yappie-logo-transparent.png",
+          "imageWidth": 220,
+          "resizeMode": "contain"
+        }
+      ],
       "@cloudflare/react-native-webrtc"
     ],
     "android": {
       "package": "com.socialdiscovery.app",
-      "versionCode": 3,
+      "versionCode": 4,
+      "adaptiveIcon": {
+        "backgroundColor": "#FFF8F6",
+        "foregroundImage": "./assets/brand/yappie-logo-transparent.png"
+      },
       "permissions": [
         "android.permission.RECORD_AUDIO",
         "android.permission.MODIFY_AUDIO_SETTINGS",

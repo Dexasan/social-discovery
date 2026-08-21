@@ -1,4 +1,4 @@
-# Social Discovery
+# YAPPIE — Talk to Strangers
 
 Android-first private-beta app for meeting people through authenticated Quick Chat, public posts, persistent DMs, and live interest-based Clubs.
 
