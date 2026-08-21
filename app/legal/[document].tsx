@@ -35,7 +35,7 @@ const documents: Record<LegalDocument, {
       { heading: 'Conversations and live rooms', body: 'Messages and room participation are processed to deliver the features, enforce blocks, investigate reports, and maintain service reliability. Live audio is transmitted through the configured realtime provider and is not designed as a recording feature.' },
       { heading: 'Safety records', body: 'Blocks, reports, moderation actions, and limited technical logs may be retained to prevent abuse and investigate incidents. Blocking hides interactions between the affected accounts.' },
       { heading: 'Service providers', body: 'The beta relies on infrastructure providers including Supabase for authentication and data services, Expo for application delivery, and Cloudflare for live audio. They process data only to provide their services under their own security obligations.' },
-      { heading: 'Your choices', body: 'You can edit profile details, control who may start a direct message, block accounts, and sign out inside the app. Account deletion and formal privacy-request contact details must be added before a public store launch.' },
+      { heading: 'Your choices', body: 'You can edit profile details, control who may start a direct message, block accounts, change your password, and permanently delete your account inside the app. Formal privacy-request contact details must be added before a public store launch.' },
     ],
   },
   'community-guidelines': {

@@ -134,6 +134,15 @@ export default function ProfileScreen() {
           </View>
         </Card>
       </Pressable>
+      <Pressable accessibilityRole="button" onPress={() => router.push('/settings/account')} style={({ pressed }) => pressed && styles.safetyPressed}>
+        <Card style={styles.accountSettingsCard}>
+          <View style={styles.safetyTop}>
+            <View style={styles.accountSettingsIcon}><Text style={styles.accountSettingsGlyph}>@</Text></View>
+            <View style={styles.safetyCopy}><Text style={styles.safetyTitle}>Account settings</Text><Muted>Password, account details, and deletion</Muted></View>
+            <Text style={styles.chevron}>›</Text>
+          </View>
+        </Card>
+      </Pressable>
       <View style={styles.account}>
         <Muted>Signed in as {user?.email ?? 'authenticated user'}</Muted>
         <Pressable accessibilityRole="button" onPress={() => void signOut()} style={styles.signOutButton}>
@@ -173,6 +182,9 @@ const styles = StyleSheet.create({
   balanceLabel: { color: colors.textSubtle, fontSize: 9, fontWeight: '800', textTransform: 'uppercase' },
   safetyCard: { gap: spacing.md },
   policyCard: { marginTop: spacing.md },
+  accountSettingsCard: { marginTop: spacing.md },
+  accountSettingsIcon: { alignItems: 'center', backgroundColor: colors.surfaceRaised, borderRadius: radius.md, height: 44, justifyContent: 'center', width: 44 },
+  accountSettingsGlyph: { color: colors.primary, fontSize: 17, fontWeight: '900' },
   policyIcon: { alignItems: 'center', backgroundColor: colors.surfaceRaised, borderRadius: radius.md, height: 44, justifyContent: 'center', width: 44 },
   policyGlyph: { color: colors.textMuted, fontSize: 18, fontWeight: '900' },
   activityCard: { marginBottom: spacing.md },

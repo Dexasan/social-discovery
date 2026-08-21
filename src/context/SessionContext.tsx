@@ -23,6 +23,7 @@ type SignUpResult = {
 
 type SessionValue = {
   completeOnboarding: (input: CompleteOnboardingInput) => Promise<void>;
+  deleteAccount: (currentPassword: string) => Promise<void>;
   isConfigured: boolean;
   isLoading: boolean;
   isPasswordRecovery: boolean;
@@ -195,6 +196,24 @@ export function SessionProvider({ children }: PropsWithChildren) {
         if (error) throw error;
         setProfile(mapProfile(data));
         setOnboardingComplete(true);
+      },
+      deleteAccount: async (currentPassword) => {
+        if (!supabase || !session?.user.email) throw new Error('Your account session is unavailable.');
+
+        const { error: authenticationError } = await supabase.auth.signInWithPassword({
+          email: session.user.email,
+          password: currentPassword,
+        });
+        if (authenticationError) throw new Error('Your current password is incorrect.');
+
+        const { error } = await supabase.rpc('delete_my_account');
+        if (error) throw error;
+
+        await supabase.auth.signOut({ scope: 'local' });
+        setIsPasswordRecovery(false);
+        setProfile(null);
+        setOnboardingComplete(false);
+        setSession(null);
       },
     }),
     [isLoading, isPasswordRecovery, loadUserData, onboardingComplete, profile, session],

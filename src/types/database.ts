@@ -825,6 +825,7 @@ export type Database = {
         }
       }
       end_club_room: { Args: { target_room_id: string }; Returns: undefined }
+      delete_my_account: { Args: never; Returns: undefined }
       get_activity_unread_count: { Args: never; Returns: number }
       heartbeat_club_room: {
         Args: { target_room_id: string }
