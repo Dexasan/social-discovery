@@ -41,10 +41,11 @@ type SessionValue = {
 
 const SessionContext = createContext<SessionValue | null>(null);
 
-function mapProfile(row: ProfileRow | null): Profile | null {
+function mapProfile(row: ProfileRow | null, birthDate: string | null = null): Profile | null {
   if (!row) return null;
 
   return {
+    birthDate,
     handle: row.handle ?? '',
     displayName: row.display_name ?? '',
     country: row.country_code ?? 'Worldwide',
@@ -65,13 +66,13 @@ export function SessionProvider({ children }: PropsWithChildren) {
 
     const [profileResult, settingsResult] = await Promise.all([
       supabase.from('profiles').select('*').eq('id', userId).single(),
-      supabase.from('user_settings').select('onboarding_completed_at').eq('id', userId).single(),
+      supabase.from('user_settings').select('onboarding_completed_at, date_of_birth').eq('id', userId).single(),
     ]);
 
     if (profileResult.error) throw profileResult.error;
     if (settingsResult.error) throw settingsResult.error;
 
-    setProfile(mapProfile(profileResult.data));
+    setProfile(mapProfile(profileResult.data, settingsResult.data.date_of_birth));
     setOnboardingComplete(Boolean(settingsResult.data.onboarding_completed_at));
   }, []);
 
@@ -194,7 +195,7 @@ export function SessionProvider({ children }: PropsWithChildren) {
         });
 
         if (error) throw error;
-        setProfile(mapProfile(data));
+        setProfile(mapProfile(data, birthDate));
         setOnboardingComplete(true);
       },
       deleteAccount: async (currentPassword) => {

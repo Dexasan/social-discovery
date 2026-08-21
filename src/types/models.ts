@@ -1,4 +1,5 @@
 export type Profile = {
+  birthDate: string | null;
   handle: string;
   displayName: string;
   country: string;
@@ -7,4 +8,3 @@ export type Profile = {
 };
 
 export type DiscoveryTab = 'quick-chat' | 'feed' | 'clubs' | 'messages' | 'profile';
-

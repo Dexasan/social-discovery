@@ -2,13 +2,22 @@ import { useCallback, useEffect, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { router, useFocusEffect } from 'expo-router';
 
-import { Avatar, Card, Muted, Pill, Screen } from '@/components/ui';
+import { Avatar, Screen } from '@/components/ui';
 import { useSession } from '@/context/SessionContext';
 import { loadActivityUnreadCount, subscribeToActivity } from '@/features/activity/api';
 import { loadCoinWallet, type CoinWallet } from '@/features/gifts/api';
 import { loadOwnSocialStats, type SocialStats } from '@/features/social/api';
 import { isSupabaseConfigured } from '@/lib/supabase';
 import { colors, radius, spacing } from '@/theme/tokens';
+
+function formatDate(value: string | null | undefined, includeDay = true) {
+  if (!value) return 'Not set';
+  const date = new Date(value.includes('T') ? value : `${value}T00:00:00`);
+  if (Number.isNaN(date.getTime())) return 'Not set';
+  return date.toLocaleDateString(undefined, includeDay
+    ? { day: 'numeric', month: 'short', year: 'numeric' }
+    : { month: 'short', year: 'numeric' });
+}
 
 export default function ProfileScreen() {
   const { profile, signOut, user } = useSession();
@@ -17,27 +26,18 @@ export default function ProfileScreen() {
   const [activityUnread, setActivityUnread] = useState(0);
 
   const refreshActivityUnread = useCallback(() => {
-    void loadActivityUnreadCount()
-      .then(setActivityUnread)
-      .catch(() => setActivityUnread(0));
+    void loadActivityUnreadCount().then(setActivityUnread).catch(() => setActivityUnread(0));
   }, []);
 
   useFocusEffect(useCallback(() => {
     let active = true;
-
     if (!user || !isSupabaseConfigured) {
       setStats({ followers: 0, following: 0, posts: 0 });
       return () => { active = false; };
     }
-
-    void loadOwnSocialStats(user.id)
-      .then((nextStats) => { if (active) setStats(nextStats); })
-      .catch(() => { if (active) setStats({ followers: 0, following: 0, posts: 0 }); });
-    void loadCoinWallet()
-      .then((nextWallet) => { if (active) setWallet(nextWallet); })
-      .catch(() => { if (active) setWallet(null); });
+    void loadOwnSocialStats(user.id).then((nextStats) => { if (active) setStats(nextStats); }).catch(() => { if (active) setStats({ followers: 0, following: 0, posts: 0 }); });
+    void loadCoinWallet().then((nextWallet) => { if (active) setWallet(nextWallet); }).catch(() => { if (active) setWallet(null); });
     refreshActivityUnread();
-
     return () => { active = false; };
   }, [refreshActivityUnread, user]));
 
@@ -48,160 +48,111 @@ export default function ProfileScreen() {
 
   if (!profile) return null;
 
+  const metadata = [
+    { label: 'Birthday', value: formatDate(profile.birthDate) },
+    { label: 'Languages', value: profile.languages.join(', ') || 'Not set' },
+    { label: 'From', value: profile.country || 'Worldwide' },
+    { label: 'Joined', value: formatDate(user?.created_at, false) },
+  ];
+
   return (
     <Screen>
-      <View style={styles.cover}>
-        <View style={styles.coverOrbOne} /><View style={styles.coverOrbTwo} />
-        <View style={styles.profileTop}>
-          <View style={styles.avatarWrap}><Avatar label={profile.displayName} size={96} /></View>
-          <Pressable
-            accessibilityLabel="Edit profile"
-            accessibilityRole="button"
-            onPress={() => router.push('/profile/edit')}
-            style={({ pressed }) => [styles.editButton, pressed && styles.editButtonPressed]}
-          >
-            <Text style={styles.editLabel}>Edit profile</Text>
+      <View style={styles.topBar}>
+        <View><Text style={styles.topName}>{profile.displayName}</Text><Text style={styles.topHandle}>@{profile.handle}</Text></View>
+        <View style={styles.topActions}>
+          <Pressable accessibilityLabel="Activity" onPress={() => router.push('/activity')} style={styles.iconButton}>
+            <Text style={styles.iconGlyph}>✦</Text>
+            {activityUnread > 0 ? <View style={styles.notificationBadge}><Text style={styles.notificationText}>{Math.min(activityUnread, 9)}</Text></View> : null}
           </Pressable>
-        </View>
-        <View style={styles.identity}>
-          <Text style={styles.name}>{profile.displayName}</Text>
-          <Text style={styles.handle}>@{profile.handle}</Text>
-          <View style={styles.locationRow}><Text style={styles.locationDot}>●</Text><Muted style={styles.locationText}>{profile.country} · {profile.languages.join(' · ')}</Muted></View>
+          <Pressable accessibilityLabel="Account settings" onPress={() => router.push('/settings/account')} style={styles.iconButton}><Text style={styles.iconGlyph}>⚙</Text></Pressable>
         </View>
       </View>
-      <Text style={styles.bio}>{profile.bio || 'Here for good conversations and unexpected connections.'}</Text>
+
+      <View style={styles.profileHeader}>
+        <Avatar label={profile.displayName} size={78} />
+        <View style={styles.profileCopy}>
+          <Text style={styles.bio}>{profile.bio || 'Here for good conversations and unexpected connections.'}</Text>
+          <Pressable accessibilityRole="button" onPress={() => router.push('/profile/edit')} style={styles.editButton}><Text style={styles.editLabel}>Edit profile</Text></Pressable>
+        </View>
+      </View>
+
       <View style={styles.stats}>
-        <Pressable
-          accessibilityLabel="View people you follow"
-          accessibilityRole="button"
-          onPress={() => user && router.push({ pathname: '/people/connections', params: { userId: user.id, mode: 'following', name: profile.displayName } })}
-          style={styles.stat}
-        >
+        <Pressable onPress={() => user && router.push({ pathname: '/people/connections', params: { userId: user.id, mode: 'following', name: profile.displayName } })} style={styles.stat}>
           <Text style={styles.statNumber}>{stats?.following ?? '—'}</Text><Text style={styles.statLabel}>Following</Text>
         </Pressable>
-        <Pressable
-          accessibilityLabel="View your followers"
-          accessibilityRole="button"
-          onPress={() => user && router.push({ pathname: '/people/connections', params: { userId: user.id, mode: 'followers', name: profile.displayName } })}
-          style={styles.stat}
-        >
+        <View style={styles.statDivider} />
+        <Pressable onPress={() => user && router.push({ pathname: '/people/connections', params: { userId: user.id, mode: 'followers', name: profile.displayName } })} style={styles.stat}>
           <Text style={styles.statNumber}>{stats?.followers ?? '—'}</Text><Text style={styles.statLabel}>Followers</Text>
         </Pressable>
+        <View style={styles.statDivider} />
         <View style={styles.stat}><Text style={styles.statNumber}>{stats?.posts ?? '—'}</Text><Text style={styles.statLabel}>Posts</Text></View>
       </View>
-      {wallet ? (
-        <Card style={styles.walletCard}>
-          <View style={styles.coinIcon}><Text style={styles.coinGlyph}>✦</Text></View>
-          <View style={styles.walletCopy}>
-            <Text style={styles.walletTitle}>Your coin wallet</Text>
-            <Muted>Send virtual gifts to people who make the app better.</Muted>
+
+      <View style={styles.metadataGrid}>
+        {metadata.map((item) => (
+          <View key={item.label} style={styles.metadataItem}>
+            <Text style={styles.metadataLabel}>{item.label}</Text>
+            <Text numberOfLines={2} style={styles.metadataValue}>{item.value}</Text>
           </View>
-          <View style={styles.balanceBadge}><Text style={styles.balance}>{wallet.balance}</Text><Text style={styles.balanceLabel}>coins</Text></View>
-        </Card>
-      ) : null}
-      <Pressable accessibilityRole="button" onPress={() => router.push('/activity')} style={({ pressed }) => pressed && styles.safetyPressed}>
-        <Card style={[styles.activityCard, activityUnread > 0 && styles.activityCardUnread]}>
-          <View style={styles.safetyTop}>
-            <View style={styles.activityIcon}><Text style={styles.activityGlyph}>✦</Text></View>
-            <View style={styles.safetyCopy}>
-              <Text style={styles.safetyTitle}>Activity</Text>
-              <Muted>{activityUnread > 0 ? `${activityUnread} new interaction${activityUnread === 1 ? '' : 's'}` : 'Follows, replies, likes, and gifts'}</Muted>
-            </View>
-            {activityUnread > 0 ? <View style={styles.activityBadge}><Text style={styles.activityBadgeText}>{Math.min(activityUnread, 99)}</Text></View> : <Text style={styles.chevron}>›</Text>}
-          </View>
-        </Card>
-      </Pressable>
-      <Pressable accessibilityRole="button" onPress={() => router.push('/settings/safety')} style={({ pressed }) => pressed && styles.safetyPressed}>
-        <Card style={styles.safetyCard}>
-          <View style={styles.safetyTop}>
-            <View style={styles.safetyIcon}><Text style={styles.safetyGlyph}>✓</Text></View>
-            <View style={styles.safetyCopy}><Text style={styles.safetyTitle}>Safety & privacy</Text><Muted>Blocks, reports and message controls</Muted></View>
-            <Text style={styles.chevron}>›</Text>
-          </View>
-          <Pill label={isSupabaseConfigured ? 'Protected account' : 'Local preview'} tone="success" />
-        </Card>
-      </Pressable>
-      <Pressable
-        accessibilityRole="button"
-        onPress={() => router.push({ pathname: '/legal/[document]', params: { document: 'community-guidelines' } })}
-        style={({ pressed }) => pressed && styles.safetyPressed}
-      >
-        <Card style={styles.policyCard}>
-          <View style={styles.safetyTop}>
-            <View style={styles.policyIcon}><Text style={styles.policyGlyph}>§</Text></View>
-            <View style={styles.safetyCopy}><Text style={styles.safetyTitle}>Rules & policies</Text><Muted>Terms, privacy, and community standards</Muted></View>
-            <Text style={styles.chevron}>›</Text>
-          </View>
-        </Card>
-      </Pressable>
-      <Pressable accessibilityRole="button" onPress={() => router.push('/settings/account')} style={({ pressed }) => pressed && styles.safetyPressed}>
-        <Card style={styles.accountSettingsCard}>
-          <View style={styles.safetyTop}>
-            <View style={styles.accountSettingsIcon}><Text style={styles.accountSettingsGlyph}>@</Text></View>
-            <View style={styles.safetyCopy}><Text style={styles.safetyTitle}>Account settings</Text><Muted>Password, account details, and deletion</Muted></View>
-            <Text style={styles.chevron}>›</Text>
-          </View>
-        </Card>
-      </Pressable>
-      <View style={styles.account}>
-        <Muted>Signed in as {user?.email ?? 'authenticated user'}</Muted>
-        <Pressable accessibilityRole="button" onPress={() => void signOut()} style={styles.signOutButton}>
-          <Text style={styles.signOutText}>Sign out</Text>
+        ))}
+      </View>
+
+      <View style={styles.quickGrid}>
+        <Pressable onPress={() => router.push('/activity')} style={[styles.quickTile, styles.quickCobalt]}>
+          <Text style={styles.quickGlyph}>✦</Text><Text style={styles.quickTitle}>Activity</Text><Text style={styles.quickMeta}>{activityUnread > 0 ? `${activityUnread} new` : 'All caught up'}</Text>
         </Pressable>
+        <View style={[styles.quickTile, styles.quickWarm]}>
+          <Text style={styles.quickGlyph}>◎</Text><Text style={styles.quickTitle}>Coins</Text><Text style={styles.quickMeta}>{wallet ? `${wallet.balance} available` : 'Wallet'}</Text>
+        </View>
+        <Pressable onPress={() => router.push('/settings/safety')} style={[styles.quickTile, styles.quickGreen]}>
+          <Text style={styles.quickGlyph}>✓</Text><Text style={styles.quickTitle}>Safety</Text><Text style={styles.quickMeta}>Privacy & blocks</Text>
+        </Pressable>
+        <Pressable onPress={() => router.push({ pathname: '/legal/[document]', params: { document: 'community-guidelines' } })} style={styles.quickTile}>
+          <Text style={styles.quickGlyph}>§</Text><Text style={styles.quickTitle}>Guidelines</Text><Text style={styles.quickMeta}>Community rules</Text>
+        </Pressable>
+      </View>
+
+      <View style={styles.accountFooter}>
+        <Text numberOfLines={1} style={styles.email}>{user?.email ?? 'Authenticated account'}</Text>
+        <Pressable accessibilityRole="button" onPress={() => void signOut()} style={styles.signOutButton}><Text style={styles.signOutText}>Sign out</Text></Pressable>
       </View>
     </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  cover: { backgroundColor: colors.primary, borderColor: colors.primary, borderRadius: 34, borderWidth: 1, gap: spacing.md, marginTop: spacing.xs, overflow: 'hidden', padding: spacing.xl },
-  coverOrbOne: { backgroundColor: colors.primaryGlow, borderRadius: 90, height: 150, position: 'absolute', right: -30, top: -70, width: 150 },
-  coverOrbTwo: { backgroundColor: colors.accentGlow, borderRadius: 60, bottom: -50, height: 110, left: -35, position: 'absolute', width: 110 },
-  profileTop: { alignItems: 'flex-start', flexDirection: 'row', justifyContent: 'space-between' },
-  avatarWrap: { backgroundColor: colors.signal, borderRadius: 34, padding: 7, transform: [{ rotate: '-4deg' }] },
-  editButton: { backgroundColor: colors.signal, borderColor: colors.signal, borderRadius: 16, borderWidth: 1, minHeight: 46, paddingHorizontal: spacing.lg, paddingVertical: 11, transform: [{ rotate: '3deg' }] },
-  editButtonPressed: { opacity: 0.72, transform: [{ scale: 0.97 }] },
-  editLabel: { color: colors.text, fontSize: 14, fontWeight: '900' },
-  identity: { gap: spacing.xs },
-  name: { color: colors.white, fontSize: 34, fontWeight: '900', letterSpacing: -1.4 },
-  handle: { color: colors.signal, fontSize: 16, fontWeight: '900' },
-  locationRow: { alignItems: 'center', flexDirection: 'row', gap: spacing.sm },
-  locationDot: { color: colors.accent, fontSize: 8 },
-  locationText: { color: '#C9C7C0', fontSize: 14 },
-  bio: { color: colors.text, fontSize: 19, fontWeight: '600', lineHeight: 28, marginTop: spacing.xl },
-  stats: { backgroundColor: colors.signal, borderColor: '#B8E346', borderRadius: 24, borderWidth: 1, flexDirection: 'row', justifyContent: 'space-around', marginVertical: spacing.xl, paddingVertical: 20, transform: [{ rotate: '-0.5deg' }] },
+  topBar: { alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between' },
+  topName: { color: colors.text, fontSize: 24, fontWeight: '900', letterSpacing: -0.7 },
+  topHandle: { color: colors.textMuted, fontSize: 14, marginTop: 2 },
+  topActions: { flexDirection: 'row', gap: spacing.sm },
+  iconButton: { alignItems: 'center', backgroundColor: colors.surface, borderColor: colors.border, borderRadius: 17, borderWidth: 1, height: 46, justifyContent: 'center', width: 46 },
+  iconGlyph: { color: colors.text, fontSize: 19, fontWeight: '800' },
+  notificationBadge: { alignItems: 'center', backgroundColor: colors.accent, borderColor: colors.background, borderRadius: 9, borderWidth: 2, height: 18, justifyContent: 'center', position: 'absolute', right: -3, top: -3, width: 18 },
+  notificationText: { color: colors.white, fontSize: 10, fontWeight: '900' },
+  profileHeader: { alignItems: 'flex-start', flexDirection: 'row', gap: spacing.lg, marginTop: spacing.xl },
+  profileCopy: { flex: 1, gap: spacing.md },
+  bio: { color: colors.text, fontSize: 16, lineHeight: 23 },
+  editButton: { alignItems: 'center', alignSelf: 'flex-start', borderColor: colors.borderStrong, borderRadius: radius.pill, borderWidth: 1, minHeight: 38, justifyContent: 'center', paddingHorizontal: spacing.lg },
+  editLabel: { color: colors.text, fontSize: 13, fontWeight: '900' },
+  stats: { alignItems: 'center', borderBottomColor: colors.border, borderBottomWidth: StyleSheet.hairlineWidth, borderTopColor: colors.border, borderTopWidth: StyleSheet.hairlineWidth, flexDirection: 'row', marginTop: spacing.xl, paddingVertical: spacing.lg },
   stat: { alignItems: 'center', flex: 1, gap: 2 },
-  statNumber: { color: colors.text, fontSize: 24, fontWeight: '900', textAlign: 'center' },
-  statLabel: { color: colors.textMuted, fontSize: 12, fontWeight: '900', textTransform: 'uppercase' },
-  walletCard: { alignItems: 'center', backgroundColor: '#FFF0CF', borderColor: '#F2D89D', flexDirection: 'row', gap: spacing.md, marginBottom: spacing.md },
-  coinIcon: { alignItems: 'center', backgroundColor: colors.warningSoft, borderRadius: radius.pill, height: 46, justifyContent: 'center', width: 46 },
-  coinGlyph: { color: colors.warning, fontSize: 22, fontWeight: '900' },
-  walletCopy: { flex: 1, gap: 2 },
-  walletTitle: { color: colors.text, fontSize: 17, fontWeight: '900' },
-  balanceBadge: { alignItems: 'center', backgroundColor: colors.surfaceRaised, borderRadius: radius.md, minWidth: 62, paddingHorizontal: spacing.sm, paddingVertical: 8 },
-  balance: { color: colors.warning, fontSize: 19, fontWeight: '900' },
-  balanceLabel: { color: colors.textSubtle, fontSize: 12, fontWeight: '800', textTransform: 'uppercase' },
-  safetyCard: { gap: spacing.md },
-  policyCard: { marginTop: spacing.md },
-  accountSettingsCard: { marginTop: spacing.md },
-  accountSettingsIcon: { alignItems: 'center', backgroundColor: colors.surfaceRaised, borderRadius: radius.md, height: 44, justifyContent: 'center', width: 44 },
-  accountSettingsGlyph: { color: colors.cobalt, fontSize: 19, fontWeight: '900' },
-  policyIcon: { alignItems: 'center', backgroundColor: colors.surfaceRaised, borderRadius: radius.md, height: 44, justifyContent: 'center', width: 44 },
-  policyGlyph: { color: colors.textMuted, fontSize: 18, fontWeight: '900' },
-  activityCard: { marginBottom: spacing.md },
-  activityCardUnread: { backgroundColor: colors.accentSoft, borderColor: '#FFB9A7' },
-  activityIcon: { alignItems: 'center', backgroundColor: colors.cobaltSoft, borderRadius: radius.md, height: 50, justifyContent: 'center', width: 50 },
-  activityGlyph: { color: colors.cobalt, fontSize: 21, fontWeight: '900' },
-  activityBadge: { alignItems: 'center', backgroundColor: colors.accent, borderRadius: 14, height: 30, justifyContent: 'center', minWidth: 30, paddingHorizontal: 7 },
-  activityBadgeText: { color: colors.white, fontSize: 12, fontWeight: '900' },
-  safetyPressed: { opacity: 0.72, transform: [{ scale: 0.99 }] },
-  safetyTop: { alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between' },
-  safetyIcon: { alignItems: 'center', backgroundColor: colors.successSoft, borderRadius: radius.md, height: 44, justifyContent: 'center', width: 44 },
-  safetyGlyph: { color: colors.success, fontSize: 19, fontWeight: '900' },
-  safetyCopy: { flex: 1, gap: 2, marginLeft: spacing.md },
-  safetyTitle: { color: colors.text, fontSize: 17, fontWeight: '900' },
-  chevron: { color: colors.textSubtle, fontSize: 24 },
-  account: { alignItems: 'center', gap: spacing.md, marginTop: spacing.xl },
-  signOutButton: { backgroundColor: colors.dangerSoft, borderColor: '#FFB9A7', borderRadius: radius.pill, borderWidth: 1, paddingHorizontal: spacing.xl, paddingVertical: spacing.md },
-  signOutText: { color: colors.danger, fontSize: 16, fontWeight: '800' },
+  statDivider: { backgroundColor: colors.border, height: 27, width: StyleSheet.hairlineWidth },
+  statNumber: { color: colors.text, fontSize: 19, fontWeight: '900' },
+  statLabel: { color: colors.textSubtle, fontSize: 11, fontWeight: '800', textTransform: 'uppercase' },
+  metadataGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.md, marginTop: spacing.xl },
+  metadataItem: { backgroundColor: colors.surface, borderColor: colors.border, borderRadius: 18, borderWidth: 1, minHeight: 82, padding: spacing.md, width: '47.8%' },
+  metadataLabel: { color: colors.textSubtle, fontSize: 11, fontWeight: '900', letterSpacing: 0.7, textTransform: 'uppercase' },
+  metadataValue: { color: colors.text, fontSize: 15, fontWeight: '800', lineHeight: 20, marginTop: 7 },
+  quickGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.md, marginTop: spacing.xl },
+  quickTile: { backgroundColor: colors.surfaceRaised, borderColor: colors.border, borderRadius: 20, borderWidth: 1, minHeight: 126, padding: spacing.lg, width: '47.8%' },
+  quickCobalt: { backgroundColor: colors.cobaltSoft, borderColor: '#BFC9FF' },
+  quickWarm: { backgroundColor: '#FFF0CF', borderColor: '#F2D89D' },
+  quickGreen: { backgroundColor: colors.signalSoft, borderColor: '#CDE987' },
+  quickGlyph: { color: colors.text, fontSize: 21, fontWeight: '900' },
+  quickTitle: { color: colors.text, fontSize: 16, fontWeight: '900', marginTop: 12 },
+  quickMeta: { color: colors.textMuted, fontSize: 12, marginTop: 4 },
+  accountFooter: { alignItems: 'center', borderTopColor: colors.border, borderTopWidth: StyleSheet.hairlineWidth, flexDirection: 'row', gap: spacing.md, justifyContent: 'space-between', marginTop: spacing.xl, paddingTop: spacing.lg },
+  email: { color: colors.textSubtle, flex: 1, fontSize: 13 },
+  signOutButton: { borderColor: '#FFB9A7', borderRadius: radius.pill, borderWidth: 1, paddingHorizontal: spacing.lg, paddingVertical: 10 },
+  signOutText: { color: colors.danger, fontSize: 13, fontWeight: '900' },
 });

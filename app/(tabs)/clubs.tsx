@@ -1,8 +1,8 @@
 import { useCallback, useState } from 'react';
 import { router, useFocusEffect } from 'expo-router';
-import { ActivityIndicator, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 
-import { Card, EmptyState, Eyebrow, Heading, Muted, Pill, Screen, SectionHeader, SignalBars } from '@/components/ui';
+import { EmptyState, Screen, SignalBars } from '@/components/ui';
 import { joinClub, leaveClub, loadClubs, startClubRoom, type ClubSummary } from '@/features/clubs/api';
 import { colors, radius, spacing } from '@/theme/tokens';
 
@@ -26,9 +26,7 @@ export default function ClubsScreen() {
     }
   }, []);
 
-  useFocusEffect(useCallback(() => {
-    void refresh();
-  }, [refresh]));
+  useFocusEffect(useCallback(() => { void refresh(); }, [refresh]));
 
   const toggleMembership = async (club: ClubSummary) => {
     setBusyClubId(club.club_id);
@@ -65,178 +63,142 @@ export default function ClubsScreen() {
     ? clubs.filter((club) => [club.name, club.description, club.topic].some((value) => value.toLowerCase().includes(normalizedQuery)))
     : clubs;
   const liveClubs = visibleClubs.filter((club) => club.live_room_id);
+  const hostingClub = clubs.find((club) => club.club_id === hostingClubId) ?? null;
 
   return (
     <Screen>
-      <View style={styles.pageHeader}>
-        <View style={styles.headerCopy}>
-          <Eyebrow>YAPPIE CLUBS · LIVE AUDIO</Eyebrow>
-          <Heading compact>Hear the room before you enter.</Heading>
-          <Muted>Live voices, odd little communities, and absolutely no camera pressure.</Muted>
-        </View>
+      <View style={styles.topBar}>
+        <Text style={styles.navTitle}>Clubs</Text>
         <Pressable accessibilityLabel="Create a club" accessibilityRole="button" onPress={() => router.push('/clubs/create')} style={styles.createButton}>
           <Text style={styles.createGlyph}>＋</Text>
         </Pressable>
       </View>
+
       <View style={styles.searchWrap}>
         <Text style={styles.searchGlyph}>⌕</Text>
-        <TextInput
-          accessibilityLabel="Search clubs"
-          autoCapitalize="none"
-          onChangeText={setQuery}
-          placeholder="Search communities or topics"
-          placeholderTextColor={colors.textSubtle}
-          style={styles.searchInput}
-          value={query}
-        />
+        <TextInput accessibilityLabel="Search clubs" autoCapitalize="none" onChangeText={setQuery} placeholder="Search communities" placeholderTextColor={colors.textSubtle} style={styles.searchInput} value={query} />
         {query ? <Pressable accessibilityLabel="Clear search" onPress={() => setQuery('')}><Text style={styles.clearSearch}>×</Text></Pressable> : null}
       </View>
+
       {loading ? <ActivityIndicator color={colors.primary} style={styles.loading} /> : null}
       {error ? <Text style={styles.error}>{error}</Text> : null}
 
-      {liveClubs.length > 0 ? <SectionHeader action={<Pill label={`${liveClubs.length} rooms`} tone="live" />} title="Live now" /> : null}
-      <View style={styles.list}>
-        {liveClubs.map((club) => (
-          <Card key={`live-${club.club_id}`} style={styles.liveCard}>
-            <View style={styles.liveRail} />
-            <View style={styles.cardTop}>
-              <Pill label={`Live · ${club.live_listener_count}`} tone="live" />
-              <Text style={styles.topic}>{club.name}</Text>
-            </View>
-            <View style={styles.liveSignal}><SignalBars /><Text style={styles.liveSignalLabel}>ON AIR</Text></View>
-            <Text style={styles.roomTitle}>{club.live_room_title}</Text>
-            <View style={styles.listenerStack}>
-              <View style={[styles.listenerDot, styles.listenerOne]} /><View style={[styles.listenerDot, styles.listenerTwo]} /><View style={[styles.listenerDot, styles.listenerThree]} />
-              <Text style={styles.listenerCopy}>People are talking now</Text>
-            </View>
-            <Pressable
-              accessibilityRole="button"
-              onPress={() => router.push({ pathname: '/clubs/room/[roomId]', params: { roomId: club.live_room_id! } })}
-              style={({ pressed }) => [styles.listenButton, pressed && styles.pressed]}
-            >
-              <Text style={styles.listenLabel}>Listen in</Text><Text style={styles.listenArrow}>↗</Text>
-            </Pressable>
-          </Card>
-        ))}
-      </View>
-
-      {!loading && clubs.length === 0 ? <EmptyState description="Create the first community and give people a place to return to." glyph="◎" title="No clubs yet" /> : null}
-      {!loading && clubs.length > 0 && visibleClubs.length === 0 ? <EmptyState description="Try another name or topic." glyph="⌕" title="No matching clubs" /> : null}
-      {visibleClubs.length > 0 ? <SectionHeader title={normalizedQuery ? 'Search results' : 'Explore communities'} /> : null}
-      <View style={styles.list}>
-        {visibleClubs.map((club, index) => (
-          <Card key={club.club_id} style={[styles.clubCard, index % 3 === 0 && styles.clubCardSignal, index % 3 === 1 && styles.clubCardCobalt]}>
-            <View style={styles.cardTop}>
-              <Pressable
-                accessibilityLabel={`Open ${club.name}`}
-                accessibilityRole="button"
-                onPress={() => router.push({ pathname: '/clubs/[clubId]', params: { clubId: club.club_id } })}
-                style={styles.clubLink}
-              >
-                <View style={[styles.clubMark, index % 2 === 1 && styles.clubMarkAlternate]}><Text style={styles.clubMarkText}>{club.name.slice(0, 1)}</Text></View>
-                <View style={styles.clubIdentity}>
-                  <Text style={styles.clubName}>{club.name}</Text>
-                  <Text style={styles.clubMeta}>{club.member_count} members · {club.topic}</Text>
-                </View>
-              </Pressable>
-              <Pressable
-                accessibilityRole="button"
-                disabled={busyClubId === club.club_id}
-                onPress={() => void toggleMembership(club)}
-                style={[styles.joinButton, club.is_member && styles.joinedButton]}
-              >
-                <Text style={[styles.joinLabel, club.is_member && styles.joinedLabel]}>{club.is_member ? 'Joined' : 'Join'}</Text>
-              </Pressable>
-            </View>
-            <Pressable onPress={() => router.push({ pathname: '/clubs/[clubId]', params: { clubId: club.club_id } })}>
-              <Muted style={styles.description}>{club.description}</Muted>
-            </Pressable>
-
-            {club.is_member && !club.live_room_id ? (
-              hostingClubId === club.club_id ? (
-                <View style={styles.hostForm}>
-                  <TextInput
-                    accessibilityLabel="Room title"
-                    maxLength={120}
-                    onChangeText={setRoomTitle}
-                    placeholder="What should people talk about?"
-                    placeholderTextColor={colors.textMuted}
-                    style={styles.input}
-                    value={roomTitle}
-                  />
-                  <View style={styles.hostActions}>
-                    <Pressable onPress={() => { setHostingClubId(null); setRoomTitle(''); }} style={styles.cancelButton}>
-                      <Text style={styles.cancelLabel}>Cancel</Text>
-                    </Pressable>
-                    <Pressable disabled={!roomTitle.trim()} onPress={() => void startRoom(club)} style={styles.startButton}>
-                      <Text style={styles.startLabel}>Go live</Text>
-                    </Pressable>
-                  </View>
-                </View>
-              ) : (
-                <Pressable onPress={() => setHostingClubId(club.club_id)} style={styles.hostButton}>
-                  <Text style={styles.hostLabel}>＋ Start a room</Text>
+      {liveClubs.length > 0 ? (
+        <>
+          <View style={styles.sectionLine}><Text style={styles.sectionTitle}>Live now</Text><View style={styles.liveStatus}><View style={styles.liveDot} /><Text style={styles.liveCount}>{liveClubs.length}</Text></View></View>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.liveScroller}>
+            <View style={styles.liveRow}>
+              {liveClubs.map((club) => (
+                <Pressable
+                  key={club.club_id}
+                  accessibilityRole="button"
+                  onPress={() => router.push({ pathname: '/clubs/room/[roomId]', params: { roomId: club.live_room_id! } })}
+                  style={({ pressed }) => [styles.liveCard, pressed && styles.pressed]}
+                >
+                  <View style={styles.liveTop}><View style={styles.liveLabel}><View style={styles.liveDot} /><Text style={styles.liveLabelText}>LIVE</Text></View><SignalBars /></View>
+                  <Text numberOfLines={2} style={styles.roomTitle}>{club.live_room_title}</Text>
+                  <Text numberOfLines={1} style={styles.liveClubName}>{club.name}</Text>
+                  <View style={styles.listenerRow}><Text style={styles.listenerIcon}>◉</Text><Text style={styles.listenerCopy}>{club.live_listener_count} listening</Text><Text style={styles.enterArrow}>→</Text></View>
                 </Pressable>
-              )
-            ) : null}
-          </Card>
+              ))}
+            </View>
+          </ScrollView>
+        </>
+      ) : null}
+
+      {!loading ? <View style={styles.sectionLine}><Text style={styles.sectionTitle}>{query ? 'Results' : 'Find your people'}</Text><Text style={styles.sectionCount}>{visibleClubs.length} clubs</Text></View> : null}
+      {!loading && visibleClubs.length === 0 ? <EmptyState description="Try another word or create the community you wish existed." glyph="⌕" title="No clubs found" /> : null}
+
+      <View style={styles.clubGrid}>
+        {visibleClubs.map((club, index) => (
+          <View key={club.club_id} style={[styles.clubTile, index % 3 === 1 && styles.clubTileCobalt, index % 3 === 2 && styles.clubTileWarm]}>
+            <Pressable accessibilityRole="button" onPress={() => router.push({ pathname: '/clubs/[clubId]', params: { clubId: club.club_id } })} style={styles.clubLink}>
+              <View style={[styles.clubMark, index % 3 === 1 && styles.clubMarkCobalt, index % 3 === 2 && styles.clubMarkWarm]}><Text style={styles.clubMarkText}>{club.name.slice(0, 2).toUpperCase()}</Text></View>
+              <Text numberOfLines={2} style={styles.clubName}>{club.name}</Text>
+              <Text numberOfLines={1} style={styles.clubTopic}>{club.topic}</Text>
+              <Text style={styles.memberCount}>{club.member_count} members</Text>
+            </Pressable>
+            <View style={styles.tileActions}>
+              <Pressable disabled={busyClubId === club.club_id} onPress={() => void toggleMembership(club)} style={[styles.joinButton, club.is_member && styles.joinedButton]}>
+                <Text style={[styles.joinLabel, club.is_member && styles.joinedLabel]}>{busyClubId === club.club_id ? '…' : club.is_member ? 'Joined' : 'Join'}</Text>
+              </Pressable>
+              {club.is_member && !club.live_room_id ? (
+                <Pressable accessibilityLabel={`Start a room in ${club.name}`} onPress={() => { setHostingClubId(club.club_id); setRoomTitle(''); }} style={styles.micButton}><Text style={styles.micGlyph}>◉</Text></Pressable>
+              ) : null}
+            </View>
+          </View>
         ))}
       </View>
+
+      {hostingClub ? (
+        <View style={styles.hostPanel}>
+          <View style={styles.hostPanelTop}><View><Text style={styles.hostTitle}>Go live in {hostingClub.name}</Text><Text style={styles.hostHint}>Give people a reason to tap in.</Text></View><Pressable onPress={() => setHostingClubId(null)}><Text style={styles.hostClose}>×</Text></Pressable></View>
+          <TextInput autoFocus maxLength={80} onChangeText={setRoomTitle} placeholder="What are you talking about?" placeholderTextColor={colors.textSubtle} style={styles.roomInput} value={roomTitle} />
+          <Pressable disabled={!roomTitle.trim() || busyClubId === hostingClub.club_id} onPress={() => void startRoom(hostingClub)} style={[styles.startButton, (!roomTitle.trim() || busyClubId === hostingClub.club_id) && styles.disabled]}>
+            <Text style={styles.startLabel}>{busyClubId === hostingClub.club_id ? 'Starting…' : 'Start live room'}</Text>
+          </Pressable>
+        </View>
+      ) : null}
     </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  pageHeader: { alignItems: 'center', flexDirection: 'row', gap: spacing.lg },
-  headerCopy: { flex: 1, gap: spacing.sm },
-  createButton: { alignItems: 'center', backgroundColor: colors.signal, borderRadius: 20, height: 58, justifyContent: 'center', transform: [{ rotate: '4deg' }], width: 58 },
-  createGlyph: { color: colors.primaryInk, fontSize: 26, fontWeight: '700' },
-  searchWrap: { alignItems: 'center', backgroundColor: colors.surface, borderColor: colors.borderStrong, borderRadius: 20, borderWidth: 1, flexDirection: 'row', gap: spacing.sm, marginTop: spacing.xl, paddingHorizontal: spacing.lg },
-  searchGlyph: { color: colors.textSubtle, fontSize: 20 },
-  searchInput: { color: colors.text, flex: 1, fontSize: 16, minHeight: 58 },
-  clearSearch: { color: colors.textMuted, fontSize: 22, paddingHorizontal: spacing.xs },
+  topBar: { alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between' },
+  navTitle: { color: colors.text, fontSize: 25, fontWeight: '900', letterSpacing: -0.8 },
+  createButton: { alignItems: 'center', backgroundColor: colors.primary, borderRadius: 18, height: 48, justifyContent: 'center', width: 48 },
+  createGlyph: { color: colors.white, fontSize: 25, fontWeight: '700' },
+  searchWrap: { alignItems: 'center', backgroundColor: colors.surface, borderColor: colors.border, borderRadius: 18, borderWidth: 1, flexDirection: 'row', gap: spacing.sm, marginTop: spacing.lg, paddingHorizontal: spacing.lg },
+  searchGlyph: { color: colors.textSubtle, fontSize: 19 },
+  searchInput: { color: colors.text, flex: 1, fontSize: 16, minHeight: 54 },
+  clearSearch: { color: colors.textMuted, fontSize: 23, paddingHorizontal: spacing.xs },
   loading: { marginVertical: spacing.xl },
   error: { color: colors.danger, fontSize: 14, lineHeight: 21, marginTop: spacing.md, textAlign: 'center' },
-  list: { gap: spacing.lg },
-  liveCard: { backgroundColor: colors.primary, borderColor: colors.primary, borderRadius: 32, gap: spacing.lg, overflow: 'hidden', paddingLeft: spacing.xl },
-  liveRail: { backgroundColor: colors.signal, bottom: 22, borderRadius: 3, left: 0, position: 'absolute', top: 22, width: 7 },
-  liveSignal: { alignItems: 'center', flexDirection: 'row', gap: spacing.md },
-  liveSignalLabel: { color: colors.signal, fontSize: 14, fontWeight: '900', letterSpacing: 2 },
-  clubCard: { gap: spacing.md, overflow: 'hidden' },
-  clubCardSignal: { backgroundColor: colors.signalSoft, borderColor: '#CDE987', transform: [{ rotate: '-0.35deg' }] },
-  clubCardCobalt: { backgroundColor: colors.cobaltSoft, borderColor: '#BFC9FF', transform: [{ rotate: '0.35deg' }] },
-  cardTop: { alignItems: 'center', flexDirection: 'row', gap: spacing.md, justifyContent: 'space-between' },
-  clubLink: { alignItems: 'center', flex: 1, flexDirection: 'row', gap: spacing.md },
-  topic: { color: '#C9C7C0', fontSize: 14, fontWeight: '800' },
-  roomTitle: { color: colors.white, fontSize: 28, fontWeight: '900', letterSpacing: -1, lineHeight: 33 },
-  listenerStack: { alignItems: 'center', flexDirection: 'row', minHeight: 24 },
-  listenerDot: { borderColor: colors.surfaceSoft, borderRadius: 12, borderWidth: 2, height: 24, width: 24 },
-  listenerOne: { backgroundColor: colors.cobalt },
-  listenerTwo: { backgroundColor: '#FF8B79', marginLeft: -7 },
-  listenerThree: { backgroundColor: '#65BFA6', marginLeft: -7 },
-  listenerCopy: { color: '#C9C7C0', fontSize: 13, fontWeight: '700', marginLeft: spacing.sm },
-  listenButton: { alignItems: 'center', backgroundColor: colors.signal, borderRadius: 20, flexDirection: 'row', justifyContent: 'space-between', minHeight: 62, paddingHorizontal: 21 },
-  listenLabel: { color: colors.primary, fontSize: 17, fontWeight: '900' },
-  listenArrow: { color: colors.primary, fontSize: 26, fontWeight: '900' },
+  sectionLine: { alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between', marginBottom: spacing.md, marginTop: spacing.xl },
+  sectionTitle: { color: colors.text, fontSize: 20, fontWeight: '900', letterSpacing: -0.45 },
+  sectionCount: { color: colors.textSubtle, fontSize: 13, fontWeight: '700' },
+  liveStatus: { alignItems: 'center', flexDirection: 'row', gap: 6 },
+  liveDot: { backgroundColor: colors.accent, borderRadius: 4, height: 8, width: 8 },
+  liveCount: { color: colors.accent, fontSize: 13, fontWeight: '900' },
+  liveScroller: { marginHorizontal: -18 },
+  liveRow: { flexDirection: 'row', gap: spacing.md, paddingHorizontal: 18 },
+  liveCard: { backgroundColor: colors.primary, borderRadius: 24, gap: spacing.sm, minHeight: 196, padding: 18, width: 274 },
+  liveTop: { alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between' },
+  liveLabel: { alignItems: 'center', flexDirection: 'row', gap: 6 },
+  liveLabelText: { color: colors.accent, fontSize: 12, fontWeight: '900', letterSpacing: 1 },
+  roomTitle: { color: colors.white, fontSize: 23, fontWeight: '900', letterSpacing: -0.7, lineHeight: 27, marginTop: spacing.sm },
+  liveClubName: { color: colors.signal, fontSize: 13, fontWeight: '800' },
+  listenerRow: { alignItems: 'center', flexDirection: 'row', marginTop: 'auto' },
+  listenerIcon: { color: colors.cobaltSoft, fontSize: 15 },
+  listenerCopy: { color: '#C9C7C0', fontSize: 13, fontWeight: '700', marginLeft: 7 },
+  enterArrow: { color: colors.white, fontSize: 22, marginLeft: 'auto' },
   pressed: { opacity: 0.75, transform: [{ scale: 0.985 }] },
-  clubMark: { alignItems: 'center', backgroundColor: colors.primary, borderRadius: 17, height: 54, justifyContent: 'center', transform: [{ rotate: '-4deg' }], width: 54 },
-  clubMarkAlternate: { backgroundColor: colors.cobalt, transform: [{ rotate: '4deg' }] },
-  clubMarkText: { color: colors.white, fontSize: 21, fontWeight: '900' },
-  clubIdentity: { flex: 1, gap: 3 },
-  clubName: { color: colors.text, fontSize: 19, fontWeight: '900', letterSpacing: -0.45 },
-  clubMeta: { color: colors.textMuted, fontSize: 13, fontWeight: '700' },
-  description: { paddingLeft: 58 },
-  joinButton: { backgroundColor: colors.primary, borderRadius: radius.pill, minHeight: 42, paddingHorizontal: spacing.lg, paddingVertical: 10 },
-  joinedButton: { backgroundColor: 'rgba(255,255,255,0.6)', borderColor: colors.borderStrong, borderWidth: 1 },
-  joinLabel: { color: colors.primaryInk, fontSize: 14, fontWeight: '800' },
-  joinedLabel: { color: colors.primary },
-  hostButton: { alignItems: 'center', backgroundColor: colors.surfaceRaised, borderColor: colors.border, borderRadius: radius.md, borderWidth: 1, padding: spacing.md },
-  hostLabel: { color: colors.primary, fontSize: 15, fontWeight: '800' },
-  hostForm: { gap: spacing.md },
-  input: { backgroundColor: colors.surfaceSoft, borderColor: colors.borderStrong, borderRadius: radius.md, borderWidth: 1, color: colors.text, fontSize: 16, minHeight: 56, paddingHorizontal: spacing.md },
-  hostActions: { flexDirection: 'row', gap: spacing.sm, justifyContent: 'flex-end' },
-  cancelButton: { borderColor: colors.border, borderRadius: radius.sm, borderWidth: 1, paddingHorizontal: spacing.lg, paddingVertical: 10 },
-  cancelLabel: { color: colors.textMuted, fontSize: 14, fontWeight: '700' },
-  startButton: { backgroundColor: colors.primary, borderRadius: radius.sm, paddingHorizontal: spacing.lg, paddingVertical: 10 },
-  startLabel: { color: colors.primaryInk, fontSize: 14, fontWeight: '800' },
+  clubGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.md },
+  clubTile: { backgroundColor: colors.signalSoft, borderColor: '#CDE987', borderRadius: 22, borderWidth: 1, minHeight: 220, padding: spacing.lg, width: '47.8%' },
+  clubTileCobalt: { backgroundColor: colors.cobaltSoft, borderColor: '#BFC9FF' },
+  clubTileWarm: { backgroundColor: '#FFF0CF', borderColor: '#F2D89D' },
+  clubLink: { flex: 1 },
+  clubMark: { alignItems: 'center', backgroundColor: colors.primary, borderRadius: 15, height: 48, justifyContent: 'center', marginBottom: spacing.md, width: 48 },
+  clubMarkCobalt: { backgroundColor: colors.cobalt },
+  clubMarkWarm: { backgroundColor: colors.accent },
+  clubMarkText: { color: colors.white, fontSize: 17, fontWeight: '900' },
+  clubName: { color: colors.text, fontSize: 17, fontWeight: '900', letterSpacing: -0.35, lineHeight: 21 },
+  clubTopic: { color: colors.textMuted, fontSize: 13, fontWeight: '700', marginTop: 4 },
+  memberCount: { color: colors.textSubtle, fontSize: 12, marginTop: 7 },
+  tileActions: { alignItems: 'center', flexDirection: 'row', gap: spacing.sm, marginTop: spacing.md },
+  joinButton: { alignItems: 'center', backgroundColor: colors.primary, borderRadius: radius.pill, flex: 1, minHeight: 38, justifyContent: 'center', paddingHorizontal: spacing.sm },
+  joinedButton: { backgroundColor: 'rgba(255,255,255,0.65)', borderColor: colors.borderStrong, borderWidth: 1 },
+  joinLabel: { color: colors.white, fontSize: 13, fontWeight: '900' },
+  joinedLabel: { color: colors.text },
+  micButton: { alignItems: 'center', backgroundColor: colors.cobalt, borderRadius: 19, height: 38, justifyContent: 'center', width: 38 },
+  micGlyph: { color: colors.white, fontSize: 13 },
+  hostPanel: { backgroundColor: colors.surface, borderColor: colors.borderStrong, borderRadius: 22, borderWidth: 1, gap: spacing.md, marginTop: spacing.lg, padding: spacing.lg },
+  hostPanelTop: { alignItems: 'flex-start', flexDirection: 'row', justifyContent: 'space-between' },
+  hostTitle: { color: colors.text, fontSize: 18, fontWeight: '900' },
+  hostHint: { color: colors.textMuted, fontSize: 13, marginTop: 3 },
+  hostClose: { color: colors.textMuted, fontSize: 25, lineHeight: 25 },
+  roomInput: { backgroundColor: colors.surfaceSoft, borderColor: colors.borderStrong, borderRadius: 16, borderWidth: 1, color: colors.text, fontSize: 16, minHeight: 54, paddingHorizontal: spacing.lg },
+  startButton: { alignItems: 'center', backgroundColor: colors.cobalt, borderRadius: 16, minHeight: 52, justifyContent: 'center' },
+  startLabel: { color: colors.white, fontSize: 15, fontWeight: '900' },
+  disabled: { opacity: 0.45 },
 });

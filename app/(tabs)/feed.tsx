@@ -2,7 +2,7 @@ import { useCallback, useState } from 'react';
 import { router, useFocusEffect } from 'expo-router';
 import { ActivityIndicator, Pressable, RefreshControl, Share, StyleSheet, Text, TextInput, View } from 'react-native';
 
-import { Avatar, Card, EmptyState, Eyebrow, Heading, Muted, Pill, PrimaryButton, Screen, SectionHeader } from '@/components/ui';
+import { Avatar, EmptyState, Screen } from '@/components/ui';
 import { useSession } from '@/context/SessionContext';
 import { createPost, loadFeed, loadFollowingFeed, setPostLiked, type FeedPost } from '@/features/feed/api';
 import { colors, radius, spacing } from '@/theme/tokens';
@@ -25,6 +25,7 @@ export default function FeedScreen() {
   const [posts, setPosts] = useState<FeedPost[]>([]);
   const [body, setBody] = useState('');
   const [topic, setTopic] = useState('Random Thoughts');
+  const [composerOpen, setComposerOpen] = useState(false);
   const [feedMode, setFeedMode] = useState<FeedMode>('global');
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -48,9 +49,7 @@ export default function FeedScreen() {
     }
   }, [feedMode]);
 
-  useFocusEffect(useCallback(() => {
-    void refresh();
-  }, [refresh]));
+  useFocusEffect(useCallback(() => { void refresh(); }, [refresh]));
 
   const publish = async () => {
     if (!user || !body.trim() || submitting) return;
@@ -59,6 +58,7 @@ export default function FeedScreen() {
     try {
       await createPost(user.id, body, topic);
       setBody('');
+      setComposerOpen(false);
       if (feedMode !== 'global') setFeedMode('global');
       else await refresh();
     } catch (nextError) {
@@ -111,68 +111,61 @@ export default function FeedScreen() {
 
   return (
     <Screen refreshControl={<RefreshControl colors={[colors.primary]} onRefresh={() => void refresh(true)} progressBackgroundColor={colors.surfaceRaised} refreshing={refreshing} tintColor={colors.primary} />}>
-      <View style={styles.pageHeader}>
-        <View>
-          <Eyebrow>OPEN FREQUENCY</Eyebrow>
-          <Heading compact>The internet, with a pulse.</Heading>
+      <View style={styles.topBar}>
+        <View style={styles.feedModeRow}>
+          {(['global', 'following'] as const).map((mode) => (
+            <Pressable
+              key={mode}
+              accessibilityRole="tab"
+              accessibilityState={{ selected: feedMode === mode }}
+              onPress={() => {
+                if (mode === feedMode) return;
+                setLoading(true);
+                setPosts([]);
+                setFeedMode(mode);
+              }}
+              style={[styles.feedModeButton, feedMode === mode && styles.feedModeSelected]}
+            >
+              <Text style={[styles.feedModeLabel, feedMode === mode && styles.feedModeLabelSelected]}>{mode === 'global' ? 'For you' : 'Following'}</Text>
+            </Pressable>
+          ))}
         </View>
-        <View style={styles.livePulse}><View style={styles.liveDot} /><Text style={styles.liveText}>Live</Text></View>
+        <View style={styles.liveDot} />
       </View>
 
-      <View style={styles.feedModeRow}>
-        {(['global', 'following'] as const).map((mode) => (
-          <Pressable
-            key={mode}
-            accessibilityRole="tab"
-            accessibilityState={{ selected: feedMode === mode }}
-            onPress={() => {
-              if (mode === feedMode) return;
-              setLoading(true);
-              setPosts([]);
-              setFeedMode(mode);
-            }}
-            style={[styles.feedModeButton, feedMode === mode && styles.feedModeSelected]}
-          >
-            <Text style={[styles.feedModeLabel, feedMode === mode && styles.feedModeLabelSelected]}>{mode === 'global' ? 'Everyone' : 'My people'}</Text>
-          </Pressable>
-        ))}
-      </View>
-
-      <Card style={styles.composerCard}>
-        <View style={styles.composeTop}>
-          <Avatar label={profile?.displayName || 'You'} size={42} />
+      <View style={[styles.composer, composerOpen && styles.composerOpen]}>
+        <Avatar label={profile?.displayName || 'You'} size={40} />
+        <View style={styles.composerMain}>
           <TextInput
             accessibilityLabel="New post"
             maxLength={500}
             multiline
             onChangeText={setBody}
-            placeholder="Start a conversation…"
+            onFocus={() => setComposerOpen(true)}
+            placeholder="What’s happening?"
             placeholderTextColor={colors.textMuted}
-            style={styles.composeInput}
+            style={[styles.composeInput, composerOpen && styles.composeInputOpen]}
             value={body}
           />
+          {composerOpen ? (
+            <>
+              <View style={styles.topics}>
+                {topics.map((option) => (
+                  <Pressable key={option} onPress={() => setTopic(option)} style={[styles.topicChoice, topic === option && styles.topicSelected]}>
+                    <Text style={[styles.topicText, topic === option && styles.topicTextSelected]}>{option}</Text>
+                  </Pressable>
+                ))}
+              </View>
+              <View style={styles.publishRow}>
+                <Text style={styles.counter}>{body.length}/500</Text>
+                <Pressable disabled={!body.trim() || submitting} onPress={() => void publish()} style={[styles.publishButton, (!body.trim() || submitting) && styles.disabled]}>
+                  <Text style={styles.publishLabel}>{submitting ? 'Posting…' : 'Post'}</Text>
+                </Pressable>
+              </View>
+            </>
+          ) : null}
         </View>
-        <View style={styles.composerRule} />
-        <View style={styles.topics}>
-          {topics.map((option) => (
-            <Pressable
-              key={option}
-              accessibilityRole="radio"
-              accessibilityState={{ checked: topic === option }}
-              onPress={() => setTopic(option)}
-              style={[styles.topicChoice, topic === option && styles.topicSelected]}
-            >
-              <Text style={[styles.topicText, topic === option && styles.topicTextSelected]}>{option}</Text>
-            </Pressable>
-          ))}
-        </View>
-        <View style={styles.publishRow}>
-          <Text style={styles.counter}>{body.length}/500</Text>
-          <View style={styles.publishButton}>
-            <PrimaryButton disabled={!body.trim() || submitting} label={submitting ? 'Sharing…' : 'Share post'} onPress={() => void publish()} />
-          </View>
-        </View>
-      </Card>
+      </View>
 
       {error ? <Text accessibilityRole="alert" style={styles.error}>{error}</Text> : null}
       {loading ? <ActivityIndicator color={colors.primary} style={styles.loading} /> : null}
@@ -180,60 +173,41 @@ export default function FeedScreen() {
         <Pressable accessibilityRole="button" onPress={() => { setLoading(true); void refresh(); }} style={styles.retryButton}><Text style={styles.retryLabel}>Try again</Text></Pressable>
       ) : null}
       {!loading && !error && posts.length === 0 ? (
-        <EmptyState
-          description={feedMode === 'following' ? 'Follow people from Quick Chat, Clubs, or the world feed to build this space.' : 'Break the silence with the first thought.'}
-          glyph="✦"
-          title={feedMode === 'following' ? 'Your people will show up here' : 'A fresh corner of the internet'}
-        />
+        <EmptyState description={feedMode === 'following' ? 'Follow people from Quick Chat or Clubs to build your timeline.' : 'Break the silence with the first thought.'} glyph="✦" title={feedMode === 'following' ? 'Your people will show up here' : 'Nothing here yet'} />
       ) : null}
 
-      {posts.length > 0 ? <SectionHeader title="Happening now" /> : null}
-      <View style={styles.list}>
-        {posts.map((post, index) => {
+      <View style={styles.timeline}>
+        {posts.map((post) => {
           const authorName = post.author_display_name || (post.author_handle ? `@${post.author_handle}` : 'Community member');
           return (
-            <Card key={post.post_id} style={[styles.postCard, index % 3 === 0 && styles.postCardSignal, index % 3 === 1 && styles.postCardCobalt]}>
-              <Text style={styles.postIndex}>{String(index + 1).padStart(2, '0')}</Text>
-              <View style={styles.authorRow}>
-                <Pressable
-                  accessibilityLabel={`Open ${authorName}'s profile`}
-                  accessibilityRole="button"
-                  onPress={() => router.push({ pathname: '/people/[userId]', params: { userId: post.author_id } })}
-                  style={styles.authorLink}
-                >
-                  <Avatar label={authorName} size={42} />
-                  <View style={styles.authorCopy}>
-                    <Text style={styles.name}>{authorName}</Text>
-                    <Text style={styles.meta}>@{post.author_handle ?? 'member'} · {relativeTime(post.created_at)}</Text>
-                  </View>
+            <View key={post.post_id} style={styles.post}>
+              <Pressable accessibilityRole="button" onPress={() => router.push({ pathname: '/people/[userId]', params: { userId: post.author_id } })}>
+                <Avatar label={authorName} size={40} />
+              </Pressable>
+              <View style={styles.postMain}>
+                <Pressable onPress={() => router.push({ pathname: '/people/[userId]', params: { userId: post.author_id } })} style={styles.authorLine}>
+                  <Text numberOfLines={1} style={styles.name}>{authorName}</Text>
+                  <Text numberOfLines={1} style={styles.meta}>@{post.author_handle ?? 'member'} · {relativeTime(post.created_at)}</Text>
                 </Pressable>
-                {post.topic ? <Pill label={post.topic} /> : null}
+                {post.topic ? <Text style={styles.postTopic}>{post.topic}</Text> : null}
+                <Text style={styles.postBody}>{post.body}</Text>
+                <View style={styles.actions}>
+                  <Pressable accessibilityLabel="Like post" onPress={() => void toggleLike(post)} style={styles.actionButton}>
+                    <Text style={[styles.actionIcon, post.liked_by_me && styles.actionLiked]}>{post.liked_by_me ? '♥' : '♡'}</Text><Text style={[styles.actionText, post.liked_by_me && styles.actionLiked]}>{post.like_count}</Text>
+                  </Pressable>
+                  <Pressable onPress={() => router.push({ pathname: '/post/[postId]', params: { postId: post.post_id, body: post.body, author: authorName, authorId: post.author_id } })} style={styles.actionButton}>
+                    <Text style={styles.actionIcon}>○</Text><Text style={styles.actionText}>{post.reply_count}</Text>
+                  </Pressable>
+                  <Pressable accessibilityLabel="Share post" onPress={() => void sharePost(post, authorName)} style={styles.shareButton}><Text style={styles.shareIcon}>↗</Text></Pressable>
+                </View>
               </View>
-              <Text style={styles.postBody}>{post.body}</Text>
-              <View style={styles.actions}>
-                <Pressable accessibilityRole="button" onPress={() => void toggleLike(post)} style={[styles.actionButton, post.liked_by_me && styles.actionButtonActive]}>
-                  <Text style={[styles.actionIcon, post.liked_by_me && styles.actionActive]}>{post.liked_by_me ? '♥' : '♡'}</Text>
-                  <Text style={[styles.action, post.liked_by_me && styles.actionActive]}>{post.like_count}</Text>
-                </Pressable>
-                <Pressable
-                  accessibilityRole="button"
-                  onPress={() => router.push({ pathname: '/post/[postId]', params: { postId: post.post_id, body: post.body, author: authorName, authorId: post.author_id } })}
-                  style={styles.actionButton}
-                >
-                  <Text style={styles.actionIcon}>◌</Text><Text style={styles.action}>{post.reply_count}</Text>
-                </Pressable>
-                <View style={styles.actionSpacer} />
-                <Pressable accessibilityLabel="Share post" accessibilityRole="button" onPress={() => void sharePost(post, authorName)} style={styles.shareButton}>
-                  <Text style={styles.shareIcon}>↗</Text><Text style={styles.shareLabel}>Share</Text>
-                </Pressable>
-              </View>
-            </Card>
+            </View>
           );
         })}
       </View>
       {posts.length > 0 && hasMore ? (
-        <Pressable accessibilityRole="button" disabled={loadingMore} onPress={() => void loadMore()} style={[styles.loadMoreButton, loadingMore && styles.loadMoreDisabled]}>
-          {loadingMore ? <ActivityIndicator color={colors.primary} size="small" /> : <Text style={styles.loadMoreLabel}>Load older conversations</Text>}
+        <Pressable disabled={loadingMore} onPress={() => void loadMore()} style={styles.loadMoreButton}>
+          {loadingMore ? <ActivityIndicator color={colors.primary} size="small" /> : <Text style={styles.loadMoreLabel}>Show more</Text>}
         </Pressable>
       ) : null}
       {posts.length > 0 && !hasMore ? <Text style={styles.feedEnd}>You’re all caught up.</Text> : null}
@@ -242,54 +216,48 @@ export default function FeedScreen() {
 }
 
 const styles = StyleSheet.create({
-  pageHeader: { alignItems: 'flex-start', flexDirection: 'row', gap: spacing.md, justifyContent: 'space-between' },
-  livePulse: { alignItems: 'center', backgroundColor: colors.accentSoft, borderColor: '#FFC4B9', borderRadius: radius.pill, borderWidth: 1, flexDirection: 'row', gap: 6, paddingHorizontal: 11, paddingVertical: 7 },
-  liveDot: { backgroundColor: colors.accent, borderRadius: 4, height: 7, width: 7 },
-  liveText: { color: colors.accent, fontSize: 12, fontWeight: '900', letterSpacing: 0.8, textTransform: 'uppercase' },
-  feedModeRow: { backgroundColor: colors.surfaceRaised, borderColor: colors.border, borderRadius: 19, borderWidth: 1, flexDirection: 'row', marginTop: spacing.xl, padding: 5 },
-  feedModeButton: { alignItems: 'center', borderRadius: 15, flex: 1, paddingVertical: 13 },
+  topBar: { alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between', marginBottom: spacing.md },
+  feedModeRow: { backgroundColor: colors.surfaceRaised, borderRadius: radius.pill, flexDirection: 'row', padding: 4 },
+  feedModeButton: { borderRadius: radius.pill, minWidth: 94, paddingHorizontal: spacing.lg, paddingVertical: 10 },
   feedModeSelected: { backgroundColor: colors.primary },
-  feedModeLabel: { color: colors.textMuted, fontSize: 14, fontWeight: '800' },
+  feedModeLabel: { color: colors.textMuted, fontSize: 14, fontWeight: '800', textAlign: 'center' },
   feedModeLabelSelected: { color: colors.white },
-  composerCard: { backgroundColor: colors.cobaltSoft, borderColor: '#BFC9FF', borderRadius: 30, gap: spacing.md, marginTop: spacing.xl, transform: [{ rotate: '-0.5deg' }] },
-  composeTop: { alignItems: 'flex-start', flexDirection: 'row', gap: spacing.md },
-  composeInput: { color: colors.text, flex: 1, fontSize: 18, fontWeight: '600', lineHeight: 27, minHeight: 92, paddingTop: spacing.sm, textAlignVertical: 'top' },
-  composerRule: { backgroundColor: colors.border, height: StyleSheet.hairlineWidth },
-  topics: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
-  topicChoice: { backgroundColor: 'rgba(255,255,255,0.58)', borderColor: '#BFC9FF', borderRadius: radius.pill, borderWidth: 1, paddingHorizontal: 12, paddingVertical: 9 },
-  topicSelected: { backgroundColor: colors.primary, borderColor: colors.primary },
-  topicText: { color: colors.textMuted, fontSize: 13, fontWeight: '800' },
-  topicTextSelected: { color: colors.white },
+  liveDot: { backgroundColor: colors.success, borderRadius: 5, height: 9, marginRight: spacing.sm, width: 9 },
+  composer: { alignItems: 'flex-start', backgroundColor: colors.surface, borderBottomColor: colors.border, borderTopColor: colors.border, borderWidth: 0, borderBottomWidth: StyleSheet.hairlineWidth, borderTopWidth: StyleSheet.hairlineWidth, flexDirection: 'row', gap: spacing.md, marginHorizontal: -18, paddingHorizontal: 18, paddingVertical: 12 },
+  composerOpen: { paddingBottom: spacing.lg },
+  composerMain: { flex: 1, gap: spacing.md },
+  composeInput: { color: colors.text, fontSize: 17, lineHeight: 23, minHeight: 40, paddingHorizontal: 0, paddingTop: 8, textAlignVertical: 'top' },
+  composeInputOpen: { minHeight: 74 },
+  topics: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
+  topicChoice: { borderColor: colors.border, borderRadius: radius.pill, borderWidth: 1, paddingHorizontal: 10, paddingVertical: 6 },
+  topicSelected: { backgroundColor: colors.cobaltSoft, borderColor: '#BFC9FF' },
+  topicText: { color: colors.textMuted, fontSize: 12, fontWeight: '700' },
+  topicTextSelected: { color: colors.cobalt, fontWeight: '900' },
   publishRow: { alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between' },
-  counter: { color: colors.textMuted, fontSize: 13, fontWeight: '800' },
-  publishButton: { minWidth: 156 },
+  counter: { color: colors.textSubtle, fontSize: 12 },
+  publishButton: { backgroundColor: colors.cobalt, borderRadius: radius.pill, paddingHorizontal: 20, paddingVertical: 10 },
+  publishLabel: { color: colors.white, fontSize: 14, fontWeight: '900' },
+  disabled: { opacity: 0.4 },
   loading: { marginVertical: spacing.xl },
   error: { color: colors.danger, fontSize: 14, lineHeight: 21, marginTop: spacing.md, textAlign: 'center' },
   retryButton: { alignItems: 'center', alignSelf: 'center', backgroundColor: colors.primary, borderRadius: radius.md, marginTop: spacing.lg, paddingHorizontal: spacing.xl, paddingVertical: spacing.md },
-  retryLabel: { color: colors.primaryInk, fontSize: 15, fontWeight: '900' },
-  list: { gap: spacing.lg },
-  postCard: { overflow: 'hidden', paddingTop: 52 },
-  postCardSignal: { backgroundColor: colors.signalSoft, borderColor: '#CDE987', transform: [{ rotate: '0.45deg' }] },
-  postCardCobalt: { backgroundColor: colors.cobaltSoft, borderColor: '#BFC9FF', transform: [{ rotate: '-0.45deg' }] },
-  postIndex: { color: 'rgba(23,24,27,0.12)', fontSize: 50, fontWeight: '900', letterSpacing: -3, position: 'absolute', right: 15, top: 0 },
-  authorRow: { alignItems: 'center', flexDirection: 'row', gap: spacing.md },
-  authorLink: { alignItems: 'center', flex: 1, flexDirection: 'row', gap: spacing.md },
-  authorCopy: { flex: 1 },
-  name: { color: colors.text, fontSize: 17, fontWeight: '900', letterSpacing: -0.25 },
-  meta: { color: colors.textMuted, fontSize: 13, marginTop: 3 },
-  postBody: { color: colors.text, fontSize: 20, fontWeight: '600', letterSpacing: -0.3, lineHeight: 29, marginVertical: spacing.lg },
-  actions: { alignItems: 'center', borderTopColor: colors.border, borderTopWidth: StyleSheet.hairlineWidth, flexDirection: 'row', gap: spacing.sm, paddingTop: spacing.md },
-  actionButton: { alignItems: 'center', backgroundColor: 'rgba(255,255,255,0.65)', borderRadius: radius.pill, flexDirection: 'row', gap: 7, minHeight: 42, minWidth: 62, paddingHorizontal: 13, paddingVertical: 8 },
-  actionButtonActive: { backgroundColor: colors.primarySoft },
-  actionIcon: { color: colors.textMuted, fontSize: 18, fontWeight: '700' },
-  action: { color: colors.textMuted, fontSize: 14, fontWeight: '800' },
-  actionActive: { color: colors.danger },
-  actionSpacer: { flex: 1 },
-  shareButton: { alignItems: 'center', flexDirection: 'row', gap: 5, paddingHorizontal: spacing.sm, paddingVertical: 7 },
-  shareIcon: { color: colors.primary, fontSize: 15, fontWeight: '900' },
-  shareLabel: { color: colors.textMuted, fontSize: 13, fontWeight: '800' },
-  loadMoreButton: { alignItems: 'center', alignSelf: 'center', backgroundColor: colors.surfaceRaised, borderColor: colors.borderStrong, borderRadius: radius.pill, borderWidth: 1, marginTop: spacing.xl, minWidth: 210, paddingHorizontal: spacing.xl, paddingVertical: spacing.md },
-  loadMoreDisabled: { opacity: 0.6 },
-  loadMoreLabel: { color: colors.primary, fontSize: 15, fontWeight: '900' },
-  feedEnd: { color: colors.textSubtle, fontSize: 14, fontWeight: '700', marginTop: spacing.xl, textAlign: 'center' },
+  retryLabel: { color: colors.white, fontSize: 15, fontWeight: '900' },
+  timeline: { marginHorizontal: -18 },
+  post: { alignItems: 'flex-start', backgroundColor: colors.surface, borderBottomColor: colors.border, borderBottomWidth: StyleSheet.hairlineWidth, flexDirection: 'row', gap: spacing.md, paddingHorizontal: 18, paddingVertical: 14 },
+  postMain: { flex: 1 },
+  authorLine: { alignItems: 'baseline', flexDirection: 'row', gap: 5 },
+  name: { color: colors.text, fontSize: 15, fontWeight: '900', maxWidth: '48%' },
+  meta: { color: colors.textSubtle, flex: 1, fontSize: 13 },
+  postTopic: { color: colors.cobalt, fontSize: 12, fontWeight: '800', marginTop: 3 },
+  postBody: { color: colors.text, fontSize: 16, lineHeight: 22, marginTop: 5 },
+  actions: { alignItems: 'center', flexDirection: 'row', gap: 34, marginTop: 10 },
+  actionButton: { alignItems: 'center', flexDirection: 'row', gap: 5, minHeight: 28 },
+  actionIcon: { color: colors.textMuted, fontSize: 18 },
+  actionText: { color: colors.textMuted, fontSize: 13, fontWeight: '700' },
+  actionLiked: { color: colors.danger },
+  shareButton: { marginLeft: 'auto', paddingHorizontal: spacing.sm, paddingVertical: 3 },
+  shareIcon: { color: colors.textMuted, fontSize: 17, fontWeight: '900' },
+  loadMoreButton: { alignItems: 'center', alignSelf: 'center', borderColor: colors.borderStrong, borderRadius: radius.pill, borderWidth: 1, marginTop: spacing.lg, minWidth: 150, paddingHorizontal: spacing.xl, paddingVertical: spacing.md },
+  loadMoreLabel: { color: colors.primary, fontSize: 14, fontWeight: '900' },
+  feedEnd: { color: colors.textSubtle, fontSize: 13, marginTop: spacing.lg, textAlign: 'center' },
 });
