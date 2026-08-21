@@ -6,6 +6,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { GiftPicker } from '@/components/GiftPicker';
 import { Avatar, Muted } from '@/components/ui';
 import { useSession } from '@/context/SessionContext';
+import { markConversationRead } from '@/features/messages/api';
 import {
   blockProfile,
   loadConversationMessages,
@@ -41,9 +42,16 @@ export default function DirectConversationScreen() {
     if (!conversationId) return;
     let active = true;
     void loadConversationMessages(conversationId)
-      .then((data) => { if (active) setMessages(data); })
+      .then((data) => {
+        if (!active) return;
+        setMessages(data);
+        void markConversationRead(conversationId).catch(() => undefined);
+      })
       .catch((nextError: unknown) => { if (active) setError(nextError instanceof Error ? nextError.message : 'Could not load messages.'); });
-    const unsubscribe = subscribeToConversationMessages(conversationId, addMessage);
+    const unsubscribe = subscribeToConversationMessages(conversationId, (message) => {
+      addMessage(message);
+      void markConversationRead(conversationId).catch(() => undefined);
+    });
     return () => {
       active = false;
       unsubscribe();

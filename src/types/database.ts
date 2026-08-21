@@ -355,6 +355,7 @@ export type Database = {
         Row: {
           author_id: string
           body: string
+          club_id: string | null
           created_at: string
           deleted_at: string | null
           id: string
@@ -364,6 +365,7 @@ export type Database = {
         Insert: {
           author_id: string
           body: string
+          club_id?: string | null
           created_at?: string
           deleted_at?: string | null
           id?: string
@@ -373,6 +375,7 @@ export type Database = {
         Update: {
           author_id?: string
           body?: string
+          club_id?: string | null
           created_at?: string
           deleted_at?: string | null
           id?: string
@@ -385,6 +388,13 @@ export type Database = {
             columns: ["author_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "posts_club_id_fkey"
+            columns: ["club_id"]
+            isOneToOne: false
+            referencedRelation: "clubs"
             referencedColumns: ["id"]
           },
         ]
@@ -731,6 +741,19 @@ export type Database = {
         Returns: boolean
       }
       cancel_quick_chat_search: { Args: never; Returns: undefined }
+      create_club: {
+        Args: {
+          club_description: string
+          club_name: string
+          club_topic: string
+          member_rooms?: boolean
+        }
+        Returns: string
+      }
+      create_club_post: {
+        Args: { post_body: string; target_club_id: string }
+        Returns: string
+      }
       complete_onboarding: {
         Args: {
           onboarding_birth_date: string
@@ -770,6 +793,47 @@ export type Database = {
           lifetime_spent: number
         }[]
       }
+      get_club_detail: {
+        Args: { target_club_id: string }
+        Returns: {
+          allow_member_rooms: boolean
+          club_id: string
+          created_at: string
+          description: string
+          is_member: boolean
+          live_listener_count: number
+          live_room_id: string | null
+          live_room_title: string | null
+          member_count: number
+          member_role: string | null
+          name: string
+          owner_display_name: string | null
+          owner_handle: string | null
+          owner_id: string | null
+          slug: string
+          topic: string
+        }[]
+      }
+      get_club_posts: {
+        Args: {
+          before_created_at?: string
+          post_limit?: number
+          target_club_id: string
+        }
+        Returns: {
+          author_country_code: string | null
+          author_display_name: string | null
+          author_handle: string | null
+          author_id: string
+          body: string
+          created_at: string
+          like_count: number
+          liked_by_me: boolean
+          post_id: string
+          reply_count: number
+          topic: string | null
+        }[]
+      }
       get_feed: {
         Args: { before_created_at?: string; feed_limit?: number }
         Returns: {
@@ -789,6 +853,22 @@ export type Database = {
       get_or_create_direct_conversation: {
         Args: { other_user_id: string }
         Returns: string
+      }
+      get_following_feed: {
+        Args: { before_created_at?: string; feed_limit?: number }
+        Returns: {
+          author_country_code: string | null
+          author_display_name: string | null
+          author_handle: string | null
+          author_id: string
+          body: string
+          created_at: string
+          like_count: number
+          liked_by_me: boolean
+          post_id: string
+          reply_count: number
+          topic: string | null
+        }[]
       }
       get_privacy_settings: {
         Args: never
@@ -855,6 +935,18 @@ export type Database = {
           partner_display_name: string
           partner_handle: string
           partner_id: string
+          unread_count: number
+        }[]
+      }
+      list_club_members: {
+        Args: { member_limit?: number; target_club_id: string }
+        Returns: {
+          country_code: string | null
+          display_name: string | null
+          handle: string | null
+          joined_at: string
+          role: string
+          user_id: string
         }[]
       }
       list_gift_catalog: {
@@ -913,6 +1005,18 @@ export type Database = {
         Args: { raised: boolean; target_room_id: string }
         Returns: undefined
       }
+      mark_conversation_read: {
+        Args: { target_conversation_id: string }
+        Returns: undefined
+      }
+      manage_club_member: {
+        Args: {
+          management_action: string
+          target_club_id: string
+          target_user_id: string
+        }
+        Returns: undefined
+      }
       set_message_permission: {
         Args: { new_permission: string }
         Returns: string
@@ -928,6 +1032,19 @@ export type Database = {
           balance: number
           coin_cost: number
           gift_id: string
+        }[]
+      }
+      search_message_profiles: {
+        Args: { profile_limit?: number; profile_query?: string }
+        Returns: {
+          bio: string | null
+          country_code: string | null
+          display_name: string | null
+          follows_me: boolean
+          handle: string | null
+          is_following: boolean
+          languages: string[]
+          user_id: string
         }[]
       }
       start_club_room: {

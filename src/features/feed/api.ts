@@ -37,6 +37,15 @@ export async function loadFeed(beforeCreatedAt?: string) {
   return data as FeedPost[];
 }
 
+export async function loadFollowingFeed(beforeCreatedAt?: string) {
+  const { data, error } = await client().rpc('get_following_feed', {
+    feed_limit: 30,
+    before_created_at: beforeCreatedAt,
+  });
+  if (error) throw error;
+  return data as FeedPost[];
+}
+
 export async function createPost(authorId: string, body: string, topic?: string) {
   const { data, error } = await client()
     .from('posts')

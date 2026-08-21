@@ -12,6 +12,7 @@ export default function ClubsScreen() {
   const [busyClubId, setBusyClubId] = useState<string | null>(null);
   const [hostingClubId, setHostingClubId] = useState<string | null>(null);
   const [roomTitle, setRoomTitle] = useState('');
+  const [query, setQuery] = useState('');
   const [error, setError] = useState('');
 
   const refresh = useCallback(async () => {
@@ -59,7 +60,11 @@ export default function ClubsScreen() {
     }
   };
 
-  const liveClubs = clubs.filter((club) => club.live_room_id);
+  const normalizedQuery = query.trim().toLowerCase();
+  const visibleClubs = normalizedQuery
+    ? clubs.filter((club) => [club.name, club.description, club.topic].some((value) => value.toLowerCase().includes(normalizedQuery)))
+    : clubs;
+  const liveClubs = visibleClubs.filter((club) => club.live_room_id);
 
   return (
     <Screen>
@@ -69,7 +74,22 @@ export default function ClubsScreen() {
           <Heading compact>Find your room.</Heading>
           <Muted>Drop into conversations happening around the world.</Muted>
         </View>
-        <View style={styles.waveMark}><Text style={styles.waveGlyph}>≋</Text></View>
+        <Pressable accessibilityLabel="Create a club" accessibilityRole="button" onPress={() => router.push('/clubs/create')} style={styles.createButton}>
+          <Text style={styles.createGlyph}>＋</Text>
+        </Pressable>
+      </View>
+      <View style={styles.searchWrap}>
+        <Text style={styles.searchGlyph}>⌕</Text>
+        <TextInput
+          accessibilityLabel="Search clubs"
+          autoCapitalize="none"
+          onChangeText={setQuery}
+          placeholder="Search communities or topics"
+          placeholderTextColor={colors.textSubtle}
+          style={styles.searchInput}
+          value={query}
+        />
+        {query ? <Pressable accessibilityLabel="Clear search" onPress={() => setQuery('')}><Text style={styles.clearSearch}>×</Text></Pressable> : null}
       </View>
       {loading ? <ActivityIndicator color={colors.primary} style={styles.loading} /> : null}
       {error ? <Text style={styles.error}>{error}</Text> : null}
@@ -96,17 +116,25 @@ export default function ClubsScreen() {
         ))}
       </View>
 
-      {!loading && clubs.length === 0 ? <EmptyState description="New communities will show up here." glyph="◎" title="No clubs yet" /> : null}
-      {clubs.length > 0 ? <SectionHeader title="Explore communities" /> : null}
+      {!loading && clubs.length === 0 ? <EmptyState description="Create the first community and give people a place to return to." glyph="◎" title="No clubs yet" /> : null}
+      {!loading && clubs.length > 0 && visibleClubs.length === 0 ? <EmptyState description="Try another name or topic." glyph="⌕" title="No matching clubs" /> : null}
+      {visibleClubs.length > 0 ? <SectionHeader title={normalizedQuery ? 'Search results' : 'Explore communities'} /> : null}
       <View style={styles.list}>
-        {clubs.map((club) => (
+        {visibleClubs.map((club) => (
           <Card key={club.club_id} style={styles.clubCard}>
             <View style={styles.cardTop}>
-              <View style={styles.clubMark}><Text style={styles.clubMarkText}>{club.name.slice(0, 1)}</Text></View>
-              <View style={styles.clubIdentity}>
-                <Text style={styles.clubName}>{club.name}</Text>
-                <Text style={styles.clubMeta}>{club.member_count} members · {club.topic}</Text>
-              </View>
+              <Pressable
+                accessibilityLabel={`Open ${club.name}`}
+                accessibilityRole="button"
+                onPress={() => router.push({ pathname: '/clubs/[clubId]', params: { clubId: club.club_id } })}
+                style={styles.clubLink}
+              >
+                <View style={styles.clubMark}><Text style={styles.clubMarkText}>{club.name.slice(0, 1)}</Text></View>
+                <View style={styles.clubIdentity}>
+                  <Text style={styles.clubName}>{club.name}</Text>
+                  <Text style={styles.clubMeta}>{club.member_count} members · {club.topic}</Text>
+                </View>
+              </Pressable>
               <Pressable
                 accessibilityRole="button"
                 disabled={busyClubId === club.club_id}
@@ -116,7 +144,9 @@ export default function ClubsScreen() {
                 <Text style={[styles.joinLabel, club.is_member && styles.joinedLabel]}>{club.is_member ? 'Joined' : 'Join'}</Text>
               </Pressable>
             </View>
-            <Muted style={styles.description}>{club.description}</Muted>
+            <Pressable onPress={() => router.push({ pathname: '/clubs/[clubId]', params: { clubId: club.club_id } })}>
+              <Muted style={styles.description}>{club.description}</Muted>
+            </Pressable>
 
             {club.is_member && !club.live_room_id ? (
               hostingClubId === club.club_id ? (
@@ -155,8 +185,12 @@ export default function ClubsScreen() {
 const styles = StyleSheet.create({
   pageHeader: { alignItems: 'center', flexDirection: 'row', gap: spacing.lg },
   headerCopy: { flex: 1, gap: spacing.sm },
-  waveMark: { alignItems: 'center', backgroundColor: colors.accentSoft, borderColor: '#552534', borderRadius: 24, borderWidth: 1, height: 58, justifyContent: 'center', width: 58 },
-  waveGlyph: { color: colors.accent, fontSize: 30, fontWeight: '900', transform: [{ rotate: '90deg' }] },
+  createButton: { alignItems: 'center', backgroundColor: colors.primarySoft, borderColor: '#304377', borderRadius: 22, borderWidth: 1, height: 50, justifyContent: 'center', width: 50 },
+  createGlyph: { color: colors.primary, fontSize: 26, fontWeight: '500' },
+  searchWrap: { alignItems: 'center', backgroundColor: colors.surfaceSoft, borderColor: colors.border, borderRadius: radius.md, borderWidth: 1, flexDirection: 'row', gap: spacing.sm, marginTop: spacing.xl, paddingHorizontal: spacing.md },
+  searchGlyph: { color: colors.textSubtle, fontSize: 20 },
+  searchInput: { color: colors.text, flex: 1, fontSize: 14, minHeight: 50 },
+  clearSearch: { color: colors.textMuted, fontSize: 22, paddingHorizontal: spacing.xs },
   loading: { marginVertical: spacing.xl },
   error: { color: colors.danger, fontSize: 13, marginTop: spacing.md, textAlign: 'center' },
   list: { gap: spacing.md },
@@ -164,6 +198,7 @@ const styles = StyleSheet.create({
   liveRail: { backgroundColor: colors.accent, bottom: 18, borderRadius: 3, left: 0, position: 'absolute', top: 18, width: 4 },
   clubCard: { gap: spacing.md },
   cardTop: { alignItems: 'center', flexDirection: 'row', gap: spacing.md, justifyContent: 'space-between' },
+  clubLink: { alignItems: 'center', flex: 1, flexDirection: 'row', gap: spacing.md },
   topic: { color: colors.textMuted, fontSize: 12, fontWeight: '700' },
   roomTitle: { color: colors.text, fontSize: 23, fontWeight: '900', letterSpacing: -0.6, lineHeight: 29 },
   listenerStack: { alignItems: 'center', flexDirection: 'row', minHeight: 24 },

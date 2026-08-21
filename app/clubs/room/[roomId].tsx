@@ -11,6 +11,7 @@ import {
   joinClubRoom,
   leaveClubRoom,
   loadClubRoom,
+  loadOwnClubRole,
   loadRoomParticipants,
   moderateRoomParticipant,
   setRoomHandRaised,
@@ -34,6 +35,9 @@ export default function ClubRoomScreen() {
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
   const [giftRecipient, setGiftRecipient] = useState<RoomParticipant | null>(null);
+  const [clubRole, setClubRole] = useState<'owner' | 'moderator' | 'member' | null>(null);
+  const [appIsActive, setAppIsActive] = useState(AppState.currentState === 'active');
+  const [hasJoined, setHasJoined] = useState(false);
   const [error, setError] = useState('');
 
   const refresh = useCallback(async () => {
@@ -42,18 +46,23 @@ export default function ClubRoomScreen() {
       const [nextRoom, nextParticipants] = await Promise.all([loadClubRoom(roomId), loadRoomParticipants(roomId)]);
       setRoom(nextRoom);
       setParticipants(nextParticipants);
+      if (user) setClubRole(await loadOwnClubRole(nextRoom.club_id, user.id));
     } catch (nextError) {
       setError(nextError instanceof Error ? nextError.message : 'Could not load this room.');
     } finally {
       setLoading(false);
     }
-  }, [roomId]);
+  }, [roomId, user]);
 
   useEffect(() => {
     if (!roomId) return;
     let active = true;
     void joinClubRoom(roomId)
-      .then(() => { if (active) return refresh(); })
+      .then(() => {
+        if (!active) return;
+        setHasJoined(true);
+        return refresh();
+      })
       .catch((nextError: unknown) => {
         if (active) {
           setError(nextError instanceof Error ? nextError.message : 'Could not join this room.');
@@ -69,10 +78,11 @@ export default function ClubRoomScreen() {
 
   const ownParticipant = participants.find((participant) => participant.user_id === user?.id);
   const isHost = ownParticipant?.role === 'host';
+  const canModerate = isHost || clubRole === 'owner' || clubRole === 'moderator';
   const raised = Boolean(ownParticipant?.hand_raised_at);
   const stage = participants.filter((participant) => participant.role === 'host' || participant.role === 'speaker');
   const audience = participants.filter((participant) => participant.role === 'listener');
-  const audio = useClubRoomAudio(room?.status === 'live' ? roomId : undefined, ownParticipant?.role);
+  const audio = useClubRoomAudio(room?.status === 'live' && appIsActive ? roomId : undefined, ownParticipant?.role);
   const giftRecipientName = giftRecipient?.display_name || (giftRecipient?.handle ? `@${giftRecipient.handle}` : 'Speaker');
 
   useEffect(() => {
@@ -100,22 +110,45 @@ export default function ClubRoomScreen() {
     };
     const subscription = AppState.addEventListener('change', (nextState) => {
       if (previousState === 'active' && nextState !== 'active') {
-        enqueue(() => disconnectRoomAudio(roomId));
+        setAppIsActive(false);
+        enqueue(async () => {
+          await disconnectRoomAudio(roomId).catch(() => undefined);
+          await leaveClubRoom(roomId).catch(() => undefined);
+        });
       } else if (previousState !== 'active' && nextState === 'active') {
         enqueue(async () => {
           await joinClubRoom(roomId);
           await refresh();
+          setAppIsActive(true);
         });
       }
       previousState = nextState;
     });
     return () => {
       subscription.remove();
-      enqueue(() => disconnectRoomAudio(roomId));
+      enqueue(async () => {
+        await disconnectRoomAudio(roomId).catch(() => undefined);
+        await leaveClubRoom(roomId).catch(() => undefined);
+      });
     };
   }, [refresh, room?.status, roomId]);
 
-  const audioTitle = !audio.isConfigured
+  useEffect(() => {
+    if (!roomId || !hasJoined || !appIsActive || room?.status !== 'live' || ownParticipant) return;
+    void disconnectRoomAudio(roomId).catch(() => undefined);
+    Alert.alert('You left the room', 'A host or moderator removed you from this conversation.', [
+      {
+        text: 'Back to club',
+        onPress: () => router.replace(room?.club_id
+          ? { pathname: '/clubs/[clubId]', params: { clubId: room.club_id } }
+          : '/(tabs)/clubs'),
+      },
+    ]);
+  }, [appIsActive, hasJoined, ownParticipant, room?.club_id, room?.status, roomId]);
+
+  const audioTitle = room?.status !== 'live'
+    ? 'This room has ended'
+    : !audio.isConfigured
     ? 'Live audio needs Cloudflare credentials'
     : audio.status === 'connecting'
       ? 'Connecting live audio…'
@@ -123,7 +156,9 @@ export default function ClubRoomScreen() {
         ? 'Live audio connected'
         : 'Live audio unavailable';
 
-  const audioDescription = !audio.isConfigured
+  const audioDescription = room?.status !== 'live'
+    ? 'The conversation is closed. Head back to the club to see what is happening next.'
+    : !audio.isConfigured
     ? 'Room presence and moderation work now. Add the Cloudflare Realtime credentials to activate voice.'
     : audio.status === 'connected'
       ? ownParticipant?.role === 'listener'
@@ -145,7 +180,9 @@ export default function ClubRoomScreen() {
         await disconnectRoomAudio(roomId);
         await leaveClubRoom(roomId);
       }
-      router.replace('/(tabs)/clubs');
+      router.replace(room?.club_id
+        ? { pathname: '/clubs/[clubId]', params: { clubId: room.club_id } }
+        : '/(tabs)/clubs');
     } catch (nextError) {
       setError(nextError instanceof Error ? nextError.message : 'Could not leave this room.');
       setBusy(false);
@@ -153,6 +190,10 @@ export default function ClubRoomScreen() {
   };
 
   const confirmLeave = () => {
+    if (room?.status !== 'live') {
+      void leave();
+      return;
+    }
     Alert.alert(isHost ? 'End this room?' : 'Leave this room?', isHost ? 'Everyone will be disconnected from the room.' : 'You can rejoin while it is live.', [
       { text: 'Cancel', style: 'cancel' },
       { text: isHost ? 'End room' : 'Leave', style: 'destructive', onPress: () => void leave() },
@@ -200,7 +241,7 @@ export default function ClubRoomScreen() {
     <Screen>
       <View style={styles.topRow}>
         <Pressable accessibilityRole="button" onPress={confirmLeave} style={styles.leaveButton}>
-          <Text style={styles.leaveGlyph}>‹</Text><Text style={styles.leave}>{isHost ? 'End room' : 'Leave quietly'}</Text>
+          <Text style={styles.leaveGlyph}>‹</Text><Text style={styles.leave}>{room?.status !== 'live' ? 'Back to club' : isHost ? 'End room' : 'Leave quietly'}</Text>
         </Pressable>
         <Pill label={room?.status === 'live' ? `Live · ${participants.length}` : 'Ended'} tone={room?.status === 'live' ? 'live' : 'default'} />
       </View>
@@ -254,7 +295,7 @@ export default function ClubRoomScreen() {
                   <Text style={styles.giftLabel}>✦ Gift</Text>
                 </Pressable>
               ) : null}
-              {isHost && participant.role === 'speaker' ? (
+              {canModerate && participant.role === 'speaker' ? (
                 <Pressable accessibilityRole="button" disabled={busy} onPress={() => void moderate(participant, 'move_listener')}>
                   <Text style={styles.moderateAction}>Move to audience</Text>
                 </Pressable>
@@ -283,12 +324,12 @@ export default function ClubRoomScreen() {
                   {participant.hand_raised_at ? <Text style={styles.hand}>Hand raised</Text> : <Muted>Listening</Muted>}
                 </View>
               </Pressable>
-              {isHost && participant.hand_raised_at ? (
+              {canModerate && participant.hand_raised_at ? (
                 <Pressable accessibilityRole="button" disabled={busy} onPress={() => void moderate(participant, 'invite_speaker')} style={styles.inviteButton}>
                   <Text style={styles.inviteLabel}>Invite</Text>
                 </Pressable>
               ) : null}
-              {isHost ? (
+              {canModerate ? (
                 <Pressable accessibilityRole="button" disabled={busy} onPress={() => void moderate(participant, 'remove')} style={styles.removeButton}>
                   <Text style={styles.removeLabel}>Remove</Text>
                 </Pressable>

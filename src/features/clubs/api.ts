@@ -9,9 +9,41 @@ export type ClubSummary = {
   live_room_id: string | null;
   live_room_title: string | null;
   member_count: number;
+  member_role: 'owner' | 'moderator' | 'member' | null;
   name: string;
   slug: string;
   topic: string;
+};
+
+export type ClubDetail = ClubSummary & {
+  allow_member_rooms: boolean;
+  created_at: string;
+  owner_display_name: string | null;
+  owner_handle: string | null;
+  owner_id: string | null;
+};
+
+export type ClubMember = {
+  country_code: string | null;
+  display_name: string | null;
+  handle: string | null;
+  joined_at: string;
+  role: 'owner' | 'moderator' | 'member';
+  user_id: string;
+};
+
+export type ClubPost = {
+  author_country_code: string | null;
+  author_display_name: string | null;
+  author_handle: string | null;
+  author_id: string;
+  body: string;
+  created_at: string;
+  like_count: number;
+  liked_by_me: boolean;
+  post_id: string;
+  reply_count: number;
+  topic: string | null;
 };
 
 export type RoomParticipant = {
@@ -33,7 +65,75 @@ function client() {
 export async function loadClubs() {
   const { data, error } = await client().rpc('list_clubs');
   if (error) throw error;
-  return data as ClubSummary[];
+  return (data as Omit<ClubSummary, 'member_role'>[]).map((club) => ({
+    ...club,
+    member_role: club.is_member ? 'member' as const : null,
+  }));
+}
+
+export async function createClub(input: {
+  allowMemberRooms: boolean;
+  description: string;
+  name: string;
+  topic: string;
+}) {
+  const { data, error } = await client().rpc('create_club', {
+    club_name: input.name,
+    club_description: input.description,
+    club_topic: input.topic,
+    member_rooms: input.allowMemberRooms,
+  });
+  if (error) throw error;
+  return data;
+}
+
+export async function loadClubDetail(clubId: string) {
+  const { data, error } = await client().rpc('get_club_detail', { target_club_id: clubId });
+  if (error) throw error;
+  const detail = (data as ClubDetail[])[0];
+  if (!detail) throw new Error('This club is unavailable.');
+  return detail;
+}
+
+export async function loadClubMembers(clubId: string) {
+  const { data, error } = await client().rpc('list_club_members', {
+    target_club_id: clubId,
+    member_limit: 40,
+  });
+  if (error) throw error;
+  return data as ClubMember[];
+}
+
+export async function loadClubPosts(clubId: string, beforeCreatedAt?: string) {
+  const { data, error } = await client().rpc('get_club_posts', {
+    target_club_id: clubId,
+    post_limit: 30,
+    before_created_at: beforeCreatedAt,
+  });
+  if (error) throw error;
+  return data as ClubPost[];
+}
+
+export async function createClubPost(clubId: string, body: string) {
+  const { data, error } = await client().rpc('create_club_post', {
+    target_club_id: clubId,
+    post_body: body.trim(),
+  });
+  if (error) throw error;
+  return data;
+}
+
+export async function manageClubMember(
+  clubId: string,
+  userId: string,
+  action: 'promote' | 'demote' | 'remove' | 'ban',
+) {
+  const { error } = await client().rpc('manage_club_member', {
+    target_club_id: clubId,
+    target_user_id: userId,
+    management_action: action,
+  });
+  if (error) throw error;
 }
 
 export async function joinClub(clubId: string) {
@@ -60,6 +160,18 @@ export async function loadClubRoom(roomId: string) {
     .single();
   if (error) throw error;
   return data as ClubRoom;
+}
+
+export async function loadOwnClubRole(clubId: string, userId: string) {
+  const { data, error } = await client()
+    .from('club_memberships')
+    .select('role')
+    .eq('club_id', clubId)
+    .eq('user_id', userId)
+    .eq('status', 'active')
+    .maybeSingle();
+  if (error) throw error;
+  return (data?.role as 'owner' | 'moderator' | 'member' | undefined) ?? null;
 }
 
 export async function joinClubRoom(roomId: string) {

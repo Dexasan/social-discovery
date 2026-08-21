@@ -4,10 +4,11 @@ import { ActivityIndicator, Pressable, RefreshControl, Share, StyleSheet, Text, 
 
 import { Avatar, Card, EmptyState, Eyebrow, Heading, Muted, Pill, PrimaryButton, Screen, SectionHeader } from '@/components/ui';
 import { useSession } from '@/context/SessionContext';
-import { createPost, loadFeed, setPostLiked, type FeedPost } from '@/features/feed/api';
+import { createPost, loadFeed, loadFollowingFeed, setPostLiked, type FeedPost } from '@/features/feed/api';
 import { colors, radius, spacing } from '@/theme/tokens';
 
 const topics = ['Random Thoughts', 'Music', 'Study', 'Travel'];
+type FeedMode = 'global' | 'following';
 
 function relativeTime(value: string) {
   const seconds = Math.max(1, Math.round((Date.now() - new Date(value).getTime()) / 1000));
@@ -24,6 +25,7 @@ export default function FeedScreen() {
   const [posts, setPosts] = useState<FeedPost[]>([]);
   const [body, setBody] = useState('');
   const [topic, setTopic] = useState('Random Thoughts');
+  const [feedMode, setFeedMode] = useState<FeedMode>('global');
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -35,7 +37,7 @@ export default function FeedScreen() {
     if (showRefreshIndicator) setRefreshing(true);
     setError('');
     try {
-      const nextPosts = await loadFeed();
+      const nextPosts = await (feedMode === 'following' ? loadFollowingFeed() : loadFeed());
       setPosts(nextPosts);
       setHasMore(nextPosts.length === 30);
     } catch (nextError) {
@@ -44,7 +46,7 @@ export default function FeedScreen() {
       setLoading(false);
       setRefreshing(false);
     }
-  }, []);
+  }, [feedMode]);
 
   useFocusEffect(useCallback(() => {
     void refresh();
@@ -57,7 +59,8 @@ export default function FeedScreen() {
     try {
       await createPost(user.id, body, topic);
       setBody('');
-      await refresh();
+      if (feedMode !== 'global') setFeedMode('global');
+      else await refresh();
     } catch (nextError) {
       setError(nextError instanceof Error ? nextError.message : 'Could not publish this post.');
     } finally {
@@ -85,7 +88,7 @@ export default function FeedScreen() {
     setLoadingMore(true);
     setError('');
     try {
-      const olderPosts = await loadFeed(oldestPost.created_at);
+      const olderPosts = await (feedMode === 'following' ? loadFollowingFeed(oldestPost.created_at) : loadFeed(oldestPost.created_at));
       setPosts((current) => {
         const existingIds = new Set(current.map((item) => item.post_id));
         return [...current, ...olderPosts.filter((item) => !existingIds.has(item.post_id))];
@@ -114,6 +117,25 @@ export default function FeedScreen() {
           <Heading compact>What’s on your mind?</Heading>
         </View>
         <View style={styles.livePulse}><View style={styles.liveDot} /><Text style={styles.liveText}>Live</Text></View>
+      </View>
+
+      <View style={styles.feedModeRow}>
+        {(['global', 'following'] as const).map((mode) => (
+          <Pressable
+            key={mode}
+            accessibilityRole="tab"
+            accessibilityState={{ selected: feedMode === mode }}
+            onPress={() => {
+              if (mode === feedMode) return;
+              setLoading(true);
+              setPosts([]);
+              setFeedMode(mode);
+            }}
+            style={[styles.feedModeButton, feedMode === mode && styles.feedModeSelected]}
+          >
+            <Text style={[styles.feedModeLabel, feedMode === mode && styles.feedModeLabelSelected]}>{mode === 'global' ? 'For everyone' : 'Following'}</Text>
+          </Pressable>
+        ))}
       </View>
 
       <Card style={styles.composerCard}>
@@ -158,7 +180,11 @@ export default function FeedScreen() {
         <Pressable accessibilityRole="button" onPress={() => { setLoading(true); void refresh(); }} style={styles.retryButton}><Text style={styles.retryLabel}>Try again</Text></Pressable>
       ) : null}
       {!loading && !error && posts.length === 0 ? (
-        <EmptyState description="Break the silence with the first thought." glyph="✦" title="A fresh corner of the internet" />
+        <EmptyState
+          description={feedMode === 'following' ? 'Follow people from Quick Chat, Clubs, or the world feed to build this space.' : 'Break the silence with the first thought.'}
+          glyph="✦"
+          title={feedMode === 'following' ? 'Your people will show up here' : 'A fresh corner of the internet'}
+        />
       ) : null}
 
       {posts.length > 0 ? <SectionHeader title="Happening now" /> : null}
@@ -219,6 +245,11 @@ const styles = StyleSheet.create({
   livePulse: { alignItems: 'center', backgroundColor: colors.accentSoft, borderRadius: radius.pill, flexDirection: 'row', gap: 6, paddingHorizontal: 11, paddingVertical: 7 },
   liveDot: { backgroundColor: colors.accent, borderRadius: 4, height: 7, width: 7 },
   liveText: { color: colors.accent, fontSize: 10, fontWeight: '900', letterSpacing: 0.8, textTransform: 'uppercase' },
+  feedModeRow: { backgroundColor: colors.surfaceSoft, borderColor: colors.border, borderRadius: radius.pill, borderWidth: 1, flexDirection: 'row', marginTop: spacing.xl, padding: 4 },
+  feedModeButton: { alignItems: 'center', borderRadius: radius.pill, flex: 1, paddingVertical: 10 },
+  feedModeSelected: { backgroundColor: colors.surfaceRaised },
+  feedModeLabel: { color: colors.textSubtle, fontSize: 12, fontWeight: '800' },
+  feedModeLabelSelected: { color: colors.text },
   composerCard: { backgroundColor: colors.surfaceSoft, gap: spacing.md, marginTop: spacing.xl },
   composeTop: { alignItems: 'flex-start', flexDirection: 'row', gap: spacing.md },
   composeInput: { color: colors.text, flex: 1, fontSize: 16, lineHeight: 23, minHeight: 78, paddingTop: spacing.sm, textAlignVertical: 'top' },

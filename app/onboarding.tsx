@@ -2,11 +2,11 @@ import { useMemo, useState } from 'react';
 import { Redirect, router } from 'expo-router';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
-import { Card, Eyebrow, Heading, Muted, Pill, PrimaryButton, Screen } from '@/components/ui';
+import { Card, Eyebrow, Heading, Muted, PrimaryButton, Screen } from '@/components/ui';
 import { useSession } from '@/context/SessionContext';
 import { colors, radius, spacing } from '@/theme/tokens';
 
-const languageOptions = ['English', 'Spanish', 'German', 'Italian'];
+const languageOptions = ['English', 'Spanish', 'German', 'Italian', 'French', 'Portuguese', 'Hindi', 'Arabic', 'Nepali', 'Japanese'];
 
 function isValidAdultBirthDate(value: string) {
   const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
@@ -37,7 +37,7 @@ export default function OnboardingScreen() {
   const [handle, setHandle] = useState('');
   const [birthDate, setBirthDate] = useState('');
   const [countryCode, setCountryCode] = useState('');
-  const [language, setLanguage] = useState('English');
+  const [languages, setLanguages] = useState(['English']);
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
@@ -53,6 +53,7 @@ export default function OnboardingScreen() {
     normalizedHandle.length >= 3 &&
     isValidAdultBirthDate(birthDate) &&
     countryCodeValid &&
+    languages.length > 0 &&
     termsAccepted &&
     !submitting;
 
@@ -70,7 +71,7 @@ export default function OnboardingScreen() {
         countryCode: normalizedCountryCode,
         displayName: displayName.trim(),
         handle: normalizedHandle,
-        languages: [language],
+        languages,
       });
       router.replace('/(tabs)/quick-chat');
     } catch (nextError) {
@@ -150,17 +151,23 @@ export default function OnboardingScreen() {
           <Text style={styles.error}>Enter a valid birth date. You must be at least 18.</Text>
         ) : null}
 
-        <Text style={styles.label}>Main language</Text>
+        <View style={styles.labelRow}>
+          <Text style={styles.label}>Languages</Text>
+          <Text style={styles.helper}>Choose up to 4</Text>
+        </View>
         <View style={styles.languages}>
           {languageOptions.map((option) => (
             <Pressable
               key={option}
-              accessibilityRole="radio"
-              accessibilityState={{ checked: language === option }}
-              onPress={() => setLanguage(option)}
-              style={[styles.choice, language === option && styles.choiceSelected]}
+              accessibilityRole="checkbox"
+              accessibilityState={{ checked: languages.includes(option), disabled: !languages.includes(option) && languages.length >= 4 }}
+              disabled={!languages.includes(option) && languages.length >= 4}
+              onPress={() => setLanguages((current) => current.includes(option)
+                ? current.length > 1 ? current.filter((item) => item !== option) : current
+                : [...current, option])}
+              style={[styles.choice, languages.includes(option) && styles.choiceSelected, !languages.includes(option) && languages.length >= 4 && styles.choiceDisabled]}
             >
-              <Text style={[styles.choiceText, language === option && styles.choiceTextSelected]}>{option}</Text>
+              <Text style={[styles.choiceText, languages.includes(option) && styles.choiceTextSelected]}>{option}</Text>
             </Pressable>
           ))}
         </View>
@@ -194,6 +201,8 @@ const styles = StyleSheet.create({
   intro: { gap: spacing.md, marginBottom: spacing.xl, marginTop: spacing.xxl },
   form: { backgroundColor: colors.surfaceSoft, gap: spacing.md, marginBottom: spacing.lg },
   label: { color: colors.textMuted, fontSize: 12, fontWeight: '800', marginTop: spacing.xs },
+  labelRow: { alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between' },
+  helper: { color: colors.textSubtle, fontSize: 10.5, fontWeight: '700' },
   input: { backgroundColor: colors.surfaceRaised, borderColor: colors.borderStrong, borderRadius: radius.md, borderWidth: 1, color: colors.text, fontSize: 16, minHeight: 52, paddingHorizontal: spacing.lg },
   handleRow: { alignItems: 'center', backgroundColor: colors.surfaceRaised, borderColor: colors.borderStrong, borderRadius: radius.md, borderWidth: 1, flexDirection: 'row', minHeight: 52, paddingHorizontal: spacing.lg },
   at: { color: colors.primary, fontSize: 17, fontWeight: '800' },
@@ -204,6 +213,7 @@ const styles = StyleSheet.create({
   languages: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
   choice: { backgroundColor: colors.surfaceRaised, borderColor: colors.border, borderRadius: radius.pill, borderWidth: 1, paddingHorizontal: spacing.md, paddingVertical: 9 },
   choiceSelected: { backgroundColor: colors.primarySoft, borderColor: '#344A88' },
+  choiceDisabled: { opacity: 0.4 },
   choiceText: { color: colors.textMuted, fontSize: 13, fontWeight: '700' },
   choiceTextSelected: { color: colors.primary },
   ageRow: { alignItems: 'flex-start', flexDirection: 'row', gap: spacing.md, marginTop: spacing.sm },

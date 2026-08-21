@@ -15,6 +15,7 @@ import {
 import { colors, radius, spacing } from '@/theme/tokens';
 
 type MatchState = 'idle' | 'searching' | 'matched';
+const conversationTopics = ['Surprise me', 'Late Night', 'Music', 'Gaming', 'Languages', 'Study'];
 
 function readableMatchError(error: unknown) {
   const message = error instanceof Error ? error.message : 'Matching failed. Please try again.';
@@ -28,6 +29,7 @@ export default function QuickChatScreen() {
   const [match, setMatch] = useState<MatchResult | null>(null);
   const [partner, setPartner] = useState<PublicProfile | null>(null);
   const [error, setError] = useState('');
+  const [topic, setTopic] = useState('Surprise me');
   const activeSearchRef = useRef(false);
   const pollTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -41,7 +43,10 @@ export default function QuickChatScreen() {
     if (!activeSearchRef.current) return;
 
     try {
-      const result = await joinQuickChat(profile?.languages.length ? profile.languages : ['English']);
+      const result = await joinQuickChat(
+        profile?.languages.length ? profile.languages : ['English'],
+        topic === 'Surprise me' ? undefined : topic,
+      );
       if (!activeSearchRef.current) return;
 
       if (result.match_status === 'matched' && result.session_id && result.conversation_id && result.matched_profile_id) {
@@ -158,6 +163,23 @@ export default function QuickChatScreen() {
                 : 'Start with a conversation, not a profile. Keep the connection only if it clicks.'}
             </Muted>
           </View>
+          <View style={styles.topicSection}>
+            <Text style={styles.topicLabel}>What are you up for?</Text>
+            <View style={styles.topicChoices}>
+              {conversationTopics.map((option) => (
+                <Pressable
+                  key={option}
+                  accessibilityRole="radio"
+                  accessibilityState={{ checked: topic === option, disabled: matchState === 'searching' }}
+                  disabled={matchState === 'searching'}
+                  onPress={() => setTopic(option)}
+                  style={[styles.topicChoice, topic === option && styles.topicChoiceSelected]}
+                >
+                  <Text style={[styles.topicChoiceText, topic === option && styles.topicChoiceTextSelected]}>{option}</Text>
+                </Pressable>
+              ))}
+            </View>
+          </View>
           {matchState === 'searching' ? (
             <Pressable onPress={() => void cancelSearch()} style={styles.secondaryButton}>
               <Text style={styles.secondaryText}>Cancel search</Text>
@@ -184,6 +206,7 @@ export default function QuickChatScreen() {
       <SectionHeader title="Your matching lane" />
       <View style={styles.preferenceRow}>
         {(profile?.languages ?? ['English']).map((language) => <Pill key={language} label={language} />)}
+        <Pill label={topic === 'Surprise me' ? 'Any topic' : topic} tone="accent" />
         <Pill label="Any country" />
       </View>
     </Screen>
@@ -212,6 +235,13 @@ const styles = StyleSheet.create({
   safetyRow: { alignItems: 'center', alignSelf: 'center', flexDirection: 'row', gap: spacing.sm },
   safetyIcon: { color: colors.success, fontSize: 12, fontWeight: '900' },
   safetyNote: { color: colors.textSubtle, fontSize: 10.5, fontWeight: '600', textAlign: 'center' },
+  topicSection: { gap: spacing.sm },
+  topicLabel: { color: colors.textMuted, fontSize: 11, fontWeight: '800', textAlign: 'center', textTransform: 'uppercase' },
+  topicChoices: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm, justifyContent: 'center' },
+  topicChoice: { backgroundColor: colors.surfaceRaised, borderColor: colors.border, borderRadius: radius.pill, borderWidth: 1, paddingHorizontal: 11, paddingVertical: 7 },
+  topicChoiceSelected: { backgroundColor: colors.primarySoft, borderColor: '#344A88' },
+  topicChoiceText: { color: colors.textMuted, fontSize: 10.5, fontWeight: '800' },
+  topicChoiceTextSelected: { color: colors.primary },
   preferenceRow: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
   quickFacts: { alignItems: 'center', backgroundColor: colors.surface, borderColor: colors.border, borderRadius: radius.lg, borderWidth: 1, flexDirection: 'row', justifyContent: 'space-evenly', marginTop: spacing.lg, paddingVertical: spacing.lg },
   fact: { alignItems: 'center', flex: 1, gap: 3 },

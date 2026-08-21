@@ -6,7 +6,6 @@
     "orientation": "portrait",
     "userInterfaceStyle": "dark",
     "scheme": "socialdiscovery",
-    "newArchEnabled": true,
     "runtimeVersion": {
       "policy": "appVersion"
     },
