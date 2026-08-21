@@ -202,6 +202,6 @@ const styles = StyleSheet.create({
   safetyTitle: { color: colors.text, fontSize: 17, fontWeight: '900' },
   chevron: { color: colors.textSubtle, fontSize: 24 },
   account: { alignItems: 'center', gap: spacing.md, marginTop: spacing.xl },
-  signOutButton: { backgroundColor: colors.dangerSoft, borderColor: '#F2B8C5', borderRadius: radius.pill, borderWidth: 1, paddingHorizontal: spacing.xl, paddingVertical: spacing.md },
+  signOutButton: { backgroundColor: colors.dangerSoft, borderColor: '#FFB9A7', borderRadius: radius.pill, borderWidth: 1, paddingHorizontal: spacing.xl, paddingVertical: spacing.md },
   signOutText: { color: colors.danger, fontSize: 16, fontWeight: '800' },
 });

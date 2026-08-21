@@ -206,7 +206,7 @@ const styles = StyleSheet.create({
   sectionHeader: { alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between', marginBottom: spacing.md, marginTop: spacing.xl },
   sectionTitle: { color: colors.text, fontSize: 22, fontWeight: '900', letterSpacing: -0.7 },
   iconButton: { alignItems: 'center', backgroundColor: colors.surfaceRaised, borderColor: colors.border, borderRadius: 18, borderWidth: 1, height: 52, justifyContent: 'center', width: 52 },
-  iconButtonDanger: { backgroundColor: colors.dangerSoft, borderColor: '#F2B8C5' },
+  iconButtonDanger: { backgroundColor: colors.dangerSoft, borderColor: '#FFB9A7' },
   iconGlyph: { color: colors.text, fontSize: 22, fontWeight: '800' },
   iconGlyphDanger: { color: colors.danger },
   pressed: { opacity: 0.7, transform: [{ scale: 0.96 }] },
