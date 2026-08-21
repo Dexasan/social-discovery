@@ -65,7 +65,7 @@ export default function MessagesScreen() {
       ) : null}
       {conversations.length > 0 ? <SectionHeader action={totalUnread > 0 ? <View style={styles.unreadSummary}><Text style={styles.unreadSummaryText}>{totalUnread} new</Text></View> : undefined} title="Recent conversations" /> : null}
       <View style={styles.list}>
-        {conversations.map((chat) => {
+        {conversations.map((chat, index) => {
           const name = chat.partner_display_name || (chat.partner_handle ? `@${chat.partner_handle}` : 'Connection');
           return (
             <Pressable
@@ -77,7 +77,7 @@ export default function MessagesScreen() {
               })}
               style={({ pressed }) => pressed && styles.pressed}
             >
-              <Card style={[styles.chat, chat.unread_count > 0 && styles.unreadChat]}>
+              <Card style={[styles.chat, index % 3 === 0 && styles.chatSignal, index % 3 === 1 && styles.chatCobalt, chat.unread_count > 0 && styles.unreadChat]}>
                 <View><Avatar label={name} size={52} /><View style={styles.presence} /></View>
                 <View style={styles.copy}>
                   <Text style={styles.name}>{name}</Text>
@@ -98,24 +98,26 @@ export default function MessagesScreen() {
 
 const styles = StyleSheet.create({
   headerRow: { alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between' },
-  composeMark: { alignItems: 'center', backgroundColor: colors.primary, borderRadius: 22, height: 44, justifyContent: 'center', width: 44 },
-  composeGlyph: { color: colors.primaryInk, fontSize: 23, fontWeight: '700' },
+  composeMark: { alignItems: 'center', backgroundColor: colors.signal, borderRadius: 20, height: 58, justifyContent: 'center', transform: [{ rotate: '4deg' }], width: 58 },
+  composeGlyph: { color: colors.primary, fontSize: 29, fontWeight: '700' },
   loading: { marginVertical: spacing.xl },
-  error: { color: colors.danger, fontSize: 13, marginTop: spacing.lg, textAlign: 'center' },
-  list: { gap: spacing.sm },
-  chat: { alignItems: 'center', backgroundColor: colors.surface, flexDirection: 'row', gap: spacing.md, paddingVertical: 14 },
-  unreadChat: { backgroundColor: colors.primarySoft, borderColor: '#F3B5E8' },
+  error: { color: colors.danger, fontSize: 14, lineHeight: 21, marginTop: spacing.lg, textAlign: 'center' },
+  list: { gap: spacing.md },
+  chat: { alignItems: 'center', backgroundColor: colors.surface, borderRadius: 24, flexDirection: 'row', gap: spacing.md, minHeight: 86, paddingVertical: 16 },
+  chatSignal: { backgroundColor: colors.signalSoft, borderColor: '#CDE987', transform: [{ rotate: '-0.25deg' }] },
+  chatCobalt: { backgroundColor: colors.cobaltSoft, borderColor: '#BFC9FF', transform: [{ rotate: '0.25deg' }] },
+  unreadChat: { borderColor: colors.accent, borderWidth: 2 },
   copy: { flex: 1, gap: 3 },
-  name: { color: colors.text, fontSize: 15, fontWeight: '900', letterSpacing: -0.2 },
-  preview: { color: colors.textSubtle, fontSize: 13, lineHeight: 19 },
+  name: { color: colors.text, fontSize: 18, fontWeight: '900', letterSpacing: -0.3 },
+  preview: { color: colors.textMuted, fontSize: 15, lineHeight: 21 },
   unreadPreview: { color: colors.textMuted, fontWeight: '700' },
   presence: { backgroundColor: colors.success, borderColor: colors.surfaceSoft, borderRadius: 5, borderWidth: 2, bottom: 0, height: 11, position: 'absolute', right: 0, width: 11 },
   trailing: { alignItems: 'flex-end', gap: 5 },
-  time: { color: colors.textSubtle, fontSize: 10.5, fontWeight: '700' },
+  time: { color: colors.textSubtle, fontSize: 12, fontWeight: '800' },
   chevron: { color: colors.textSubtle, fontSize: 22, fontWeight: '300' },
-  unreadSummary: { backgroundColor: colors.primarySoft, borderRadius: 999, paddingHorizontal: 10, paddingVertical: 6 },
-  unreadSummaryText: { color: colors.primary, fontSize: 10, fontWeight: '900', textTransform: 'uppercase' },
-  unreadBadge: { alignItems: 'center', backgroundColor: colors.primary, borderRadius: 11, height: 22, justifyContent: 'center', minWidth: 22, paddingHorizontal: 6 },
-  unreadBadgeText: { color: colors.primaryInk, fontSize: 10, fontWeight: '900' },
+  unreadSummary: { backgroundColor: colors.accentSoft, borderRadius: 999, paddingHorizontal: 12, paddingVertical: 8 },
+  unreadSummaryText: { color: colors.danger, fontSize: 12, fontWeight: '900', textTransform: 'uppercase' },
+  unreadBadge: { alignItems: 'center', backgroundColor: colors.accent, borderRadius: 13, height: 26, justifyContent: 'center', minWidth: 26, paddingHorizontal: 7 },
+  unreadBadgeText: { color: colors.white, fontSize: 12, fontWeight: '900' },
   pressed: { opacity: 0.72, transform: [{ scale: 0.99 }] },
 });

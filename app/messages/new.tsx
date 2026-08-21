@@ -127,8 +127,8 @@ const styles = StyleSheet.create({
   personCopy: { flex: 1, gap: 3 },
   nameRow: { alignItems: 'center', flexDirection: 'row', gap: spacing.sm },
   name: { color: colors.text, flexShrink: 1, fontSize: 14, fontWeight: '900' },
-  handle: { color: colors.textSubtle, fontSize: 10.5, fontWeight: '700' },
-  bio: { color: colors.textMuted, fontSize: 11.5 },
+  handle: { color: colors.textSubtle, fontSize: 13, fontWeight: '700' },
+  bio: { color: colors.textMuted, fontSize: 14 },
   arrow: { color: colors.primary, fontSize: 25, fontWeight: '300' },
   pressed: { opacity: 0.72, transform: [{ scale: 0.99 }] },
 });

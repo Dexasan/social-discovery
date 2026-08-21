@@ -113,8 +113,8 @@ export default function FeedScreen() {
     <Screen refreshControl={<RefreshControl colors={[colors.primary]} onRefresh={() => void refresh(true)} progressBackgroundColor={colors.surfaceRaised} refreshing={refreshing} tintColor={colors.primary} />}>
       <View style={styles.pageHeader}>
         <View>
-          <Eyebrow>YAPPIE · THE WORLD IS TALKING</Eyebrow>
-          <Heading compact>What’s everybody saying?</Heading>
+          <Eyebrow>OPEN FREQUENCY</Eyebrow>
+          <Heading compact>The internet, with a pulse.</Heading>
         </View>
         <View style={styles.livePulse}><View style={styles.liveDot} /><Text style={styles.liveText}>Live</Text></View>
       </View>
@@ -189,10 +189,11 @@ export default function FeedScreen() {
 
       {posts.length > 0 ? <SectionHeader title="Happening now" /> : null}
       <View style={styles.list}>
-        {posts.map((post) => {
+        {posts.map((post, index) => {
           const authorName = post.author_display_name || (post.author_handle ? `@${post.author_handle}` : 'Community member');
           return (
-            <Card key={post.post_id}>
+            <Card key={post.post_id} style={[styles.postCard, index % 3 === 0 && styles.postCardSignal, index % 3 === 1 && styles.postCardCobalt]}>
+              <Text style={styles.postIndex}>{String(index + 1).padStart(2, '0')}</Text>
               <View style={styles.authorRow}>
                 <Pressable
                   accessibilityLabel={`Open ${authorName}'s profile`}
@@ -241,50 +242,54 @@ export default function FeedScreen() {
 }
 
 const styles = StyleSheet.create({
-  pageHeader: { alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between' },
+  pageHeader: { alignItems: 'flex-start', flexDirection: 'row', gap: spacing.md, justifyContent: 'space-between' },
   livePulse: { alignItems: 'center', backgroundColor: colors.accentSoft, borderColor: '#FFC4B9', borderRadius: radius.pill, borderWidth: 1, flexDirection: 'row', gap: 6, paddingHorizontal: 11, paddingVertical: 7 },
   liveDot: { backgroundColor: colors.accent, borderRadius: 4, height: 7, width: 7 },
-  liveText: { color: colors.accent, fontSize: 10, fontWeight: '900', letterSpacing: 0.8, textTransform: 'uppercase' },
-  feedModeRow: { backgroundColor: colors.surface, borderColor: colors.border, borderRadius: radius.pill, borderWidth: 1, flexDirection: 'row', marginTop: spacing.xl, padding: 4 },
-  feedModeButton: { alignItems: 'center', borderRadius: radius.pill, flex: 1, paddingVertical: 10 },
-  feedModeSelected: { backgroundColor: colors.primarySoft },
-  feedModeLabel: { color: colors.textSubtle, fontSize: 12, fontWeight: '800' },
-  feedModeLabelSelected: { color: colors.primaryPressed },
-  composerCard: { backgroundColor: '#FFF0EB', borderColor: '#FFD2C8', gap: spacing.md, marginTop: spacing.xl },
+  liveText: { color: colors.accent, fontSize: 12, fontWeight: '900', letterSpacing: 0.8, textTransform: 'uppercase' },
+  feedModeRow: { backgroundColor: colors.surfaceRaised, borderColor: colors.border, borderRadius: 19, borderWidth: 1, flexDirection: 'row', marginTop: spacing.xl, padding: 5 },
+  feedModeButton: { alignItems: 'center', borderRadius: 15, flex: 1, paddingVertical: 13 },
+  feedModeSelected: { backgroundColor: colors.primary },
+  feedModeLabel: { color: colors.textMuted, fontSize: 14, fontWeight: '800' },
+  feedModeLabelSelected: { color: colors.white },
+  composerCard: { backgroundColor: colors.cobaltSoft, borderColor: '#BFC9FF', borderRadius: 30, gap: spacing.md, marginTop: spacing.xl, transform: [{ rotate: '-0.5deg' }] },
   composeTop: { alignItems: 'flex-start', flexDirection: 'row', gap: spacing.md },
-  composeInput: { color: colors.text, flex: 1, fontSize: 16, lineHeight: 23, minHeight: 78, paddingTop: spacing.sm, textAlignVertical: 'top' },
+  composeInput: { color: colors.text, flex: 1, fontSize: 18, fontWeight: '600', lineHeight: 27, minHeight: 92, paddingTop: spacing.sm, textAlignVertical: 'top' },
   composerRule: { backgroundColor: colors.border, height: StyleSheet.hairlineWidth },
   topics: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
-  topicChoice: { backgroundColor: colors.surfaceRaised, borderColor: colors.border, borderRadius: radius.pill, borderWidth: 1, paddingHorizontal: 10, paddingVertical: 7 },
-  topicSelected: { backgroundColor: colors.primarySoft, borderColor: '#F3B5E8' },
-  topicText: { color: colors.textMuted, fontSize: 11, fontWeight: '700' },
-  topicTextSelected: { color: colors.primary },
+  topicChoice: { backgroundColor: 'rgba(255,255,255,0.58)', borderColor: '#BFC9FF', borderRadius: radius.pill, borderWidth: 1, paddingHorizontal: 12, paddingVertical: 9 },
+  topicSelected: { backgroundColor: colors.primary, borderColor: colors.primary },
+  topicText: { color: colors.textMuted, fontSize: 13, fontWeight: '800' },
+  topicTextSelected: { color: colors.white },
   publishRow: { alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between' },
-  counter: { color: colors.textSubtle, fontSize: 11, fontWeight: '700' },
-  publishButton: { minWidth: 138 },
+  counter: { color: colors.textMuted, fontSize: 13, fontWeight: '800' },
+  publishButton: { minWidth: 156 },
   loading: { marginVertical: spacing.xl },
-  error: { color: colors.danger, fontSize: 13, marginTop: spacing.md, textAlign: 'center' },
+  error: { color: colors.danger, fontSize: 14, lineHeight: 21, marginTop: spacing.md, textAlign: 'center' },
   retryButton: { alignItems: 'center', alignSelf: 'center', backgroundColor: colors.primary, borderRadius: radius.md, marginTop: spacing.lg, paddingHorizontal: spacing.xl, paddingVertical: spacing.md },
-  retryLabel: { color: colors.primaryInk, fontSize: 13, fontWeight: '900' },
-  list: { gap: spacing.md },
+  retryLabel: { color: colors.primaryInk, fontSize: 15, fontWeight: '900' },
+  list: { gap: spacing.lg },
+  postCard: { overflow: 'hidden', paddingTop: 52 },
+  postCardSignal: { backgroundColor: colors.signalSoft, borderColor: '#CDE987', transform: [{ rotate: '0.45deg' }] },
+  postCardCobalt: { backgroundColor: colors.cobaltSoft, borderColor: '#BFC9FF', transform: [{ rotate: '-0.45deg' }] },
+  postIndex: { color: 'rgba(23,24,27,0.12)', fontSize: 50, fontWeight: '900', letterSpacing: -3, position: 'absolute', right: 15, top: 0 },
   authorRow: { alignItems: 'center', flexDirection: 'row', gap: spacing.md },
   authorLink: { alignItems: 'center', flex: 1, flexDirection: 'row', gap: spacing.md },
   authorCopy: { flex: 1 },
-  name: { color: colors.text, fontSize: 15, fontWeight: '900', letterSpacing: -0.2 },
-  meta: { color: colors.textSubtle, fontSize: 12, marginTop: 2 },
-  postBody: { color: colors.text, fontSize: 17, fontWeight: '600', letterSpacing: -0.15, lineHeight: 25, marginVertical: spacing.lg },
+  name: { color: colors.text, fontSize: 17, fontWeight: '900', letterSpacing: -0.25 },
+  meta: { color: colors.textMuted, fontSize: 13, marginTop: 3 },
+  postBody: { color: colors.text, fontSize: 20, fontWeight: '600', letterSpacing: -0.3, lineHeight: 29, marginVertical: spacing.lg },
   actions: { alignItems: 'center', borderTopColor: colors.border, borderTopWidth: StyleSheet.hairlineWidth, flexDirection: 'row', gap: spacing.sm, paddingTop: spacing.md },
-  actionButton: { alignItems: 'center', backgroundColor: colors.surfaceRaised, borderRadius: radius.pill, flexDirection: 'row', gap: 6, minWidth: 54, paddingHorizontal: 11, paddingVertical: 7 },
+  actionButton: { alignItems: 'center', backgroundColor: 'rgba(255,255,255,0.65)', borderRadius: radius.pill, flexDirection: 'row', gap: 7, minHeight: 42, minWidth: 62, paddingHorizontal: 13, paddingVertical: 8 },
   actionButtonActive: { backgroundColor: colors.primarySoft },
-  actionIcon: { color: colors.textMuted, fontSize: 15, fontWeight: '700' },
-  action: { color: colors.textMuted, fontSize: 12, fontWeight: '800' },
+  actionIcon: { color: colors.textMuted, fontSize: 18, fontWeight: '700' },
+  action: { color: colors.textMuted, fontSize: 14, fontWeight: '800' },
   actionActive: { color: colors.danger },
   actionSpacer: { flex: 1 },
   shareButton: { alignItems: 'center', flexDirection: 'row', gap: 5, paddingHorizontal: spacing.sm, paddingVertical: 7 },
   shareIcon: { color: colors.primary, fontSize: 15, fontWeight: '900' },
-  shareLabel: { color: colors.textMuted, fontSize: 11, fontWeight: '800' },
+  shareLabel: { color: colors.textMuted, fontSize: 13, fontWeight: '800' },
   loadMoreButton: { alignItems: 'center', alignSelf: 'center', backgroundColor: colors.surfaceRaised, borderColor: colors.borderStrong, borderRadius: radius.pill, borderWidth: 1, marginTop: spacing.xl, minWidth: 210, paddingHorizontal: spacing.xl, paddingVertical: spacing.md },
   loadMoreDisabled: { opacity: 0.6 },
-  loadMoreLabel: { color: colors.primary, fontSize: 12, fontWeight: '900' },
-  feedEnd: { color: colors.textSubtle, fontSize: 11, fontWeight: '700', marginTop: spacing.xl, textAlign: 'center' },
+  loadMoreLabel: { color: colors.primary, fontSize: 15, fontWeight: '900' },
+  feedEnd: { color: colors.textSubtle, fontSize: 14, fontWeight: '700', marginTop: spacing.xl, textAlign: 'center' },
 });

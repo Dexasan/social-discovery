@@ -173,7 +173,7 @@ export default function AccountSettingsScreen() {
 
 const styles = StyleSheet.create({
   topRow: { alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between' },
-  backButton: { alignItems: 'center', backgroundColor: colors.surfaceRaised, borderColor: colors.border, borderRadius: radius.pill, borderWidth: 1, height: 42, justifyContent: 'center', width: 42 },
+  backButton: { alignItems: 'center', backgroundColor: colors.surfaceRaised, borderColor: colors.border, borderRadius: radius.pill, borderWidth: 1, height: 50, justifyContent: 'center', width: 50 },
   backGlyph: { color: colors.text, fontSize: 30, fontWeight: '500', lineHeight: 32 },
   topTitle: { color: colors.textMuted, fontSize: 12, fontWeight: '900', letterSpacing: 0.7, textTransform: 'uppercase' },
   topSpacer: { width: 42 },
@@ -184,10 +184,10 @@ const styles = StyleSheet.create({
   heroCopy: { maxWidth: 300, textAlign: 'center' },
   identityCard: { alignItems: 'center', flexDirection: 'row', gap: spacing.md, justifyContent: 'space-between' },
   identityCopy: { flex: 1, gap: 4 },
-  label: { color: colors.textSubtle, fontSize: 9, fontWeight: '900', letterSpacing: 0.8 },
+  label: { color: colors.textSubtle, fontSize: 12, fontWeight: '900', letterSpacing: 0.8 },
   email: { color: colors.text, fontSize: 14, fontWeight: '800' },
   formCard: { backgroundColor: colors.surfaceSoft, gap: spacing.md },
-  fieldLabel: { color: colors.textMuted, fontSize: 11, fontWeight: '900', marginTop: spacing.xs },
+  fieldLabel: { color: colors.textMuted, fontSize: 14, fontWeight: '900', marginTop: spacing.xs },
   input: { backgroundColor: colors.surfaceRaised, borderColor: colors.borderStrong, borderRadius: radius.md, borderWidth: 1, color: colors.text, fontSize: 15, minHeight: 52, paddingHorizontal: spacing.lg },
   error: { color: colors.danger, fontSize: 12.5, lineHeight: 18 },
   notice: { backgroundColor: colors.successSoft, borderRadius: radius.sm, color: colors.success, fontSize: 12.5, lineHeight: 18, padding: spacing.md },

@@ -3,7 +3,7 @@ import { router } from 'expo-router';
 import { ActivityIndicator, AppState, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { BrandLockup, BrandMark } from '@/components/Brand';
-import { Avatar, Card, Muted, Pill, PrimaryButton, Screen, SectionHeader } from '@/components/ui';
+import { Avatar, Card, Muted, Pill, PrimaryButton, Screen, SectionHeader, SignalBars } from '@/components/ui';
 import { useSession } from '@/context/SessionContext';
 import {
   cancelQuickChatSearch,
@@ -167,14 +167,12 @@ export default function QuickChatScreen() {
         <Card style={styles.discoveryCard}>
           <View style={styles.discoveryTop}>
             <Pill label={matchState === 'searching' ? 'Searching live' : 'Global discovery'} tone={matchState === 'searching' ? 'live' : 'accent'} />
-            <Text style={styles.noLimits}>No limits</Text>
+            <Text style={styles.noLimits}>DROP 01</Text>
           </View>
-          <View style={styles.orbit}>
-            <View style={[styles.orbitRing, styles.orbitOuter]} />
-            <View style={[styles.orbitRing, styles.orbitMiddle]} />
-            <View style={styles.satelliteOne} />
-            <View style={styles.satelliteTwo} />
-            <View style={styles.satelliteThree} />
+          <View style={styles.signalStage}>
+            <Text style={styles.signalNumber}>01</Text>
+            <View style={styles.signalSticker}><SignalBars /></View>
+            <View style={styles.signalSlash} />
             <View style={styles.orbitCore}>
               {matchState === 'searching' ? <ActivityIndicator color={colors.primaryPressed} size="large" /> : <BrandMark size={62} />}
             </View>
@@ -183,14 +181,14 @@ export default function QuickChatScreen() {
             <Text style={styles.discoveryTitle}>
               {matchState === 'searching' ? 'Finding your next yap…' : 'Tap in. Meet somebody.'}
             </Text>
-            <Muted>
+            <Text style={styles.discoveryCopy}>
               {matchState === 'searching'
                 ? 'Finding someone who shares your language right now.'
                   : 'No swipes and no waiting for a match. Say hello first and decide later.'}
-            </Muted>
+            </Text>
           </View>
           <View style={styles.topicSection}>
-            <Text style={styles.topicLabel}>What are you up for?</Text>
+            <Text style={styles.topicLabel}>PICK TONIGHT’S ENERGY</Text>
             <View style={styles.topicChoices}>
               {conversationTopics.map((option) => (
                 <Pressable
@@ -211,7 +209,9 @@ export default function QuickChatScreen() {
               <Text style={styles.secondaryText}>Cancel search</Text>
             </Pressable>
           ) : (
-            <PrimaryButton label="Start a random chat" onPress={beginSearch} />
+            <Pressable accessibilityRole="button" onPress={beginSearch} style={({ pressed }) => [styles.dropButton, pressed && styles.dropButtonPressed]}>
+              <Text style={styles.dropButtonText}>Drop me into a chat</Text><Text style={styles.dropArrow}>↗</Text>
+            </Pressable>
           )}
           {error ? <Text style={styles.error}>{error}</Text> : null}
           <View style={styles.safetyRow}>
@@ -242,46 +242,48 @@ export default function QuickChatScreen() {
 const styles = StyleSheet.create({
   headerRow: { alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between', marginBottom: spacing.xl },
   headerBrand: { gap: 3 },
-  headerPrompt: { color: colors.textMuted, fontSize: 11, fontWeight: '700', marginLeft: 50 },
+  headerPrompt: { color: colors.textMuted, fontSize: 14, fontWeight: '700', marginLeft: 50, marginTop: 2 },
   online: { alignItems: 'center', backgroundColor: colors.successSoft, borderColor: '#B9E2D4', borderRadius: radius.pill, borderWidth: 1, flexDirection: 'row', gap: 7, paddingHorizontal: 11, paddingVertical: 7 },
   onlineDot: { backgroundColor: colors.success, borderRadius: 4, height: 7, width: 7 },
-  onlineText: { color: colors.success, fontSize: 10, fontWeight: '800', letterSpacing: 0.5, textTransform: 'uppercase' },
-  discoveryCard: { backgroundColor: '#FFF0EB', borderColor: '#FFD0C5', gap: spacing.xl, overflow: 'hidden', paddingVertical: spacing.xl },
+  onlineText: { color: colors.success, fontSize: 12, fontWeight: '800', letterSpacing: 0.5, textTransform: 'uppercase' },
+  discoveryCard: { backgroundColor: colors.primary, borderColor: colors.primary, gap: spacing.xl, overflow: 'hidden', paddingVertical: spacing.xl },
   discoveryTop: { alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between' },
-  noLimits: { color: colors.textSubtle, fontSize: 11, fontWeight: '800', letterSpacing: 0.7, textTransform: 'uppercase' },
-  orbit: { alignItems: 'center', alignSelf: 'center', height: 176, justifyContent: 'center', marginVertical: spacing.xs, width: 176 },
-  orbitRing: { borderColor: colors.borderStrong, borderRadius: 99, borderStyle: 'dashed', borderWidth: 1, position: 'absolute' },
-  orbitOuter: { height: 176, width: 176 },
-  orbitMiddle: { borderColor: '#F3B5E8', height: 126, width: 126 },
-  orbitCore: { alignItems: 'center', backgroundColor: colors.white, borderColor: '#F3B5E8', borderRadius: 42, borderWidth: 1, height: 84, justifyContent: 'center', width: 84 },
-  satelliteOne: { backgroundColor: colors.accent, borderColor: '#FFC0CA', borderRadius: 7, borderWidth: 2, height: 14, position: 'absolute', right: 19, top: 35, width: 14 },
-  satelliteTwo: { backgroundColor: colors.success, borderColor: '#B9F3DC', borderRadius: 6, borderWidth: 2, bottom: 24, height: 12, left: 29, position: 'absolute', width: 12 },
-  satelliteThree: { backgroundColor: colors.warning, borderColor: '#FFE2AF', borderRadius: 5, borderWidth: 2, height: 10, left: 12, position: 'absolute', top: 57, width: 10 },
+  noLimits: { color: colors.signal, fontSize: 13, fontWeight: '900', letterSpacing: 1.2 },
+  signalStage: { alignItems: 'center', alignSelf: 'stretch', height: 184, justifyContent: 'center', overflow: 'hidden' },
+  signalNumber: { color: '#2D2E31', fontSize: 158, fontWeight: '900', left: -5, letterSpacing: -16, lineHeight: 170, position: 'absolute', top: 0 },
+  signalSticker: { backgroundColor: colors.cobalt, borderRadius: 18, paddingHorizontal: 18, paddingVertical: 10, position: 'absolute', right: 3, top: 13, transform: [{ rotate: '9deg' }] },
+  signalSlash: { backgroundColor: colors.signal, bottom: 16, height: 17, position: 'absolute', right: -28, transform: [{ rotate: '-12deg' }], width: 150 },
+  orbitCore: { alignItems: 'center', backgroundColor: colors.white, borderRadius: 28, height: 104, justifyContent: 'center', transform: [{ rotate: '-4deg' }], width: 104 },
   centered: { alignItems: 'center', gap: spacing.sm },
-  discoveryTitle: { color: colors.text, fontSize: 24, fontWeight: '900', letterSpacing: -0.7, lineHeight: 29, textAlign: 'center' },
+  discoveryTitle: { color: colors.white, fontSize: 31, fontWeight: '900', letterSpacing: -1.2, lineHeight: 35, textAlign: 'center' },
+  discoveryCopy: { color: '#C9C7C0', fontSize: 16, lineHeight: 24, maxWidth: 300, textAlign: 'center' },
   safetyRow: { alignItems: 'center', alignSelf: 'center', flexDirection: 'row', gap: spacing.sm },
   safetyIcon: { color: colors.success, fontSize: 12, fontWeight: '900' },
-  safetyNote: { color: colors.textSubtle, fontSize: 10.5, fontWeight: '600', textAlign: 'center' },
-  topicSection: { gap: spacing.sm },
-  topicLabel: { color: colors.textMuted, fontSize: 11, fontWeight: '800', textAlign: 'center', textTransform: 'uppercase' },
+  safetyNote: { color: '#C9C7C0', fontSize: 12, fontWeight: '700', textAlign: 'center' },
+  topicSection: { backgroundColor: colors.signal, borderRadius: 22, gap: spacing.md, marginHorizontal: -4, padding: spacing.lg, transform: [{ rotate: '-1deg' }] },
+  topicLabel: { color: colors.primary, fontSize: 13, fontWeight: '900', letterSpacing: 1, textAlign: 'center' },
   topicChoices: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm, justifyContent: 'center' },
-  topicChoice: { backgroundColor: colors.surfaceRaised, borderColor: colors.border, borderRadius: radius.pill, borderWidth: 1, paddingHorizontal: 11, paddingVertical: 7 },
-  topicChoiceSelected: { backgroundColor: colors.primarySoft, borderColor: '#F3B5E8' },
-  topicChoiceText: { color: colors.textMuted, fontSize: 10.5, fontWeight: '800' },
-  topicChoiceTextSelected: { color: colors.primary },
+  topicChoice: { backgroundColor: 'rgba(255,255,255,0.56)', borderColor: 'rgba(23,24,27,0.18)', borderRadius: radius.pill, borderWidth: 1, paddingHorizontal: 13, paddingVertical: 9 },
+  topicChoiceSelected: { backgroundColor: colors.primary, borderColor: colors.primary },
+  topicChoiceText: { color: colors.primary, fontSize: 13, fontWeight: '800' },
+  topicChoiceTextSelected: { color: colors.white },
   preferenceRow: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
   quickFacts: { alignItems: 'center', backgroundColor: colors.surface, borderColor: colors.border, borderRadius: radius.lg, borderWidth: 1, flexDirection: 'row', justifyContent: 'space-evenly', marginTop: spacing.lg, paddingVertical: spacing.lg },
   fact: { alignItems: 'center', flex: 1, gap: 3 },
   factDivider: { backgroundColor: colors.border, height: 28, width: 1 },
   factValue: { color: colors.text, fontSize: 16, fontWeight: '900' },
-  factLabel: { color: colors.textSubtle, fontSize: 10, fontWeight: '700', textTransform: 'uppercase' },
-  matchCard: { gap: spacing.lg, paddingVertical: spacing.xl },
+  factLabel: { color: colors.textSubtle, fontSize: 12, fontWeight: '800', textTransform: 'uppercase' },
+  matchCard: { backgroundColor: colors.cobaltSoft, borderColor: '#BAC5FF', gap: spacing.lg, paddingVertical: spacing.xl },
   matchTop: { alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between', width: '100%' },
-  spark: { color: colors.primary, fontSize: 24 },
-  avatarHalo: { alignSelf: 'center', backgroundColor: colors.primarySoft, borderRadius: 64, padding: 12 },
-  matchName: { color: colors.text, fontSize: 26, fontWeight: '900', letterSpacing: -0.7 },
+  spark: { color: colors.cobalt, fontSize: 28 },
+  avatarHalo: { alignSelf: 'center', backgroundColor: colors.signal, borderRadius: 36, padding: 12, transform: [{ rotate: '-3deg' }] },
+  matchName: { color: colors.text, fontSize: 32, fontWeight: '900', letterSpacing: -1.1 },
   sharedRow: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm, justifyContent: 'center' },
   secondaryButton: { alignItems: 'center', backgroundColor: colors.surfaceRaised, borderColor: colors.borderStrong, borderRadius: radius.md, borderWidth: 1, padding: spacing.md, width: '100%' },
-  secondaryText: { color: colors.text, fontSize: 14, fontWeight: '800' },
-  error: { color: colors.danger, fontSize: 13, lineHeight: 19, textAlign: 'center' },
+  secondaryText: { color: colors.text, fontSize: 16, fontWeight: '800' },
+  dropButton: { alignItems: 'center', backgroundColor: colors.signal, borderRadius: 20, flexDirection: 'row', justifyContent: 'space-between', minHeight: 66, paddingHorizontal: 22 },
+  dropButtonPressed: { opacity: 0.78, transform: [{ scale: 0.985 }] },
+  dropButtonText: { color: colors.primary, fontSize: 18, fontWeight: '900', letterSpacing: -0.3 },
+  dropArrow: { color: colors.primary, fontSize: 27, fontWeight: '900' },
+  error: { color: '#FF9D88', fontSize: 14, lineHeight: 21, textAlign: 'center' },
 });

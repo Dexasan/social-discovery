@@ -20,7 +20,7 @@
       [
         "expo-splash-screen",
         {
-          "backgroundColor": "#FFF8F6",
+          "backgroundColor": "#F3F0E7",
           "image": "./assets/brand/yappie-logo-transparent.png",
           "imageWidth": 220,
           "resizeMode": "contain"
@@ -30,9 +30,9 @@
     ],
     "android": {
       "package": "com.socialdiscovery.app",
-      "versionCode": 4,
+      "versionCode": 5,
       "adaptiveIcon": {
-        "backgroundColor": "#FFF8F6",
+        "backgroundColor": "#F3F0E7",
         "foregroundImage": "./assets/brand/yappie-logo-transparent.png"
       },
       "permissions": [

@@ -26,7 +26,7 @@ const styles = StyleSheet.create({
   wordmarkCopy: { gap: 1 },
   wordmark: { color: colors.text, fontSize: 28, fontWeight: '900', letterSpacing: -1.4 },
   wordmarkCompact: { fontSize: 21, letterSpacing: -0.8 },
-  tagline: { color: colors.primaryPressed, fontSize: 8.5, fontWeight: '900', letterSpacing: 1.7 },
+  tagline: { color: colors.textMuted, fontSize: 11.5, fontWeight: '900', letterSpacing: 1.8 },
   inverted: { color: colors.white },
-  invertedMuted: { color: '#FFD8F6' },
+  invertedMuted: { color: '#D7D3C9' },
 });

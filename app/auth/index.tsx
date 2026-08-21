@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import { BrandLockup } from '@/components/Brand';
-import { Card, Eyebrow, Heading, Muted, Pill, PrimaryButton, Screen } from '@/components/ui';
+import { Card, Pill, PrimaryButton, Screen, SignalBars } from '@/components/ui';
 import { useSession } from '@/context/SessionContext';
 import { colors, radius, spacing } from '@/theme/tokens';
 
@@ -85,17 +85,15 @@ export default function AuthScreen() {
         <Pill label="Early access" tone="accent" />
       </View>
       <View style={styles.intro}>
-        <Eyebrow>{mode === 'sign-up' ? 'Talk to strangers. Keep the good ones.' : 'Your conversations missed you'}</Eyebrow>
-        <Heading>{mode === 'sign-up' ? 'One hello can change your whole night.' : 'Get back to your people.'}</Heading>
-        <Muted>Random chats, public thoughts, and live rooms. No swiping. No awkward matching games. Just start talking.</Muted>
+        <View style={styles.introTop}><Text style={styles.introEyebrow}>{mode === 'sign-up' ? 'STRANGERS, NOT SWIPES' : 'WELCOME BACK'}</Text><SignalBars /></View>
+        <Text style={styles.introTitle}>{mode === 'sign-up' ? 'Your next favorite person is currently a stranger.' : 'The room kept talking.'}</Text>
+        <Text style={styles.introCopy}>Random chats, public thoughts, and live audio. No awkward matching ritual. Just show up and say something.</Text>
       </View>
 
       <View style={styles.promiseRow}>
-        <View style={styles.promise}><Text style={styles.promiseValue}>∞</Text><Text style={styles.promiseLabel}>No limits</Text></View>
-        <View style={styles.promiseDivider} />
-        <View style={styles.promise}><Text style={styles.promiseValue}>1 tap</Text><Text style={styles.promiseLabel}>Meet someone</Text></View>
-        <View style={styles.promiseDivider} />
-        <View style={styles.promise}><Text style={styles.promiseValue}>Global</Text><Text style={styles.promiseLabel}>By default</Text></View>
+        <View style={[styles.promise, styles.promiseSignal]}><Text style={styles.promiseValue}>∞</Text><Text style={styles.promiseLabel}>No limits</Text></View>
+        <View style={[styles.promise, styles.promiseCobalt]}><Text style={[styles.promiseValue, styles.promiseValueLight]}>1 tap</Text><Text style={[styles.promiseLabel, styles.promiseLabelLight]}>Meet someone</Text></View>
+        <View style={[styles.promise, styles.promiseOrange]}><Text style={styles.promiseValue}>Global</Text><Text style={styles.promiseLabel}>By default</Text></View>
       </View>
 
       <Card style={styles.form}>
@@ -161,25 +159,33 @@ export default function AuthScreen() {
 
 const styles = StyleSheet.create({
   topRow: { alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between' },
-  intro: { gap: spacing.md, marginTop: spacing.xxl },
-  promiseRow: { alignItems: 'center', backgroundColor: '#FFF0EB', borderColor: '#FFD2C8', borderRadius: radius.xl, borderWidth: 1, flexDirection: 'row', marginVertical: spacing.xl, paddingVertical: spacing.lg },
-  promise: { alignItems: 'center', flex: 1, gap: 2 },
-  promiseValue: { color: colors.text, fontSize: 13, fontWeight: '900' },
-  promiseLabel: { color: colors.textSubtle, fontSize: 9.5, fontWeight: '700' },
-  promiseDivider: { backgroundColor: colors.border, height: 26, width: 1 },
-  form: { backgroundColor: colors.surface, gap: spacing.md },
-  label: { color: colors.textMuted, fontSize: 12, fontWeight: '800', marginTop: spacing.xs },
-  input: { backgroundColor: colors.surfaceSoft, borderColor: colors.borderStrong, borderRadius: radius.lg, borderWidth: 1, color: colors.text, fontSize: 16, minHeight: 56, paddingHorizontal: spacing.lg },
-  error: { color: colors.danger, fontSize: 13, lineHeight: 19 },
-  notice: { backgroundColor: colors.successSoft, borderRadius: radius.sm, color: colors.success, fontSize: 13, lineHeight: 19, padding: spacing.md },
+  intro: { backgroundColor: colors.primary, borderRadius: 32, gap: spacing.lg, marginTop: spacing.xxl, overflow: 'hidden', padding: spacing.xl },
+  introTop: { alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between' },
+  introEyebrow: { color: colors.signal, fontSize: 13, fontWeight: '900', letterSpacing: 1.4 },
+  introTitle: { color: colors.white, fontSize: 38, fontWeight: '900', letterSpacing: -1.8, lineHeight: 41 },
+  introCopy: { color: '#C9C7C0', fontSize: 17, lineHeight: 25 },
+  promiseRow: { alignItems: 'stretch', flexDirection: 'row', gap: 7, marginVertical: spacing.xl },
+  promise: { alignItems: 'center', borderRadius: 18, flex: 1, gap: 3, justifyContent: 'center', minHeight: 86, paddingHorizontal: 5, transform: [{ rotate: '-2deg' }] },
+  promiseSignal: { backgroundColor: colors.signal },
+  promiseCobalt: { backgroundColor: colors.cobalt, transform: [{ rotate: '2deg' }] },
+  promiseOrange: { backgroundColor: colors.accentSoft, transform: [{ rotate: '-1deg' }] },
+  promiseValue: { color: colors.text, fontSize: 18, fontWeight: '900' },
+  promiseValueLight: { color: colors.white },
+  promiseLabel: { color: colors.textMuted, fontSize: 12, fontWeight: '900', textAlign: 'center', textTransform: 'uppercase' },
+  promiseLabelLight: { color: '#E8EBFF' },
+  form: { backgroundColor: colors.surface, borderRadius: 30, gap: spacing.md },
+  label: { color: colors.textMuted, fontSize: 13, fontWeight: '900', marginTop: spacing.xs, textTransform: 'uppercase' },
+  input: { backgroundColor: colors.surfaceSoft, borderColor: colors.borderStrong, borderRadius: 18, borderWidth: 1, color: colors.text, fontSize: 17, minHeight: 60, paddingHorizontal: spacing.lg },
+  error: { color: colors.danger, fontSize: 14, lineHeight: 21 },
+  notice: { backgroundColor: colors.successSoft, borderRadius: radius.sm, color: colors.success, fontSize: 14, lineHeight: 21, padding: spacing.md },
   forgotButton: { alignSelf: 'flex-end', marginTop: -spacing.xs, paddingVertical: spacing.xs },
-  forgotLabel: { color: colors.primaryPressed, fontSize: 12, fontWeight: '900' },
+  forgotLabel: { color: colors.cobalt, fontSize: 14, fontWeight: '900' },
   switchButton: { alignItems: 'center', flexDirection: 'row', justifyContent: 'center', marginTop: spacing.xl },
-  switchMuted: { color: colors.textMuted, fontSize: 14 },
-  switchAction: { color: colors.primaryPressed, fontSize: 14, fontWeight: '900' },
+  switchMuted: { color: colors.textMuted, fontSize: 15 },
+  switchAction: { color: colors.cobalt, fontSize: 15, fontWeight: '900' },
   policyBlock: { alignItems: 'center', gap: spacing.sm, marginTop: spacing.xl },
-  privacy: { color: colors.textSubtle, fontSize: 10.5, lineHeight: 16, textAlign: 'center' },
+  privacy: { color: colors.textSubtle, fontSize: 12, lineHeight: 18, textAlign: 'center' },
   policyLinks: { alignItems: 'center', flexDirection: 'row', gap: spacing.sm },
-  policyLink: { color: colors.primaryPressed, fontSize: 11, fontWeight: '900' },
-  policyDot: { color: colors.textSubtle, fontSize: 11 },
+  policyLink: { color: colors.text, fontSize: 13, fontWeight: '900' },
+  policyDot: { color: colors.textSubtle, fontSize: 13 },
 });

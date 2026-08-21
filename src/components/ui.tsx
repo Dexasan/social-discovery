@@ -108,10 +108,10 @@ export function PrimaryButton({
 
 export function Avatar({ label, size = 48 }: { label: string; size?: number }) {
   const palettes = [
-    { backgroundColor: '#FFE0F7', color: '#8D276F' },
-    { backgroundColor: '#FFE1D9', color: '#994535' },
-    { backgroundColor: '#DFF3EC', color: '#246D5A' },
-    { backgroundColor: '#FFF0C9', color: '#8A5B00' },
+    { backgroundColor: colors.signal, color: colors.primary },
+    { backgroundColor: colors.cobaltSoft, color: colors.cobalt },
+    { backgroundColor: colors.accentSoft, color: '#9F321D' },
+    { backgroundColor: colors.warningSoft, color: '#785200' },
   ];
   const palette = palettes[(label.charCodeAt(0) || 0) % palettes.length] ?? palettes[0]!;
   return (
@@ -128,6 +128,16 @@ export function SectionHeader({ action, title }: { action?: ReactNode; title: st
     <View style={styles.sectionHeader}>
       <Text style={styles.sectionTitle}>{title}</Text>
       {action}
+    </View>
+  );
+}
+
+export function SignalBars({ dark = false }: { dark?: boolean }) {
+  return (
+    <View accessibilityLabel="Live audio signal" style={styles.signalBars}>
+      {[12, 24, 17, 31, 20, 27, 13].map((height, index) => (
+        <View key={`${height}-${index}`} style={[styles.signalBar, { height }, dark && styles.signalBarDark]} />
+      ))}
     </View>
   );
 }
@@ -168,41 +178,44 @@ export function EmptyState({ description, glyph, title }: { description: string;
 
 const styles = StyleSheet.create({
   screen: { backgroundColor: colors.background, flex: 1, overflow: 'hidden' },
-  ambientTop: { backgroundColor: colors.accentGlow, borderRadius: 190, height: 290, position: 'absolute', right: -115, top: -165, width: 290 },
-  ambientSide: { backgroundColor: colors.primaryGlow, borderRadius: 155, height: 230, left: -170, position: 'absolute', top: 340, width: 230 },
-  ambientDot: { backgroundColor: '#FFD99F', borderRadius: 38, height: 76, position: 'absolute', right: -38, top: 430, width: 76 },
-  screenContent: { flexGrow: 1, paddingBottom: 124, paddingHorizontal: 20, paddingTop: spacing.lg },
-  eyebrow: { color: colors.primaryPressed, fontSize: 10.5, fontWeight: '900', letterSpacing: 1.8, textTransform: 'uppercase' },
-  heading: { color: colors.text, fontSize: 38, fontWeight: '900', letterSpacing: -1.65, lineHeight: 42, marginTop: spacing.sm },
-  headingCompact: { fontSize: 28, letterSpacing: -0.9, lineHeight: 33 },
-  muted: { color: colors.textMuted, fontSize: 14, lineHeight: 21 },
-  card: { ...shadows.card, backgroundColor: colors.surface, borderColor: colors.border, borderRadius: radius.lg, borderWidth: 1, padding: spacing.lg },
-  pill: { alignItems: 'center', alignSelf: 'flex-start', backgroundColor: colors.surfaceRaised, borderColor: colors.border, borderRadius: radius.pill, borderWidth: StyleSheet.hairlineWidth, flexDirection: 'row', gap: 6, paddingHorizontal: 11, paddingVertical: 6 },
-  pillLive: { backgroundColor: colors.accentSoft, borderColor: '#FFC4B9' },
-  pillAccent: { backgroundColor: colors.primarySoft, borderColor: '#F6BCEB' },
-  pillSuccess: { backgroundColor: colors.successSoft, borderColor: '#B9E2D4' },
+  ambientTop: { backgroundColor: colors.accentGlow, borderRadius: 36, height: 220, position: 'absolute', right: -112, top: -104, transform: [{ rotate: '18deg' }], width: 220 },
+  ambientSide: { backgroundColor: colors.primaryGlow, borderRadius: 38, height: 190, left: -145, position: 'absolute', top: 360, transform: [{ rotate: '-12deg' }], width: 190 },
+  ambientDot: { backgroundColor: colors.accentSoft, borderRadius: 18, height: 66, position: 'absolute', right: -34, top: 500, transform: [{ rotate: '28deg' }], width: 66 },
+  screenContent: { flexGrow: 1, paddingBottom: 132, paddingHorizontal: 18, paddingTop: spacing.lg },
+  eyebrow: { color: colors.textMuted, fontSize: 12.5, fontWeight: '900', letterSpacing: 1.55, lineHeight: 17, textTransform: 'uppercase' },
+  heading: { color: colors.text, fontSize: 44, fontWeight: '900', letterSpacing: -2.15, lineHeight: 47, marginTop: spacing.sm },
+  headingCompact: { fontSize: 35, letterSpacing: -1.35, lineHeight: 39 },
+  muted: { color: colors.textMuted, fontSize: 16, lineHeight: 24 },
+  card: { ...shadows.card, backgroundColor: colors.surface, borderColor: colors.border, borderRadius: radius.lg, borderWidth: 1, padding: 20 },
+  pill: { alignItems: 'center', alignSelf: 'flex-start', backgroundColor: colors.surfaceRaised, borderColor: colors.border, borderRadius: radius.pill, borderWidth: 1, flexDirection: 'row', gap: 7, minHeight: 34, paddingHorizontal: 13, paddingVertical: 7 },
+  pillLive: { backgroundColor: colors.accentSoft, borderColor: '#FFB9A7' },
+  pillAccent: { backgroundColor: colors.cobaltSoft, borderColor: '#BFC9FF' },
+  pillSuccess: { backgroundColor: colors.signalSoft, borderColor: '#CDE987' },
   liveDot: { backgroundColor: colors.accent, borderRadius: 4, height: 7, width: 7 },
-  pillText: { color: colors.textMuted, fontSize: 10, fontWeight: '800', letterSpacing: 0.65, textTransform: 'uppercase' },
+  pillText: { color: colors.textMuted, fontSize: 12, fontWeight: '800', letterSpacing: 0.45, textTransform: 'uppercase' },
   pillLiveText: { color: colors.danger },
-  pillAccentText: { color: '#A72F8B' },
+  pillAccentText: { color: colors.cobalt },
   pillSuccessText: { color: colors.success },
-  primaryButton: { alignItems: 'center', backgroundColor: colors.primary, borderRadius: radius.pill, elevation: 4, flexDirection: 'row', gap: spacing.sm, justifyContent: 'center', minHeight: 56, paddingHorizontal: spacing.xl, shadowColor: colors.primary, shadowOffset: { height: 8, width: 0 }, shadowOpacity: 0.22, shadowRadius: 14 },
+  primaryButton: { alignItems: 'center', backgroundColor: colors.primary, borderRadius: 20, elevation: 3, flexDirection: 'row', gap: spacing.sm, justifyContent: 'center', minHeight: 64, paddingHorizontal: spacing.xl, shadowColor: colors.black, shadowOffset: { height: 7, width: 0 }, shadowOpacity: 0.18, shadowRadius: 12 },
   primaryButtonPressed: { backgroundColor: colors.primaryPressed, transform: [{ scale: 0.985 }] },
   primaryButtonDisabled: { opacity: 0.45 },
-  primaryButtonText: { color: colors.primaryInk, fontSize: 15, fontWeight: '900', letterSpacing: -0.1 },
+  primaryButtonText: { color: colors.primaryInk, fontSize: 17, fontWeight: '900', letterSpacing: -0.25 },
   avatarRing: { alignItems: 'center', backgroundColor: colors.white, borderColor: colors.border, borderWidth: 1, justifyContent: 'center', padding: 3 },
   avatar: { alignItems: 'center', height: '100%', justifyContent: 'center', width: '100%' },
   avatarText: { fontWeight: '900', letterSpacing: -0.6 },
   sectionHeader: { alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between', marginBottom: spacing.md, marginTop: spacing.xl },
-  sectionTitle: { color: colors.text, fontSize: 17, fontWeight: '900', letterSpacing: -0.35 },
-  iconButton: { alignItems: 'center', backgroundColor: colors.surfaceRaised, borderColor: colors.border, borderRadius: radius.pill, borderWidth: StyleSheet.hairlineWidth, height: 40, justifyContent: 'center', width: 40 },
+  sectionTitle: { color: colors.text, fontSize: 22, fontWeight: '900', letterSpacing: -0.7 },
+  iconButton: { alignItems: 'center', backgroundColor: colors.surfaceRaised, borderColor: colors.border, borderRadius: 18, borderWidth: 1, height: 52, justifyContent: 'center', width: 52 },
   iconButtonDanger: { backgroundColor: colors.dangerSoft, borderColor: '#F2B8C5' },
-  iconGlyph: { color: colors.text, fontSize: 18, fontWeight: '800' },
+  iconGlyph: { color: colors.text, fontSize: 22, fontWeight: '800' },
   iconGlyphDanger: { color: colors.danger },
   pressed: { opacity: 0.7, transform: [{ scale: 0.96 }] },
-  emptyState: { alignItems: 'center', backgroundColor: '#FFF0EB', borderColor: '#FFD4CA', borderRadius: radius.xl, borderWidth: 1, gap: spacing.sm, marginTop: spacing.xl, paddingHorizontal: spacing.xl, paddingVertical: spacing.xxl },
-  emptyIcon: { alignItems: 'center', backgroundColor: colors.primarySoft, borderRadius: radius.pill, height: 54, justifyContent: 'center', marginBottom: spacing.xs, width: 54 },
-  emptyGlyph: { color: colors.primary, fontSize: 24, fontWeight: '700' },
-  emptyTitle: { color: colors.text, fontSize: 17, fontWeight: '900', textAlign: 'center' },
+  emptyState: { alignItems: 'center', backgroundColor: colors.signalSoft, borderColor: '#CDE987', borderRadius: radius.xl, borderWidth: 1, gap: spacing.sm, marginTop: spacing.xl, paddingHorizontal: spacing.xl, paddingVertical: spacing.xxl },
+  emptyIcon: { alignItems: 'center', backgroundColor: colors.primary, borderRadius: 18, height: 60, justifyContent: 'center', marginBottom: spacing.xs, transform: [{ rotate: '-5deg' }], width: 60 },
+  emptyGlyph: { color: colors.white, fontSize: 27, fontWeight: '700' },
+  emptyTitle: { color: colors.text, fontSize: 21, fontWeight: '900', textAlign: 'center' },
   emptyDescription: { maxWidth: 260, textAlign: 'center' },
+  signalBars: { alignItems: 'center', flexDirection: 'row', gap: 4, height: 34 },
+  signalBar: { backgroundColor: colors.signal, borderRadius: 4, width: 5 },
+  signalBarDark: { backgroundColor: colors.primary },
 });

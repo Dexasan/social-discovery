@@ -131,7 +131,7 @@ export default function SafetySettingsScreen() {
 
 const styles = StyleSheet.create({
   topRow: { alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between' },
-  backButton: { alignItems: 'center', backgroundColor: colors.surfaceRaised, borderColor: colors.border, borderRadius: radius.pill, borderWidth: 1, height: 42, justifyContent: 'center', width: 42 },
+  backButton: { alignItems: 'center', backgroundColor: colors.surfaceRaised, borderColor: colors.border, borderRadius: radius.pill, borderWidth: 1, height: 50, justifyContent: 'center', width: 50 },
   backGlyph: { color: colors.text, fontSize: 30, fontWeight: '500', lineHeight: 32 },
   topTitle: { color: colors.textMuted, fontSize: 12, fontWeight: '900', letterSpacing: 0.7, textTransform: 'uppercase' },
   topSpacer: { width: 42 },
@@ -155,8 +155,8 @@ const styles = StyleSheet.create({
   blockedCopy: { flex: 1 },
   blockedName: { color: colors.text, fontSize: 14, fontWeight: '900', marginBottom: 2 },
   unblockButton: { backgroundColor: colors.surfaceRaised, borderColor: colors.borderStrong, borderRadius: radius.pill, borderWidth: 1, paddingHorizontal: spacing.md, paddingVertical: 8 },
-  unblockLabel: { color: colors.primary, fontSize: 11, fontWeight: '900' },
+  unblockLabel: { color: colors.primary, fontSize: 14, fontWeight: '900' },
   inactive: { opacity: 0.5 },
-  noteCard: { backgroundColor: colors.primarySoft, borderColor: '#F3B5E8', gap: spacing.xs, marginTop: spacing.xl },
+  noteCard: { backgroundColor: colors.cobaltSoft, borderColor: '#BFC9FF', gap: spacing.xs, marginTop: spacing.xl },
   noteTitle: { color: colors.text, fontSize: 14, fontWeight: '900' },
 });
