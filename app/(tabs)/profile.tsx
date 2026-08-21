@@ -1,9 +1,10 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { router, useFocusEffect } from 'expo-router';
 
 import { Avatar, Card, Muted, Pill, Screen } from '@/components/ui';
 import { useSession } from '@/context/SessionContext';
+import { loadActivityUnreadCount, subscribeToActivity } from '@/features/activity/api';
 import { loadCoinWallet, type CoinWallet } from '@/features/gifts/api';
 import { loadOwnSocialStats, type SocialStats } from '@/features/social/api';
 import { isSupabaseConfigured } from '@/lib/supabase';
@@ -13,6 +14,13 @@ export default function ProfileScreen() {
   const { profile, signOut, user } = useSession();
   const [stats, setStats] = useState<SocialStats | null>(null);
   const [wallet, setWallet] = useState<CoinWallet | null>(null);
+  const [activityUnread, setActivityUnread] = useState(0);
+
+  const refreshActivityUnread = useCallback(() => {
+    void loadActivityUnreadCount()
+      .then(setActivityUnread)
+      .catch(() => setActivityUnread(0));
+  }, []);
 
   useFocusEffect(useCallback(() => {
     let active = true;
@@ -28,9 +36,15 @@ export default function ProfileScreen() {
     void loadCoinWallet()
       .then((nextWallet) => { if (active) setWallet(nextWallet); })
       .catch(() => { if (active) setWallet(null); });
+    refreshActivityUnread();
 
     return () => { active = false; };
-  }, [user]));
+  }, [refreshActivityUnread, user]));
+
+  useEffect(() => {
+    if (!user || !isSupabaseConfigured) return;
+    return subscribeToActivity(user.id, refreshActivityUnread);
+  }, [refreshActivityUnread, user]);
 
   if (!profile) return null;
 
@@ -85,6 +99,18 @@ export default function ProfileScreen() {
           <View style={styles.balanceBadge}><Text style={styles.balance}>{wallet.balance}</Text><Text style={styles.balanceLabel}>coins</Text></View>
         </Card>
       ) : null}
+      <Pressable accessibilityRole="button" onPress={() => router.push('/activity')} style={({ pressed }) => pressed && styles.safetyPressed}>
+        <Card style={[styles.activityCard, activityUnread > 0 && styles.activityCardUnread]}>
+          <View style={styles.safetyTop}>
+            <View style={styles.activityIcon}><Text style={styles.activityGlyph}>✦</Text></View>
+            <View style={styles.safetyCopy}>
+              <Text style={styles.safetyTitle}>Activity</Text>
+              <Muted>{activityUnread > 0 ? `${activityUnread} new interaction${activityUnread === 1 ? '' : 's'}` : 'Follows, replies, likes, and gifts'}</Muted>
+            </View>
+            {activityUnread > 0 ? <View style={styles.activityBadge}><Text style={styles.activityBadgeText}>{Math.min(activityUnread, 99)}</Text></View> : <Text style={styles.chevron}>›</Text>}
+          </View>
+        </Card>
+      </Pressable>
       <Pressable accessibilityRole="button" onPress={() => router.push('/settings/safety')} style={({ pressed }) => pressed && styles.safetyPressed}>
         <Card style={styles.safetyCard}>
           <View style={styles.safetyTop}>
@@ -93,6 +119,19 @@ export default function ProfileScreen() {
             <Text style={styles.chevron}>›</Text>
           </View>
           <Pill label={isSupabaseConfigured ? 'Protected account' : 'Local preview'} tone="success" />
+        </Card>
+      </Pressable>
+      <Pressable
+        accessibilityRole="button"
+        onPress={() => router.push({ pathname: '/legal/[document]', params: { document: 'community-guidelines' } })}
+        style={({ pressed }) => pressed && styles.safetyPressed}
+      >
+        <Card style={styles.policyCard}>
+          <View style={styles.safetyTop}>
+            <View style={styles.policyIcon}><Text style={styles.policyGlyph}>§</Text></View>
+            <View style={styles.safetyCopy}><Text style={styles.safetyTitle}>Rules & policies</Text><Muted>Terms, privacy, and community standards</Muted></View>
+            <Text style={styles.chevron}>›</Text>
+          </View>
         </Card>
       </Pressable>
       <View style={styles.account}>
@@ -133,6 +172,15 @@ const styles = StyleSheet.create({
   balance: { color: colors.warning, fontSize: 19, fontWeight: '900' },
   balanceLabel: { color: colors.textSubtle, fontSize: 9, fontWeight: '800', textTransform: 'uppercase' },
   safetyCard: { gap: spacing.md },
+  policyCard: { marginTop: spacing.md },
+  policyIcon: { alignItems: 'center', backgroundColor: colors.surfaceRaised, borderRadius: radius.md, height: 44, justifyContent: 'center', width: 44 },
+  policyGlyph: { color: colors.textMuted, fontSize: 18, fontWeight: '900' },
+  activityCard: { marginBottom: spacing.md },
+  activityCardUnread: { backgroundColor: colors.primarySoft, borderColor: '#344A88' },
+  activityIcon: { alignItems: 'center', backgroundColor: colors.primarySoft, borderRadius: radius.md, height: 44, justifyContent: 'center', width: 44 },
+  activityGlyph: { color: colors.primary, fontSize: 19, fontWeight: '900' },
+  activityBadge: { alignItems: 'center', backgroundColor: colors.primary, borderRadius: 14, height: 28, justifyContent: 'center', minWidth: 28, paddingHorizontal: 7 },
+  activityBadgeText: { color: colors.primaryInk, fontSize: 11, fontWeight: '900' },
   safetyPressed: { opacity: 0.72, transform: [{ scale: 0.99 }] },
   safetyTop: { alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between' },
   safetyIcon: { alignItems: 'center', backgroundColor: colors.successSoft, borderRadius: radius.md, height: 44, justifyContent: 'center', width: 44 },

@@ -14,6 +14,50 @@ export type Database = {
   }
   public: {
     Tables: {
+      activity_events: {
+        Row: {
+          actor_id: string
+          created_at: string
+          id: string
+          kind: string
+          metadata: Json
+          post_id: string | null
+          read_at: string | null
+          recipient_id: string
+          source_id: string
+        }
+        Insert: {
+          actor_id: string
+          created_at?: string
+          id?: string
+          kind: string
+          metadata?: Json
+          post_id?: string | null
+          read_at?: string | null
+          recipient_id: string
+          source_id: string
+        }
+        Update: {
+          actor_id?: string
+          created_at?: string
+          id?: string
+          kind?: string
+          metadata?: Json
+          post_id?: string | null
+          read_at?: string | null
+          recipient_id?: string
+          source_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "activity_events_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       blocks: {
         Row: {
           blocked_id: string
@@ -781,6 +825,7 @@ export type Database = {
         }
       }
       end_club_room: { Args: { target_room_id: string }; Returns: undefined }
+      get_activity_unread_count: { Args: never; Returns: number }
       heartbeat_club_room: {
         Args: { target_room_id: string }
         Returns: undefined
@@ -883,6 +928,25 @@ export type Database = {
           body: string
           created_at: string
           reply_id: string
+        }[]
+      }
+      list_activity_events: {
+        Args: { activity_limit?: number; before_created_at?: string }
+        Returns: {
+          activity_id: string
+          actor_country_code: string | null
+          actor_display_name: string | null
+          actor_handle: string | null
+          actor_id: string
+          created_at: string
+          kind: string
+          metadata: Json
+          post_author_id: string | null
+          post_author_name: string | null
+          post_body: string | null
+          post_id: string | null
+          read_at: string | null
+          source_id: string
         }[]
       }
       is_blocked_between: {
@@ -1008,6 +1072,10 @@ export type Database = {
       mark_conversation_read: {
         Args: { target_conversation_id: string }
         Returns: undefined
+      }
+      mark_activity_read: {
+        Args: { target_activity_id?: string }
+        Returns: number
       }
       manage_club_member: {
         Args: {

@@ -10,19 +10,20 @@ function getCallbackParams(url: string) {
     code: query.get('code') ?? fragment.get('code'),
     errorDescription: query.get('error_description') ?? fragment.get('error_description'),
     refreshToken: query.get('refresh_token') ?? fragment.get('refresh_token'),
+    type: query.get('type') ?? fragment.get('type'),
   };
 }
 
 export async function handleAuthCallbackUrl(url: string) {
-  if (!supabase || !url.includes('/auth/callback')) return;
+  if (!supabase || !url.includes('/auth/callback')) return null;
 
-  const { accessToken, code, errorDescription, refreshToken } = getCallbackParams(url);
+  const { accessToken, code, errorDescription, refreshToken, type } = getCallbackParams(url);
   if (errorDescription) throw new Error(errorDescription);
 
   if (code) {
     const { error } = await supabase.auth.exchangeCodeForSession(code);
     if (error) throw error;
-    return;
+    return type;
   }
 
   if (accessToken && refreshToken) {
@@ -32,4 +33,6 @@ export async function handleAuthCallbackUrl(url: string) {
     });
     if (error) throw error;
   }
+
+  return type;
 }

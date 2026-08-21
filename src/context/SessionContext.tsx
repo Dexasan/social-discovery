@@ -25,13 +25,16 @@ type SessionValue = {
   completeOnboarding: (input: CompleteOnboardingInput) => Promise<void>;
   isConfigured: boolean;
   isLoading: boolean;
+  isPasswordRecovery: boolean;
   onboardingComplete: boolean;
   profile: Profile | null;
   refreshProfile: () => Promise<void>;
+  requestPasswordReset: (email: string) => Promise<void>;
   session: Session | null;
   signIn: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
   signUp: (email: string, password: string) => Promise<SignUpResult>;
+  updatePassword: (password: string) => Promise<void>;
   user: User | null;
 };
 
@@ -54,6 +57,7 @@ export function SessionProvider({ children }: PropsWithChildren) {
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [onboardingComplete, setOnboardingComplete] = useState(false);
+  const [isPasswordRecovery, setIsPasswordRecovery] = useState(false);
 
   const loadUserData = useCallback(async (userId: string) => {
     if (!supabase) return;
@@ -81,7 +85,10 @@ export function SessionProvider({ children }: PropsWithChildren) {
 
     const initialize = async () => {
       const initialUrl = await Linking.getInitialURL();
-      if (initialUrl) await handleAuthCallbackUrl(initialUrl);
+      if (initialUrl) {
+        const callbackType = await handleAuthCallbackUrl(initialUrl);
+        if (callbackType === 'recovery') setIsPasswordRecovery(true);
+      }
 
       const { data, error } = await client.auth.getSession();
       if (error) throw error;
@@ -96,7 +103,9 @@ export function SessionProvider({ children }: PropsWithChildren) {
       if (active) setIsLoading(false);
     });
 
-    const authSubscription = client.auth.onAuthStateChange((_event, nextSession) => {
+    const authSubscription = client.auth.onAuthStateChange((event, nextSession) => {
+      if (event === 'PASSWORD_RECOVERY') setIsPasswordRecovery(true);
+      if (event === 'SIGNED_OUT') setIsPasswordRecovery(false);
       setSession(nextSession);
 
       if (!nextSession?.user) {
@@ -110,7 +119,11 @@ export function SessionProvider({ children }: PropsWithChildren) {
     });
 
     const linkSubscription = Linking.addEventListener('url', ({ url }) => {
-      void handleAuthCallbackUrl(url);
+      void handleAuthCallbackUrl(url)
+        .then((callbackType) => {
+          if (callbackType === 'recovery') setIsPasswordRecovery(true);
+        })
+        .catch(() => undefined);
     });
 
     return () => {
@@ -124,13 +137,22 @@ export function SessionProvider({ children }: PropsWithChildren) {
     () => ({
       isConfigured: isSupabaseConfigured,
       isLoading,
+      isPasswordRecovery,
       onboardingComplete,
       profile,
       session,
       user: session?.user ?? null,
       signIn: async (email, password) => {
         if (!supabase) throw new Error('Supabase is not configured.');
+        setIsPasswordRecovery(false);
         const { error } = await supabase.auth.signInWithPassword({ email, password });
+        if (error) throw error;
+      },
+      requestPasswordReset: async (email) => {
+        if (!supabase) throw new Error('Supabase is not configured.');
+        const { error } = await supabase.auth.resetPasswordForEmail(email, {
+          redirectTo: Linking.createURL('/auth/callback'),
+        });
         if (error) throw error;
       },
       signUp: async (email, password) => {
@@ -149,6 +171,12 @@ export function SessionProvider({ children }: PropsWithChildren) {
         if (!supabase) return;
         const { error } = await supabase.auth.signOut();
         if (error) throw error;
+      },
+      updatePassword: async (password) => {
+        if (!supabase) throw new Error('Supabase is not configured.');
+        const { error } = await supabase.auth.updateUser({ password });
+        if (error) throw error;
+        setIsPasswordRecovery(false);
       },
       refreshProfile: async () => {
         if (session?.user) await loadUserData(session.user.id);
@@ -169,7 +197,7 @@ export function SessionProvider({ children }: PropsWithChildren) {
         setOnboardingComplete(true);
       },
     }),
-    [isLoading, loadUserData, onboardingComplete, profile, session],
+    [isLoading, isPasswordRecovery, loadUserData, onboardingComplete, profile, session],
   );
 
   return <SessionContext.Provider value={value}>{children}</SessionContext.Provider>;

@@ -1,4 +1,4 @@
-import { Redirect } from 'expo-router';
+import { Redirect, router } from 'expo-router';
 import { useState } from 'react';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
@@ -17,7 +17,7 @@ function readableAuthError(error: unknown) {
 }
 
 export default function AuthScreen() {
-  const { isConfigured, isLoading, onboardingComplete, signIn, signUp, user } = useSession();
+  const { isConfigured, isLoading, onboardingComplete, requestPasswordReset, signIn, signUp, user } = useSession();
   const [mode, setMode] = useState<AuthMode>('sign-up');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -57,6 +57,24 @@ export default function AuthScreen() {
     setMode((current) => (current === 'sign-up' ? 'sign-in' : 'sign-up'));
     setError('');
     setNotice('');
+  };
+
+  const sendResetLink = async () => {
+    if (!email.trim().includes('@') || submitting) {
+      setError('Enter your email first, then request a reset link.');
+      return;
+    }
+    setSubmitting(true);
+    setError('');
+    setNotice('');
+    try {
+      await requestPasswordReset(email.trim().toLowerCase());
+      setNotice('Password reset link sent. Open it on this Android device to choose a new password.');
+    } catch (nextError) {
+      setError(readableAuthError(nextError));
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -105,6 +123,11 @@ export default function AuthScreen() {
           style={styles.input}
           value={password}
         />
+        {mode === 'sign-in' ? (
+          <Pressable accessibilityRole="button" onPress={() => void sendResetLink()} style={styles.forgotButton}>
+            <Text style={styles.forgotLabel}>Forgot password?</Text>
+          </Pressable>
+        ) : null}
 
         {error ? <Text style={styles.error}>{error}</Text> : null}
         {notice ? <Text style={styles.notice}>{notice}</Text> : null}
@@ -121,7 +144,16 @@ export default function AuthScreen() {
         <Text style={styles.switchMuted}>{mode === 'sign-up' ? 'Already have an account?' : 'New here?'}</Text>
         <Text style={styles.switchAction}>{mode === 'sign-up' ? ' Sign in' : ' Create account'}</Text>
       </Pressable>
-      <Text style={styles.privacy}>By continuing, you agree to the Terms and acknowledge the Privacy Policy. Age eligibility is verified during profile setup.</Text>
+      <View style={styles.policyBlock}>
+        <Text style={styles.privacy}>By continuing, you agree to our policies. Age eligibility is verified during profile setup.</Text>
+        <View style={styles.policyLinks}>
+          <Pressable onPress={() => router.push({ pathname: '/legal/[document]', params: { document: 'terms' } })}><Text style={styles.policyLink}>Terms</Text></Pressable>
+          <Text style={styles.policyDot}>·</Text>
+          <Pressable onPress={() => router.push({ pathname: '/legal/[document]', params: { document: 'privacy' } })}><Text style={styles.policyLink}>Privacy</Text></Pressable>
+          <Text style={styles.policyDot}>·</Text>
+          <Pressable onPress={() => router.push({ pathname: '/legal/[document]', params: { document: 'community-guidelines' } })}><Text style={styles.policyLink}>Guidelines</Text></Pressable>
+        </View>
+      </View>
     </Screen>
   );
 }
@@ -143,8 +175,14 @@ const styles = StyleSheet.create({
   input: { backgroundColor: colors.surfaceRaised, borderColor: colors.borderStrong, borderRadius: radius.md, borderWidth: 1, color: colors.text, fontSize: 16, minHeight: 54, paddingHorizontal: spacing.lg },
   error: { color: colors.danger, fontSize: 13, lineHeight: 19 },
   notice: { backgroundColor: colors.successSoft, borderRadius: radius.sm, color: colors.success, fontSize: 13, lineHeight: 19, padding: spacing.md },
+  forgotButton: { alignSelf: 'flex-end', marginTop: -spacing.xs, paddingVertical: spacing.xs },
+  forgotLabel: { color: colors.primary, fontSize: 12, fontWeight: '800' },
   switchButton: { alignItems: 'center', flexDirection: 'row', justifyContent: 'center', marginTop: spacing.xl },
   switchMuted: { color: colors.textMuted, fontSize: 14 },
   switchAction: { color: colors.primary, fontSize: 14, fontWeight: '800' },
-  privacy: { color: colors.textSubtle, fontSize: 10.5, lineHeight: 16, marginTop: spacing.xl, textAlign: 'center' },
+  policyBlock: { alignItems: 'center', gap: spacing.sm, marginTop: spacing.xl },
+  privacy: { color: colors.textSubtle, fontSize: 10.5, lineHeight: 16, textAlign: 'center' },
+  policyLinks: { alignItems: 'center', flexDirection: 'row', gap: spacing.sm },
+  policyLink: { color: colors.primary, fontSize: 11, fontWeight: '800' },
+  policyDot: { color: colors.textSubtle, fontSize: 11 },
 });

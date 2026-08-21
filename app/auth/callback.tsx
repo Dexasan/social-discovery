@@ -5,9 +5,10 @@ import { useSession } from '@/context/SessionContext';
 import { colors, spacing } from '@/theme/tokens';
 
 export default function AuthCallbackScreen() {
-  const { isLoading, onboardingComplete, user } = useSession();
+  const { isLoading, isPasswordRecovery, onboardingComplete, user } = useSession();
 
   if (!isLoading && user) {
+    if (isPasswordRecovery) return <Redirect href="/auth/reset-password" />;
     return <Redirect href={onboardingComplete ? '/(tabs)/quick-chat' : '/onboarding'} />;
   }
 

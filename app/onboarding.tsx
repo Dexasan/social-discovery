@@ -181,8 +181,15 @@ export default function OnboardingScreen() {
           <View style={[styles.checkbox, termsAccepted && styles.checkboxChecked]}>
             {termsAccepted && <Text style={styles.checkmark}>✓</Text>}
           </View>
-          <Text style={styles.ageText}>I confirm these details are accurate and agree to the Terms and Community Guidelines.</Text>
+          <Text style={styles.ageText}>I confirm these details are accurate, I am at least 18, and I agree to the app policies.</Text>
         </Pressable>
+        <View style={styles.policyLinks}>
+          <Pressable onPress={() => router.push({ pathname: '/legal/[document]', params: { document: 'terms' } })}><Text style={styles.policyLink}>Terms</Text></Pressable>
+          <Text style={styles.policyDot}>·</Text>
+          <Pressable onPress={() => router.push({ pathname: '/legal/[document]', params: { document: 'privacy' } })}><Text style={styles.policyLink}>Privacy</Text></Pressable>
+          <Text style={styles.policyDot}>·</Text>
+          <Pressable onPress={() => router.push({ pathname: '/legal/[document]', params: { document: 'community-guidelines' } })}><Text style={styles.policyLink}>Community Guidelines</Text></Pressable>
+        </View>
 
         {error ? <Text style={styles.error}>{error}</Text> : null}
       </Card>
@@ -221,6 +228,9 @@ const styles = StyleSheet.create({
   checkboxChecked: { backgroundColor: colors.primary, borderColor: colors.primary },
   checkmark: { color: colors.primaryInk, fontWeight: '900' },
   ageText: { color: colors.textMuted, flex: 1, fontSize: 13, lineHeight: 19 },
+  policyLinks: { alignItems: 'center', flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm, justifyContent: 'center' },
+  policyLink: { color: colors.primary, fontSize: 11, fontWeight: '800' },
+  policyDot: { color: colors.textSubtle, fontSize: 11 },
   error: { color: colors.danger, fontSize: 13, lineHeight: 19 },
   privacy: { color: colors.textMuted, fontSize: 12, lineHeight: 17, marginTop: spacing.md, textAlign: 'center' },
 });
