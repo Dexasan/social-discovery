@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { router } from 'expo-router';
-import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, AppState, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { Avatar, Card, Eyebrow, Heading, Muted, Pill, PrimaryButton, Screen, SectionHeader } from '@/components/ui';
 import { useSession } from '@/context/SessionContext';
@@ -32,34 +32,54 @@ export default function QuickChatScreen() {
   const [topic, setTopic] = useState('Surprise me');
   const activeSearchRef = useRef(false);
   const pollTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const searchGenerationRef = useRef(0);
 
-  useEffect(() => () => {
-    activeSearchRef.current = false;
-    if (pollTimerRef.current) clearTimeout(pollTimerRef.current);
-    if (matchState === 'searching') void cancelQuickChatSearch();
-  }, [matchState]);
+  useEffect(() => {
+    const stopActiveSearch = () => {
+      if (!activeSearchRef.current) return;
+      searchGenerationRef.current += 1;
+      activeSearchRef.current = false;
+      if (pollTimerRef.current) clearTimeout(pollTimerRef.current);
+      pollTimerRef.current = null;
+      void cancelQuickChatSearch().catch(() => undefined);
+    };
 
-  const pollForMatch = async () => {
-    if (!activeSearchRef.current) return;
+    const appStateSubscription = AppState.addEventListener('change', (state) => {
+      if (state === 'active' || !activeSearchRef.current) return;
+      stopActiveSearch();
+      setMatchState('idle');
+      setError('Search paused while the app was away. Tap below when you are ready again.');
+    });
+
+    return () => {
+      stopActiveSearch();
+      appStateSubscription.remove();
+    };
+  }, []);
+
+  const pollForMatch = async (generation: number) => {
+    if (!activeSearchRef.current || generation !== searchGenerationRef.current) return;
 
     try {
       const result = await joinQuickChat(
         profile?.languages.length ? profile.languages : ['English'],
         topic === 'Surprise me' ? undefined : topic,
       );
-      if (!activeSearchRef.current) return;
+      if (!activeSearchRef.current || generation !== searchGenerationRef.current) return;
 
       if (result.match_status === 'matched' && result.session_id && result.conversation_id && result.matched_profile_id) {
-        activeSearchRef.current = false;
         const matchedProfile = await loadPublicProfile(result.matched_profile_id);
+        if (!activeSearchRef.current || generation !== searchGenerationRef.current) return;
+        activeSearchRef.current = false;
         setMatch(result);
         setPartner(matchedProfile);
         setMatchState('matched');
         return;
       }
 
-      pollTimerRef.current = setTimeout(() => void pollForMatch(), 2500);
+      pollTimerRef.current = setTimeout(() => void pollForMatch(generation), 2500);
     } catch (nextError) {
+      if (generation !== searchGenerationRef.current) return;
       activeSearchRef.current = false;
       setMatchState('idle');
       setError(readableMatchError(nextError));
@@ -67,17 +87,22 @@ export default function QuickChatScreen() {
   };
 
   const beginSearch = () => {
+    if (pollTimerRef.current) clearTimeout(pollTimerRef.current);
+    const generation = searchGenerationRef.current + 1;
+    searchGenerationRef.current = generation;
     setError('');
     setMatch(null);
     setPartner(null);
     setMatchState('searching');
     activeSearchRef.current = true;
-    void pollForMatch();
+    void pollForMatch(generation);
   };
 
   const cancelSearch = async () => {
+    searchGenerationRef.current += 1;
     activeSearchRef.current = false;
     if (pollTimerRef.current) clearTimeout(pollTimerRef.current);
+    pollTimerRef.current = null;
     setMatchState('idle');
     try {
       await cancelQuickChatSearch();
