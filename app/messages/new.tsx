@@ -113,8 +113,8 @@ export default function NewMessageScreen() {
 const styles = StyleSheet.create({
   topRow: { flexDirection: 'row' },
   backButton: { alignItems: 'center', flexDirection: 'row', gap: 4, paddingVertical: spacing.sm },
-  backGlyph: { color: colors.primary, fontSize: 28, lineHeight: 28 },
-  backLabel: { color: colors.primary, fontSize: 14, fontWeight: '800' },
+  backGlyph: { color: colors.text, fontSize: 28, lineHeight: 28 },
+  backLabel: { color: colors.text, fontSize: 14, fontWeight: '800' },
   hero: { gap: spacing.sm, marginTop: spacing.xl },
   searchWrap: { alignItems: 'center', backgroundColor: colors.surfaceSoft, borderColor: colors.border, borderRadius: radius.md, borderWidth: 1, flexDirection: 'row', gap: spacing.sm, marginTop: spacing.xl, paddingHorizontal: spacing.md },
   searchGlyph: { color: colors.textSubtle, fontSize: 20 },
@@ -129,6 +129,6 @@ const styles = StyleSheet.create({
   name: { color: colors.text, flexShrink: 1, fontSize: 14, fontWeight: '900' },
   handle: { color: colors.textSubtle, fontSize: 13, fontWeight: '700' },
   bio: { color: colors.textMuted, fontSize: 14 },
-  arrow: { color: colors.primary, fontSize: 25, fontWeight: '300' },
+  arrow: { color: colors.textMuted, fontSize: 25, fontWeight: '300' },
   pressed: { opacity: 0.72, transform: [{ scale: 0.99 }] },
 });

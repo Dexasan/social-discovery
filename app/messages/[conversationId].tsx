@@ -198,7 +198,7 @@ const styles = StyleSheet.create({
   ownMessageText: { color: colors.primaryInk },
   error: { color: colors.danger, fontSize: 12, paddingHorizontal: spacing.lg, paddingVertical: spacing.sm, textAlign: 'center' },
   composer: { alignItems: 'flex-end', backgroundColor: colors.surfaceSoft, borderTopColor: colors.border, borderTopWidth: StyleSheet.hairlineWidth, flexDirection: 'row', gap: spacing.sm, padding: spacing.md },
-  giftButton: { alignItems: 'center', backgroundColor: colors.warningSoft, borderColor: '#E8C778', borderRadius: 27, borderWidth: 1, height: 54, justifyContent: 'center', width: 54 },
+  giftButton: { alignItems: 'center', backgroundColor: colors.warningSoft, borderColor: '#6D5520', borderRadius: 27, borderWidth: 1, height: 54, justifyContent: 'center', width: 54 },
   giftGlyph: { color: colors.warning, fontSize: 20, fontWeight: '900' },
   input: { backgroundColor: colors.surfaceRaised, borderColor: colors.borderStrong, borderRadius: 27, borderWidth: 1, color: colors.text, flex: 1, fontSize: 17, maxHeight: 132, minHeight: 54, paddingHorizontal: spacing.lg, paddingVertical: 14 },
   sendButton: { alignItems: 'center', backgroundColor: colors.primary, borderRadius: 27, height: 54, justifyContent: 'center', width: 54 },

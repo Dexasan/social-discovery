@@ -110,8 +110,8 @@ export function Avatar({ label, size = 48 }: { label: string; size?: number }) {
   const palettes = [
     { backgroundColor: colors.signal, color: colors.primary },
     { backgroundColor: colors.cobaltSoft, color: colors.cobalt },
-    { backgroundColor: colors.accentSoft, color: '#9F321D' },
-    { backgroundColor: colors.warningSoft, color: '#785200' },
+    { backgroundColor: colors.accentSoft, color: '#FF9A82' },
+    { backgroundColor: colors.warningSoft, color: '#FFD27C' },
   ];
   const palette = palettes[(label.charCodeAt(0) || 0) % palettes.length] ?? palettes[0]!;
   return (
@@ -188,9 +188,9 @@ const styles = StyleSheet.create({
   muted: { color: colors.textMuted, fontSize: 16, lineHeight: 24 },
   card: { ...shadows.card, backgroundColor: colors.surface, borderColor: colors.border, borderRadius: radius.lg, borderWidth: 1, padding: 20 },
   pill: { alignItems: 'center', alignSelf: 'flex-start', backgroundColor: colors.surfaceRaised, borderColor: colors.border, borderRadius: radius.pill, borderWidth: 1, flexDirection: 'row', gap: 7, minHeight: 34, paddingHorizontal: 13, paddingVertical: 7 },
-  pillLive: { backgroundColor: colors.accentSoft, borderColor: '#FFB9A7' },
-  pillAccent: { backgroundColor: colors.cobaltSoft, borderColor: '#BFC9FF' },
-  pillSuccess: { backgroundColor: colors.signalSoft, borderColor: '#CDE987' },
+  pillLive: { backgroundColor: colors.accentSoft, borderColor: '#603128' },
+  pillAccent: { backgroundColor: colors.cobaltSoft, borderColor: '#34458F' },
+  pillSuccess: { backgroundColor: colors.signalSoft, borderColor: '#3B5421' },
   liveDot: { backgroundColor: colors.accent, borderRadius: 4, height: 7, width: 7 },
   pillText: { color: colors.textMuted, fontSize: 12, fontWeight: '800', letterSpacing: 0.45, textTransform: 'uppercase' },
   pillLiveText: { color: colors.danger },
@@ -206,11 +206,11 @@ const styles = StyleSheet.create({
   sectionHeader: { alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between', marginBottom: spacing.md, marginTop: spacing.xl },
   sectionTitle: { color: colors.text, fontSize: 22, fontWeight: '900', letterSpacing: -0.7 },
   iconButton: { alignItems: 'center', backgroundColor: colors.surfaceRaised, borderColor: colors.border, borderRadius: 18, borderWidth: 1, height: 52, justifyContent: 'center', width: 52 },
-  iconButtonDanger: { backgroundColor: colors.dangerSoft, borderColor: '#FFB9A7' },
+  iconButtonDanger: { backgroundColor: colors.dangerSoft, borderColor: '#603128' },
   iconGlyph: { color: colors.text, fontSize: 22, fontWeight: '800' },
   iconGlyphDanger: { color: colors.danger },
   pressed: { opacity: 0.7, transform: [{ scale: 0.96 }] },
-  emptyState: { alignItems: 'center', backgroundColor: colors.signalSoft, borderColor: '#CDE987', borderRadius: radius.xl, borderWidth: 1, gap: spacing.sm, marginTop: spacing.xl, paddingHorizontal: spacing.xl, paddingVertical: spacing.xxl },
+  emptyState: { alignItems: 'center', backgroundColor: colors.signalSoft, borderColor: '#3B5421', borderRadius: radius.xl, borderWidth: 1, gap: spacing.sm, marginTop: spacing.xl, paddingHorizontal: spacing.xl, paddingVertical: spacing.xxl },
   emptyIcon: { alignItems: 'center', backgroundColor: colors.primary, borderRadius: 18, height: 60, justifyContent: 'center', marginBottom: spacing.xs, transform: [{ rotate: '-5deg' }], width: 60 },
   emptyGlyph: { color: colors.white, fontSize: 27, fontWeight: '700' },
   emptyTitle: { color: colors.text, fontSize: 21, fontWeight: '900', textAlign: 'center' },

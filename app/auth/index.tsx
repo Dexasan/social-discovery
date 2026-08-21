@@ -166,7 +166,7 @@ const styles = StyleSheet.create({
   introCopy: { color: '#C9C7C0', fontSize: 17, lineHeight: 25 },
   promiseRow: { alignItems: 'stretch', flexDirection: 'row', gap: 7, marginVertical: spacing.xl },
   promise: { alignItems: 'center', borderRadius: 18, flex: 1, gap: 3, justifyContent: 'center', minHeight: 86, paddingHorizontal: 5, transform: [{ rotate: '-2deg' }] },
-  promiseSignal: { backgroundColor: colors.signal },
+  promiseSignal: { backgroundColor: colors.surfaceRaised, borderColor: colors.borderStrong, borderWidth: 1 },
   promiseCobalt: { backgroundColor: colors.cobalt, transform: [{ rotate: '2deg' }] },
   promiseOrange: { backgroundColor: colors.accentSoft, transform: [{ rotate: '-1deg' }] },
   promiseValue: { color: colors.text, fontSize: 18, fontWeight: '900' },

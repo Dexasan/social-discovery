@@ -155,8 +155,8 @@ const styles = StyleSheet.create({
   blockedCopy: { flex: 1 },
   blockedName: { color: colors.text, fontSize: 14, fontWeight: '900', marginBottom: 2 },
   unblockButton: { backgroundColor: colors.surfaceRaised, borderColor: colors.borderStrong, borderRadius: radius.pill, borderWidth: 1, paddingHorizontal: spacing.md, paddingVertical: 8 },
-  unblockLabel: { color: colors.primary, fontSize: 14, fontWeight: '900' },
+  unblockLabel: { color: colors.text, fontSize: 14, fontWeight: '900' },
   inactive: { opacity: 0.5 },
-  noteCard: { backgroundColor: colors.cobaltSoft, borderColor: '#BFC9FF', gap: spacing.xs, marginTop: spacing.xl },
+  noteCard: { backgroundColor: colors.cobaltSoft, borderColor: '#34458F', gap: spacing.xs, marginTop: spacing.xl },
   noteTitle: { color: colors.text, fontSize: 14, fontWeight: '900' },
 });

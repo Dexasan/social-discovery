@@ -5,6 +5,7 @@ import { Alert } from 'react-native';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import * as Updates from 'expo-updates';
+import * as SystemUI from 'expo-system-ui';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { SessionProvider } from '@/context/SessionContext';
@@ -29,11 +30,15 @@ function UpdatePrompt() {
 }
 
 export default function RootLayout() {
+  useEffect(() => {
+    void SystemUI.setBackgroundColorAsync(colors.background);
+  }, []);
+
   return (
     <SafeAreaProvider>
       <UpdatePrompt />
       <SessionProvider>
-        <StatusBar style="dark" />
+        <StatusBar style="light" />
         <Stack screenOptions={{ contentStyle: { backgroundColor: colors.background }, headerShown: false }} />
       </SessionProvider>
     </SafeAreaProvider>

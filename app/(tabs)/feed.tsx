@@ -230,7 +230,7 @@ const styles = StyleSheet.create({
   composeInputOpen: { minHeight: 74 },
   topics: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
   topicChoice: { borderColor: colors.border, borderRadius: radius.pill, borderWidth: 1, paddingHorizontal: 10, paddingVertical: 6 },
-  topicSelected: { backgroundColor: colors.cobaltSoft, borderColor: '#BFC9FF' },
+  topicSelected: { backgroundColor: colors.cobaltSoft, borderColor: '#34458F' },
   topicText: { color: colors.textMuted, fontSize: 12, fontWeight: '700' },
   topicTextSelected: { color: colors.cobalt, fontWeight: '900' },
   publishRow: { alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between' },
@@ -258,6 +258,6 @@ const styles = StyleSheet.create({
   shareButton: { marginLeft: 'auto', paddingHorizontal: spacing.sm, paddingVertical: 3 },
   shareIcon: { color: colors.textMuted, fontSize: 17, fontWeight: '900' },
   loadMoreButton: { alignItems: 'center', alignSelf: 'center', borderColor: colors.borderStrong, borderRadius: radius.pill, borderWidth: 1, marginTop: spacing.lg, minWidth: 150, paddingHorizontal: spacing.xl, paddingVertical: spacing.md },
-  loadMoreLabel: { color: colors.primary, fontSize: 14, fontWeight: '900' },
+  loadMoreLabel: { color: colors.text, fontSize: 14, fontWeight: '900' },
   feedEnd: { color: colors.textSubtle, fontSize: 13, marginTop: spacing.lg, textAlign: 'center' },
 });

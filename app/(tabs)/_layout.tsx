@@ -5,7 +5,7 @@ import { colors, shadows } from '@/theme/tokens';
 import { useSession } from '@/context/SessionContext';
 
 function TabIcon({ name, focused }: { name: string; focused: boolean }) {
-  const color = focused ? colors.primary : '#A7A69F';
+  const color = focused ? colors.primary : colors.textSubtle;
   const shape = name === 'quick-chat' ? (
     <View style={styles.chatIcon}>
       <View style={[styles.chatBubble, { borderColor: color }]} />
@@ -55,7 +55,7 @@ export default function TabsLayout() {
       screenOptions={({ route }) => ({
         headerShown: false,
         tabBarActiveTintColor: colors.signal,
-        tabBarInactiveTintColor: '#A7A69F',
+        tabBarInactiveTintColor: colors.textSubtle,
         tabBarIcon: ({ focused }) => <TabIcon focused={focused} name={route.name} />,
         tabBarItemStyle: styles.tabItem,
         tabBarLabelStyle: styles.label,
@@ -72,7 +72,7 @@ export default function TabsLayout() {
 }
 
 const styles = StyleSheet.create({
-  tabBar: { ...shadows.floating, backgroundColor: colors.primary, borderColor: '#303136', borderRadius: 27, borderTopColor: '#303136', borderTopWidth: 1, bottom: 12, height: 84, left: 10, paddingBottom: 10, paddingHorizontal: 6, paddingTop: 8, position: 'absolute', right: 10 },
+  tabBar: { ...shadows.floating, backgroundColor: colors.primary, borderColor: colors.borderStrong, borderRadius: 27, borderTopColor: colors.borderStrong, borderTopWidth: 1, bottom: 12, height: 84, left: 10, paddingBottom: 10, paddingHorizontal: 6, paddingTop: 8, position: 'absolute', right: 10 },
   tabItem: { borderRadius: 22 },
   label: { fontSize: 12, fontWeight: '900', letterSpacing: 0.1, marginTop: 2 },
   iconWrap: { alignItems: 'center', borderRadius: 14, height: 32, justifyContent: 'center', width: 46 },

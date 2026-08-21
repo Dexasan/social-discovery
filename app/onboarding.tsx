@@ -207,7 +207,7 @@ const styles = StyleSheet.create({
   progressTrack: { backgroundColor: colors.surfaceRaised, borderRadius: radius.pill, height: 10, overflow: 'hidden', width: 142 },
   progressFill: { backgroundColor: colors.signal, borderRadius: radius.pill, height: '100%', width: '82%' },
   step: { color: colors.textMuted, fontSize: 13, fontWeight: '900', letterSpacing: 0.7, textTransform: 'uppercase' },
-  intro: { backgroundColor: colors.signalSoft, borderColor: '#CDE987', borderRadius: 30, borderWidth: 1, gap: spacing.md, marginBottom: spacing.xl, marginTop: spacing.xxl, padding: spacing.xl, transform: [{ rotate: '-0.5deg' }] },
+  intro: { backgroundColor: colors.signalSoft, borderColor: '#3B5421', borderRadius: 30, borderWidth: 1, gap: spacing.md, marginBottom: spacing.xl, marginTop: spacing.xxl, padding: spacing.xl, transform: [{ rotate: '-0.5deg' }] },
   form: { backgroundColor: colors.surface, borderRadius: 30, gap: spacing.md, marginBottom: spacing.lg },
   label: { color: colors.textMuted, fontSize: 14, fontWeight: '900', marginTop: spacing.xs },
   labelRow: { alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between' },

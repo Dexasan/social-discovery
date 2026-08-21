@@ -119,7 +119,7 @@ export default function PostDetailScreen() {
 
 const styles = StyleSheet.create({
   back: { alignSelf: 'flex-start', paddingVertical: spacing.sm },
-  backText: { color: colors.primary, fontSize: 13, fontWeight: '900' },
+  backText: { color: colors.text, fontSize: 13, fontWeight: '900' },
   postCard: { backgroundColor: colors.surfaceSoft, gap: spacing.lg, marginTop: spacing.lg },
   authorRow: { alignItems: 'center', flexDirection: 'row', gap: spacing.md },
   author: { color: colors.text, fontSize: 14, fontWeight: '800' },

@@ -111,8 +111,8 @@ export default function LegalScreen() {
 
 const styles = StyleSheet.create({
   backButton: { alignItems: 'center', alignSelf: 'flex-start', flexDirection: 'row', gap: 4, paddingVertical: spacing.sm },
-  backGlyph: { color: colors.primary, fontSize: 28, lineHeight: 28 },
-  backLabel: { color: colors.primary, fontSize: 14, fontWeight: '800' },
+  backGlyph: { color: colors.text, fontSize: 28, lineHeight: 28 },
+  backLabel: { color: colors.text, fontSize: 14, fontWeight: '800' },
   hero: { gap: spacing.sm, marginTop: spacing.xl },
   updated: { color: colors.textSubtle, fontSize: 12, fontWeight: '800', marginTop: spacing.xs, textTransform: 'uppercase' },
   tabs: { backgroundColor: colors.surfaceSoft, borderColor: colors.border, borderRadius: radius.pill, borderWidth: 1, flexDirection: 'row', marginTop: spacing.xl, padding: 4 },
@@ -123,7 +123,7 @@ const styles = StyleSheet.create({
   sections: { gap: spacing.md, marginTop: spacing.xl },
   sectionCard: { alignItems: 'flex-start', flexDirection: 'row', gap: spacing.md },
   sectionNumber: { alignItems: 'center', backgroundColor: colors.primarySoft, borderRadius: radius.pill, height: 30, justifyContent: 'center', width: 30 },
-  sectionNumberText: { color: colors.primary, fontSize: 13, fontWeight: '900' },
+  sectionNumberText: { color: colors.text, fontSize: 13, fontWeight: '900' },
   sectionCopy: { flex: 1, gap: spacing.sm },
   sectionHeading: { color: colors.text, fontSize: 15, fontWeight: '900' },
   sectionBody: { color: colors.textMuted, fontSize: 13, lineHeight: 20 },
