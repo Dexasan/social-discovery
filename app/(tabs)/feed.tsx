@@ -1,6 +1,6 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { router, useFocusEffect } from 'expo-router';
-import { ActivityIndicator, Pressable, RefreshControl, Share, StyleSheet, Text, TextInput, View } from 'react-native';
+import { ActivityIndicator, Pressable, RefreshControl, ScrollView, Share, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import { Avatar, EmptyState, Screen } from '@/components/ui';
 import { useSession } from '@/context/SessionContext';
@@ -33,6 +33,16 @@ export default function FeedScreen() {
   const [hasMore, setHasMore] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
+  const [topicFilter, setTopicFilter] = useState<string | null>(null);
+
+  const popularTopics = useMemo(() => {
+    const counts = new Map<string, number>();
+    for (const post of posts) {
+      if (post.topic) counts.set(post.topic, (counts.get(post.topic) ?? 0) + 1);
+    }
+    return [...counts.entries()].sort((left, right) => right[1] - left[1]).slice(0, 8).map(([name]) => name);
+  }, [posts]);
+  const visiblePosts = topicFilter ? posts.filter((post) => post.topic === topicFilter) : posts;
 
   const refresh = useCallback(async (showRefreshIndicator = false) => {
     if (showRefreshIndicator) setRefreshing(true);
@@ -130,7 +140,7 @@ export default function FeedScreen() {
             </Pressable>
           ))}
         </View>
-        <View style={styles.liveDot} />
+        <View style={styles.fresh}><View style={styles.liveDot} /><Text style={styles.freshText}>Fresh</Text></View>
       </View>
 
       <View style={[styles.composer, composerOpen && styles.composerOpen]}>
@@ -167,6 +177,19 @@ export default function FeedScreen() {
         </View>
       </View>
 
+      {popularTopics.length > 1 ? (
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.topicRail}>
+          <View style={styles.topicRailInner}>
+            <Pressable onPress={() => setTopicFilter(null)} style={[styles.railTopic, !topicFilter && styles.railTopicSelected]}><Text style={[styles.railTopicText, !topicFilter && styles.railTopicTextSelected]}>Everything</Text></Pressable>
+            {popularTopics.map((item) => (
+              <Pressable key={item} onPress={() => setTopicFilter((current) => current === item ? null : item)} style={[styles.railTopic, topicFilter === item && styles.railTopicSelected]}>
+                <Text style={[styles.railTopicText, topicFilter === item && styles.railTopicTextSelected]}>#{item.replace(/\s+/g, '')}</Text>
+              </Pressable>
+            ))}
+          </View>
+        </ScrollView>
+      ) : null}
+
       {error ? <Text accessibilityRole="alert" style={styles.error}>{error}</Text> : null}
       {loading ? <ActivityIndicator color={colors.primary} style={styles.loading} /> : null}
       {!loading && error && posts.length === 0 ? (
@@ -176,8 +199,9 @@ export default function FeedScreen() {
         <EmptyState description={feedMode === 'following' ? 'Follow people from Quick Chat or Clubs to build your timeline.' : 'Break the silence with the first thought.'} glyph="✦" title={feedMode === 'following' ? 'Your people will show up here' : 'Nothing here yet'} />
       ) : null}
 
+      {!loading && topicFilter && visiblePosts.length === 0 ? <Text style={styles.filterEmpty}>Nothing under #{topicFilter.replace(/\s+/g, '')} yet.</Text> : null}
       <View style={styles.timeline}>
-        {posts.map((post) => {
+        {visiblePosts.map((post) => {
           const authorName = post.author_display_name || (post.author_handle ? `@${post.author_handle}` : 'Community member');
           return (
             <View key={post.post_id} style={styles.post}>
@@ -189,7 +213,7 @@ export default function FeedScreen() {
                   <Text numberOfLines={1} style={styles.name}>{authorName}</Text>
                   <Text numberOfLines={1} style={styles.meta}>@{post.author_handle ?? 'member'} · {relativeTime(post.created_at)}</Text>
                 </Pressable>
-                {post.topic ? <Text style={styles.postTopic}>{post.topic}</Text> : null}
+                {post.topic ? <Pressable onPress={() => setTopicFilter(post.topic)}><Text style={styles.postTopic}>#{post.topic.replace(/\s+/g, '')}</Text></Pressable> : null}
                 <Text style={styles.postBody}>{post.body}</Text>
                 <View style={styles.actions}>
                   <Pressable accessibilityLabel="Like post" onPress={() => void toggleLike(post)} style={styles.actionButton}>
@@ -216,41 +240,50 @@ export default function FeedScreen() {
 }
 
 const styles = StyleSheet.create({
-  topBar: { alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between', marginBottom: spacing.md },
-  feedModeRow: { backgroundColor: colors.surfaceRaised, borderRadius: radius.pill, flexDirection: 'row', padding: 4 },
-  feedModeButton: { borderRadius: radius.pill, minWidth: 94, paddingHorizontal: spacing.lg, paddingVertical: 10 },
-  feedModeSelected: { backgroundColor: colors.primary },
-  feedModeLabel: { color: colors.textMuted, fontSize: 14, fontWeight: '800', textAlign: 'center' },
-  feedModeLabelSelected: { color: colors.white },
+  topBar: { alignItems: 'flex-end', borderBottomColor: colors.border, borderBottomWidth: StyleSheet.hairlineWidth, flexDirection: 'row', justifyContent: 'space-between', marginBottom: 0, marginHorizontal: -18, paddingHorizontal: 18 },
+  feedModeRow: { flexDirection: 'row', gap: spacing.xl },
+  feedModeButton: { borderBottomColor: 'transparent', borderBottomWidth: 3, minWidth: 78, paddingBottom: 12, paddingHorizontal: 2, paddingTop: 5 },
+  feedModeSelected: { borderBottomColor: colors.signal },
+  feedModeLabel: { color: colors.textMuted, fontSize: 15, fontWeight: '800', textAlign: 'center' },
+  feedModeLabelSelected: { color: colors.text },
+  fresh: { alignItems: 'center', flexDirection: 'row', gap: 6, paddingBottom: 14 },
   liveDot: { backgroundColor: colors.success, borderRadius: 5, height: 9, marginRight: spacing.sm, width: 9 },
-  composer: { alignItems: 'flex-start', backgroundColor: colors.surface, borderBottomColor: colors.border, borderTopColor: colors.border, borderWidth: 0, borderBottomWidth: StyleSheet.hairlineWidth, borderTopWidth: StyleSheet.hairlineWidth, flexDirection: 'row', gap: spacing.md, marginHorizontal: -18, paddingHorizontal: 18, paddingVertical: 12 },
+  freshText: { color: colors.textSubtle, fontSize: 11, fontWeight: '900', letterSpacing: 0.8, textTransform: 'uppercase' },
+  composer: { alignItems: 'flex-start', backgroundColor: colors.background, borderBottomColor: colors.border, borderWidth: 0, borderBottomWidth: StyleSheet.hairlineWidth, flexDirection: 'row', gap: spacing.md, marginHorizontal: -18, paddingHorizontal: 18, paddingVertical: 11 },
   composerOpen: { paddingBottom: spacing.lg },
   composerMain: { flex: 1, gap: spacing.md },
-  composeInput: { color: colors.text, fontSize: 17, lineHeight: 23, minHeight: 40, paddingHorizontal: 0, paddingTop: 8, textAlignVertical: 'top' },
+  composeInput: { color: colors.text, fontSize: 16, lineHeight: 22, minHeight: 40, paddingHorizontal: 0, paddingTop: 8, textAlignVertical: 'top' },
   composeInputOpen: { minHeight: 74 },
   topics: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
   topicChoice: { borderColor: colors.border, borderRadius: radius.pill, borderWidth: 1, paddingHorizontal: 10, paddingVertical: 6 },
-  topicSelected: { backgroundColor: colors.cobaltSoft, borderColor: '#34458F' },
+  topicSelected: { backgroundColor: colors.signalSoft, borderColor: '#3B5421' },
   topicText: { color: colors.textMuted, fontSize: 12, fontWeight: '700' },
-  topicTextSelected: { color: colors.cobalt, fontWeight: '900' },
+  topicTextSelected: { color: colors.signal, fontWeight: '900' },
   publishRow: { alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between' },
   counter: { color: colors.textSubtle, fontSize: 12 },
-  publishButton: { backgroundColor: colors.cobalt, borderRadius: radius.pill, paddingHorizontal: 20, paddingVertical: 10 },
-  publishLabel: { color: colors.white, fontSize: 14, fontWeight: '900' },
+  publishButton: { backgroundColor: colors.signal, borderRadius: radius.pill, paddingHorizontal: 20, paddingVertical: 10 },
+  publishLabel: { color: colors.primary, fontSize: 14, fontWeight: '900' },
+  topicRail: { borderBottomColor: colors.border, borderBottomWidth: StyleSheet.hairlineWidth, marginHorizontal: -18 },
+  topicRailInner: { flexDirection: 'row', gap: spacing.sm, paddingHorizontal: 18, paddingVertical: 9 },
+  railTopic: { borderColor: 'transparent', borderRadius: radius.pill, borderWidth: 1, paddingHorizontal: 11, paddingVertical: 7 },
+  railTopicSelected: { backgroundColor: colors.surfaceRaised, borderColor: colors.borderStrong },
+  railTopicText: { color: colors.textSubtle, fontSize: 12.5, fontWeight: '800' },
+  railTopicTextSelected: { color: colors.text },
   disabled: { opacity: 0.4 },
   loading: { marginVertical: spacing.xl },
   error: { color: colors.danger, fontSize: 14, lineHeight: 21, marginTop: spacing.md, textAlign: 'center' },
   retryButton: { alignItems: 'center', alignSelf: 'center', backgroundColor: colors.primary, borderRadius: radius.md, marginTop: spacing.lg, paddingHorizontal: spacing.xl, paddingVertical: spacing.md },
   retryLabel: { color: colors.white, fontSize: 15, fontWeight: '900' },
   timeline: { marginHorizontal: -18 },
-  post: { alignItems: 'flex-start', backgroundColor: colors.surface, borderBottomColor: colors.border, borderBottomWidth: StyleSheet.hairlineWidth, flexDirection: 'row', gap: spacing.md, paddingHorizontal: 18, paddingVertical: 14 },
+  filterEmpty: { color: colors.textMuted, fontSize: 14, paddingVertical: spacing.xl, textAlign: 'center' },
+  post: { alignItems: 'flex-start', backgroundColor: colors.background, borderBottomColor: colors.border, borderBottomWidth: StyleSheet.hairlineWidth, flexDirection: 'row', gap: spacing.md, paddingHorizontal: 18, paddingVertical: 11 },
   postMain: { flex: 1 },
   authorLine: { alignItems: 'baseline', flexDirection: 'row', gap: 5 },
   name: { color: colors.text, fontSize: 15, fontWeight: '900', maxWidth: '48%' },
   meta: { color: colors.textSubtle, flex: 1, fontSize: 13 },
-  postTopic: { color: colors.cobalt, fontSize: 12, fontWeight: '800', marginTop: 3 },
-  postBody: { color: colors.text, fontSize: 16, lineHeight: 22, marginTop: 5 },
-  actions: { alignItems: 'center', flexDirection: 'row', gap: 34, marginTop: 10 },
+  postTopic: { color: colors.signal, fontSize: 11.5, fontWeight: '800', marginTop: 2 },
+  postBody: { color: colors.text, fontSize: 15.5, lineHeight: 21, marginTop: 4 },
+  actions: { alignItems: 'center', flexDirection: 'row', gap: 32, marginTop: 7 },
   actionButton: { alignItems: 'center', flexDirection: 'row', gap: 5, minHeight: 28 },
   actionIcon: { color: colors.textMuted, fontSize: 18 },
   actionText: { color: colors.textMuted, fontSize: 13, fontWeight: '700' },
