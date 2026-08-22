@@ -286,7 +286,7 @@ export default function ClubRoomScreen() {
                 onPress={() => router.push({ pathname: '/people/[userId]', params: { userId: participant.user_id } })}
                 style={styles.stageProfile}
               >
-                <View style={[styles.stageAvatar, participant.role === 'host' && styles.hostAvatar]}><Avatar label={name} size={64} /></View>
+                <View style={[styles.stageAvatar, participant.role === 'host' && styles.hostAvatar]}><Avatar label={name} path={participant.avatar_path} size={64} /></View>
                 <Text style={styles.personName}>{name}</Text>
               </Pressable>
               <Pill label={participant.role} tone={participant.role === 'host' ? 'accent' : 'default'} />
@@ -318,7 +318,7 @@ export default function ClubRoomScreen() {
                 onPress={() => router.push({ pathname: '/people/[userId]', params: { userId: participant.user_id } })}
                 style={styles.audienceProfile}
               >
-                <Avatar label={name} size={42} />
+                <Avatar label={name} path={participant.avatar_path} size={42} />
                 <View style={styles.audienceCopy}>
                   <Text style={styles.personName}>{name}</Text>
                   {participant.hand_raised_at ? <Text style={styles.hand}>Hand raised</Text> : <Muted>Listening</Muted>}

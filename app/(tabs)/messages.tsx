@@ -75,7 +75,7 @@ export default function MessagesScreen() {
               style={({ pressed }) => pressed && styles.pressed}
             >
               <Card style={[styles.chat, chat.unread_count > 0 && styles.unreadChat]}>
-                <View><Avatar label={name} size={52} /><View style={styles.presence} /></View>
+                <View><Avatar label={name} path={chat.partner_avatar_path} size={52} /><View style={styles.presence} /></View>
                 <View style={styles.copy}>
                   <Text style={styles.name}>{name}</Text>
                   <Text numberOfLines={1} style={[styles.preview, chat.unread_count > 0 && styles.unreadPreview]}>{chat.last_message_body ?? 'Start your conversation'}</Text>

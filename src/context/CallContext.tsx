@@ -48,7 +48,7 @@ function IncomingCallSheet({
       <View style={styles.scrim}>
         <View style={styles.incomingCard}>
           <View style={styles.liveBadge}><View style={styles.liveDot} /><Text style={styles.liveText}>Incoming audio call</Text></View>
-          <Avatar label={name} size={94} />
+          <Avatar label={name} path={partner?.avatar_path} size={94} />
           <Text style={styles.callerName}>{name}</Text>
           <Text style={styles.callerMeta}>
             {partner?.country_code ?? 'Worldwide'} · {partner?.languages?.slice(0, 2).join(', ') || 'YAPPIE member'}

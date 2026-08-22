@@ -1,6 +1,7 @@
-import { PropsWithChildren, ReactElement, ReactNode } from 'react';
+import { PropsWithChildren, ReactElement, ReactNode, useEffect, useState } from 'react';
 import {
   Pressable,
+  Image,
   ScrollView,
   StyleProp,
   StyleSheet,
@@ -13,6 +14,7 @@ import type { RefreshControlProps } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { colors, radius, shadows, spacing } from '@/theme/tokens';
+import { avatarPublicUrl } from '@/features/profile/avatar';
 
 export function Screen({
   children,
@@ -106,7 +108,10 @@ export function PrimaryButton({
   );
 }
 
-export function Avatar({ label, size = 48 }: { label: string; size?: number }) {
+export function Avatar({ label, path, size = 48 }: { label: string; path?: string | null; size?: number }) {
+  const source = avatarPublicUrl(path);
+  const [imageFailed, setImageFailed] = useState(false);
+  useEffect(() => setImageFailed(false), [source]);
   const palettes = [
     { backgroundColor: colors.signal, color: colors.primary },
     { backgroundColor: colors.cobaltSoft, color: colors.cobalt },
@@ -116,9 +121,19 @@ export function Avatar({ label, size = 48 }: { label: string; size?: number }) {
   const palette = palettes[(label.charCodeAt(0) || 0) % palettes.length] ?? palettes[0]!;
   return (
     <View style={[styles.avatarRing, { height: size, width: size, borderRadius: size / 2 }]}>
-      <View style={[styles.avatar, { backgroundColor: palette.backgroundColor, borderRadius: (size - 4) / 2 }]}>
-        <Text style={[styles.avatarText, { color: palette.color, fontSize: size * 0.31 }]}>{label.slice(0, 2).toUpperCase()}</Text>
-      </View>
+      {source && !imageFailed ? (
+        <Image
+          accessibilityLabel={`${label} profile picture`}
+          onError={() => setImageFailed(true)}
+          resizeMode="cover"
+          source={{ uri: source }}
+          style={[styles.avatarImage, { borderRadius: (size - 4) / 2 }]}
+        />
+      ) : (
+        <View style={[styles.avatar, { backgroundColor: palette.backgroundColor, borderRadius: (size - 4) / 2 }]}>
+          <Text style={[styles.avatarText, { color: palette.color, fontSize: size * 0.31 }]}>{label.slice(0, 2).toUpperCase()}</Text>
+        </View>
+      )}
     </View>
   );
 }
@@ -202,6 +217,7 @@ const styles = StyleSheet.create({
   primaryButtonText: { color: colors.primaryInk, fontSize: 17, fontWeight: '900', letterSpacing: -0.25 },
   avatarRing: { alignItems: 'center', backgroundColor: colors.white, borderColor: colors.border, borderWidth: 1, justifyContent: 'center', padding: 3 },
   avatar: { alignItems: 'center', height: '100%', justifyContent: 'center', width: '100%' },
+  avatarImage: { height: '100%', width: '100%' },
   avatarText: { fontWeight: '900', letterSpacing: -0.6 },
   sectionHeader: { alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between', marginBottom: spacing.md, marginTop: spacing.xl },
   sectionTitle: { color: colors.text, fontSize: 22, fontWeight: '900', letterSpacing: -0.7 },

@@ -1,6 +1,8 @@
 import { supabase } from '@/lib/supabase';
+import { loadAvatarPathMap } from '@/features/profile/avatar-data';
 
 export type FeedPost = {
+  author_avatar_path: string | null;
   author_country_code: string | null;
   author_display_name: string | null;
   author_handle: string | null;
@@ -15,6 +17,7 @@ export type FeedPost = {
 };
 
 export type FeedReply = {
+  author_avatar_path: string | null;
   author_display_name: string | null;
   author_handle: string | null;
   author_id: string;
@@ -34,7 +37,9 @@ export async function loadFeed(beforeCreatedAt?: string) {
     before_created_at: beforeCreatedAt,
   });
   if (error) throw error;
-  return data as FeedPost[];
+  const rows = data as Omit<FeedPost, 'author_avatar_path'>[];
+  const avatars = await loadAvatarPathMap(rows.map((post) => post.author_id));
+  return rows.map((post) => ({ ...post, author_avatar_path: avatars.get(post.author_id) ?? null }));
 }
 
 export async function loadFollowingFeed(beforeCreatedAt?: string) {
@@ -43,7 +48,9 @@ export async function loadFollowingFeed(beforeCreatedAt?: string) {
     before_created_at: beforeCreatedAt,
   });
   if (error) throw error;
-  return data as FeedPost[];
+  const rows = data as Omit<FeedPost, 'author_avatar_path'>[];
+  const avatars = await loadAvatarPathMap(rows.map((post) => post.author_id));
+  return rows.map((post) => ({ ...post, author_avatar_path: avatars.get(post.author_id) ?? null }));
 }
 
 export async function createPost(authorId: string, body: string, topic?: string) {
@@ -70,7 +77,9 @@ export async function setPostLiked(postId: string, userId: string, liked: boolea
 export async function loadPostReplies(postId: string) {
   const { data, error } = await client().rpc('get_post_replies', { target_post_id: postId });
   if (error) throw error;
-  return data as FeedReply[];
+  const rows = data as Omit<FeedReply, 'author_avatar_path'>[];
+  const avatars = await loadAvatarPathMap(rows.map((reply) => reply.author_id));
+  return rows.map((reply) => ({ ...reply, author_avatar_path: avatars.get(reply.author_id) ?? null }));
 }
 
 export async function createReply(postId: string, authorId: string, body: string) {

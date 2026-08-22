@@ -113,7 +113,7 @@ export default function SafetySettingsScreen() {
           const busy = unblockingId === profile.user_id;
           return (
             <View key={profile.user_id} style={styles.blockedRow}>
-              <Avatar label={name} size={46} />
+              <Avatar label={name} path={profile.avatar_path} size={46} />
               <View style={styles.blockedCopy}><Text style={styles.blockedName}>{name}</Text><Muted>@{profile.handle ?? 'member'} · {profile.country_code || 'Worldwide'}</Muted></View>
               <Pressable accessibilityRole="button" disabled={Boolean(unblockingId)} onPress={() => void unblock(profile)} style={[styles.unblockButton, Boolean(unblockingId) && !busy && styles.inactive]}><Text style={styles.unblockLabel}>{busy ? '…' : 'Unblock'}</Text></Pressable>
             </View>

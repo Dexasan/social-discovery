@@ -198,7 +198,7 @@ export default function PublicProfileScreen() {
       <View style={styles.cover}>
         <View pointerEvents="none" style={styles.coverOrbOne} />
         <View pointerEvents="none" style={styles.coverOrbTwo} />
-        <View style={styles.avatarWrap}><Avatar label={profileName} size={100} /></View>
+        <View style={styles.avatarWrap}><Avatar label={profileName} path={profile.avatar_path} size={100} /></View>
         <Text style={styles.name}>{profileName}</Text>
         <Text style={styles.handle}>@{profile.handle ?? 'member'}</Text>
         <View style={styles.metadata}>

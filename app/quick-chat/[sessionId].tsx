@@ -165,7 +165,7 @@ export default function QuickChatConversationScreen() {
             onPress={() => partnerId && router.push({ pathname: '/people/[userId]', params: { userId: partnerId } })}
             style={styles.profileLink}
           >
-            <Avatar label={partnerName} size={42} />
+            <Avatar label={partnerName} path={partner?.avatar_path} size={42} />
             <View style={styles.headerIdentity}>
               <Text style={styles.partnerName}>{partnerName}</Text>
               <Muted>Connected now · View profile</Muted>

@@ -13,6 +13,7 @@ import {
   reportProfile,
   sendConversationMessage,
   subscribeToConversationMessages,
+  loadPublicProfile,
   type Message,
 } from '@/features/quick-chat/api';
 import { colors, radius, spacing } from '@/theme/tokens';
@@ -32,6 +33,7 @@ export default function DirectConversationScreen() {
   const [sending, setSending] = useState(false);
   const [giftPickerVisible, setGiftPickerVisible] = useState(false);
   const [error, setError] = useState('');
+  const [partnerAvatarPath, setPartnerAvatarPath] = useState<string | null>(null);
   const listRef = useRef<FlatList<Message>>(null);
 
   const addMessage = (message: Message) => {
@@ -48,6 +50,11 @@ export default function DirectConversationScreen() {
         void markConversationRead(conversationId).catch(() => undefined);
       })
       .catch((nextError: unknown) => { if (active) setError(nextError instanceof Error ? nextError.message : 'Could not load messages.'); });
+    if (partnerId) {
+      void loadPublicProfile(partnerId).then((profile) => {
+        if (active) setPartnerAvatarPath(profile.avatar_path);
+      }).catch(() => undefined);
+    }
     const unsubscribe = subscribeToConversationMessages(conversationId, (message) => {
       addMessage(message);
       void markConversationRead(conversationId).catch(() => undefined);
@@ -56,7 +63,7 @@ export default function DirectConversationScreen() {
       active = false;
       unsubscribe();
     };
-  }, [conversationId]);
+  }, [conversationId, partnerId]);
 
   useEffect(() => {
     if (messages.length) listRef.current?.scrollToEnd({ animated: true });
@@ -119,7 +126,7 @@ export default function DirectConversationScreen() {
           onPress={() => partnerId && router.push({ pathname: '/people/[userId]', params: { userId: partnerId } })}
           style={styles.profileLink}
         >
-          <Avatar label={partnerName} size={42} />
+          <Avatar label={partnerName} path={partnerAvatarPath} size={42} />
           <View style={styles.identity}>
             <Text style={styles.name}>{partnerName}</Text>
             <Muted>View profile</Muted>

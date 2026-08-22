@@ -218,7 +218,7 @@ export default function QuickChatScreen() {
                 return (
                   <View key={caller.user_id} style={styles.callerCard}>
                     <View style={styles.callerAvatarWrap}>
-                      <Avatar label={name} size={62} />
+                      <Avatar label={name} path={caller.avatar_path} size={62} />
                       <View style={styles.callerOnlineDot} />
                     </View>
                     <Text numberOfLines={1} style={styles.callerName}>{name}</Text>
@@ -247,7 +247,7 @@ export default function QuickChatScreen() {
       {matchState === 'matched' ? (
         <Card style={styles.matchCard}>
           <Pill label="You found someone" tone="success" />
-          <View style={styles.avatarHalo}><Avatar label={partnerName} size={88} /></View>
+          <View style={styles.avatarHalo}><Avatar label={partnerName} path={partner?.avatar_path} size={88} /></View>
           <View style={styles.centered}>
             <Text style={styles.matchName}>{partnerName}</Text>
             <Muted>{partner?.country_code ?? 'Worldwide'} · {partner?.languages.join(', ') || 'Shared language'}</Muted>

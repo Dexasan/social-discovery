@@ -119,7 +119,7 @@ export default function ActivityScreen() {
         style={({ pressed }) => [styles.event, !event.read_at && styles.unreadEvent, pressed && styles.pressed]}
       >
         <View>
-          <Avatar label={name} size={48} />
+          <Avatar label={name} path={event.actor_avatar_path} size={48} />
           <View style={[styles.kindBadge, event.kind === 'gift' && styles.giftBadge]}>
             <Text style={styles.kindGlyph}>{event.kind === 'follow' ? '+' : event.kind === 'post_like' ? '♥' : event.kind === 'post_reply' ? '↩' : '✦'}</Text>
           </View>

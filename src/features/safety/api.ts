@@ -1,8 +1,10 @@
 import { supabase } from '@/lib/supabase';
+import { loadAvatarPathMap } from '@/features/profile/avatar-data';
 
 export type MessagePermission = 'everyone' | 'followers' | 'following';
 
 export type BlockedProfile = {
+  avatar_path: string | null;
   blocked_at: string;
   country_code: string | null;
   display_name: string | null;
@@ -23,9 +25,11 @@ export async function loadSafetySettings() {
   if (settingsResult.error) throw settingsResult.error;
   if (blocksResult.error) throw blocksResult.error;
 
+  const rows = blocksResult.data as Omit<BlockedProfile, 'avatar_path'>[];
+  const avatars = await loadAvatarPathMap(rows.map((profile) => profile.user_id));
   return {
     messagePermission: (settingsResult.data[0]?.message_permission ?? 'everyone') as MessagePermission,
-    blockedProfiles: blocksResult.data as BlockedProfile[],
+    blockedProfiles: rows.map((profile) => ({ ...profile, avatar_path: avatars.get(profile.user_id) ?? null })),
   };
 }
 

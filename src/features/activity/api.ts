@@ -1,7 +1,9 @@
 import { supabase } from '@/lib/supabase';
 import type { Json } from '@/types/database';
+import { loadAvatarPathMap } from '@/features/profile/avatar-data';
 
 export type ActivityEvent = {
+  actor_avatar_path: string | null;
   activity_id: string;
   actor_country_code: string | null;
   actor_display_name: string | null;
@@ -29,7 +31,9 @@ export async function loadActivity(beforeCreatedAt?: string) {
     before_created_at: beforeCreatedAt,
   });
   if (error) throw error;
-  return data as ActivityEvent[];
+  const rows = data as Omit<ActivityEvent, 'actor_avatar_path'>[];
+  const avatars = await loadAvatarPathMap(rows.map((event) => event.actor_id));
+  return rows.map((event) => ({ ...event, actor_avatar_path: avatars.get(event.actor_id) ?? null }));
 }
 
 export async function loadActivityUnreadCount() {

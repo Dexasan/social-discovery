@@ -169,7 +169,7 @@ export default function DirectCallScreen() {
       </View>
 
       <View style={styles.callStage}>
-        <View style={[styles.avatarHalo, isActive && styles.avatarHaloLive]}><Avatar label={partnerName} size={132} /></View>
+        <View style={[styles.avatarHalo, isActive && styles.avatarHaloLive]}><Avatar label={partnerName} path={partner?.avatar_path} size={132} /></View>
         <Text style={styles.partnerName}>{partnerName}</Text>
         <Text style={styles.partnerMeta}>{partner?.country_code ?? 'Worldwide'} · {partner?.languages?.slice(0, 2).join(', ') || 'YAPPIE member'}</Text>
         <Text style={styles.status}>{call ? statusCopy(call.status, partnerName) : 'Call unavailable'}</Text>

@@ -1,10 +1,11 @@
 import { useMemo, useState } from 'react';
 import { router } from 'expo-router';
-import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { ActivityIndicator, Alert, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import { Avatar, Card, Eyebrow, Heading, Muted, PrimaryButton, Screen } from '@/components/ui';
 import { useSession } from '@/context/SessionContext';
 import { updateOwnProfile } from '@/features/social/api';
+import { chooseAndUploadAvatar, removeAvatar } from '@/features/profile/avatar';
 import { colors, radius, spacing } from '@/theme/tokens';
 
 const languageOptions = ['English', 'Spanish', 'German', 'Italian', 'French', 'Portuguese', 'Hindi', 'Arabic', 'Nepali', 'Japanese'];
@@ -26,6 +27,8 @@ export default function EditProfileScreen() {
   const [bio, setBio] = useState(profile?.bio ?? '');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
+  const [avatarPath, setAvatarPath] = useState(profile?.avatarPath ?? null);
+  const [avatarBusy, setAvatarBusy] = useState(false);
 
   const normalizedHandle = useMemo(
     () => handle.trim().toLowerCase().replace(/[^a-z0-9_]/g, '').slice(0, 24),
@@ -65,6 +68,45 @@ export default function EditProfileScreen() {
     }
   };
 
+  const changePhoto = async () => {
+    if (!user || avatarBusy) return;
+    setAvatarBusy(true);
+    setError('');
+    try {
+      const nextPath = await chooseAndUploadAvatar(user.id, avatarPath);
+      if (nextPath) {
+        setAvatarPath(nextPath);
+        await refreshProfile();
+      }
+    } catch (nextError) {
+      setError(readableProfileError(nextError));
+    } finally {
+      setAvatarBusy(false);
+    }
+  };
+
+  const confirmRemovePhoto = () => {
+    if (!user || !avatarPath || avatarBusy) return;
+    Alert.alert('Remove profile picture?', 'Your initials will be shown instead.', [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Remove',
+        style: 'destructive',
+        onPress: () => {
+          setAvatarBusy(true);
+          setError('');
+          void removeAvatar(user.id, avatarPath)
+            .then(async () => {
+              setAvatarPath(null);
+              await refreshProfile();
+            })
+            .catch((nextError: unknown) => setError(readableProfileError(nextError)))
+            .finally(() => setAvatarBusy(false));
+        },
+      },
+    ]);
+  };
+
   if (!profile) return null;
 
   return (
@@ -84,11 +126,15 @@ export default function EditProfileScreen() {
       </View>
 
       <View style={styles.avatarPreview}>
-        <Avatar label={displayName.trim() || profile.displayName} size={88} />
+        <Pressable accessibilityLabel="Change profile picture" disabled={avatarBusy} onPress={() => void changePhoto()} style={styles.avatarAction}>
+          <Avatar label={displayName.trim() || profile.displayName} path={avatarPath} size={92} />
+          <View style={styles.avatarEditBadge}>{avatarBusy ? <ActivityIndicator color={colors.primary} size="small" /> : <Text style={styles.avatarEditGlyph}>+</Text>}</View>
+        </Pressable>
         <View style={styles.avatarCopy}>
           <Text style={styles.previewName}>{displayName.trim() || 'Your name'}</Text>
           <Text style={styles.previewHandle}>@{normalizedHandle || 'username'}</Text>
-          <Muted>Your initials update automatically.</Muted>
+          <Pressable disabled={avatarBusy} onPress={() => void changePhoto()}><Text style={styles.photoAction}>{avatarPath ? 'Change photo' : 'Choose photo'}</Text></Pressable>
+          {avatarPath ? <Pressable disabled={avatarBusy} onPress={confirmRemovePhoto}><Text style={styles.removePhoto}>Remove photo</Text></Pressable> : <Muted>One profile picture. No galleries.</Muted>}
         </View>
       </View>
 
@@ -180,9 +226,14 @@ const styles = StyleSheet.create({
   topSpacer: { width: 42 },
   intro: { gap: spacing.sm, marginBottom: spacing.xl, marginTop: spacing.xl },
   avatarPreview: { alignItems: 'center', backgroundColor: colors.surfaceSoft, borderColor: colors.border, borderRadius: radius.lg, borderWidth: 1, flexDirection: 'row', gap: spacing.lg, marginBottom: spacing.lg, padding: spacing.lg },
+  avatarAction: { position: 'relative' },
+  avatarEditBadge: { alignItems: 'center', backgroundColor: colors.signal, borderColor: colors.surfaceSoft, borderRadius: 17, borderWidth: 3, bottom: -2, height: 34, justifyContent: 'center', position: 'absolute', right: -2, width: 34 },
+  avatarEditGlyph: { color: colors.primary, fontSize: 23, fontWeight: '900', lineHeight: 25 },
   avatarCopy: { flex: 1, gap: 2 },
   previewName: { color: colors.text, fontSize: 20, fontWeight: '900', letterSpacing: -0.45 },
   previewHandle: { color: colors.link, fontSize: 13, fontWeight: '800', marginBottom: spacing.xs },
+  photoAction: { color: colors.signal, fontSize: 14, fontWeight: '900', marginTop: 3 },
+  removePhoto: { color: colors.danger, fontSize: 13, fontWeight: '800', marginTop: 3 },
   form: { backgroundColor: colors.surfaceSoft, gap: spacing.md, marginBottom: spacing.lg },
   label: { color: colors.textMuted, fontSize: 12, fontWeight: '800', marginTop: spacing.xs },
   labelRow: { alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between' },

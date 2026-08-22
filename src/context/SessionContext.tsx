@@ -45,6 +45,7 @@ function mapProfile(row: ProfileRow | null, birthDate: string | null = null): Pr
   if (!row) return null;
 
   return {
+    avatarPath: row.avatar_path,
     birthDate,
     handle: row.handle ?? '',
     displayName: row.display_name ?? '',

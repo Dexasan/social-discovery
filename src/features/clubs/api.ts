@@ -1,5 +1,6 @@
 import { supabase } from '@/lib/supabase';
 import type { Tables } from '@/types/database';
+import { loadAvatarPathMap } from '@/features/profile/avatar-data';
 
 export type ClubSummary = {
   club_id: string;
@@ -24,6 +25,7 @@ export type ClubDetail = ClubSummary & {
 };
 
 export type ClubMember = {
+  avatar_path: string | null;
   country_code: string | null;
   display_name: string | null;
   handle: string | null;
@@ -33,6 +35,7 @@ export type ClubMember = {
 };
 
 export type ClubPost = {
+  author_avatar_path: string | null;
   author_country_code: string | null;
   author_display_name: string | null;
   author_handle: string | null;
@@ -47,6 +50,7 @@ export type ClubPost = {
 };
 
 export type RoomParticipant = {
+  avatar_path: string | null;
   display_name: string | null;
   hand_raised_at: string | null;
   handle: string | null;
@@ -101,7 +105,9 @@ export async function loadClubMembers(clubId: string) {
     member_limit: 40,
   });
   if (error) throw error;
-  return data as ClubMember[];
+  const rows = data as Omit<ClubMember, 'avatar_path'>[];
+  const avatars = await loadAvatarPathMap(rows.map((member) => member.user_id));
+  return rows.map((member) => ({ ...member, avatar_path: avatars.get(member.user_id) ?? null }));
 }
 
 export async function loadClubPosts(clubId: string, beforeCreatedAt?: string) {
@@ -111,7 +117,9 @@ export async function loadClubPosts(clubId: string, beforeCreatedAt?: string) {
     before_created_at: beforeCreatedAt,
   });
   if (error) throw error;
-  return data as ClubPost[];
+  const rows = data as Omit<ClubPost, 'author_avatar_path'>[];
+  const avatars = await loadAvatarPathMap(rows.map((post) => post.author_id));
+  return rows.map((post) => ({ ...post, author_avatar_path: avatars.get(post.author_id) ?? null }));
 }
 
 export async function createClubPost(clubId: string, body: string) {
@@ -215,7 +223,9 @@ export async function endClubRoom(roomId: string) {
 export async function loadRoomParticipants(roomId: string) {
   const { data, error } = await client().rpc('list_room_participants', { target_room_id: roomId });
   if (error) throw error;
-  return data as RoomParticipant[];
+  const rows = data as Omit<RoomParticipant, 'avatar_path'>[];
+  const avatars = await loadAvatarPathMap(rows.map((participant) => participant.user_id));
+  return rows.map((participant) => ({ ...participant, avatar_path: avatars.get(participant.user_id) ?? null }));
 }
 
 export function subscribeToRoomState(roomId: string, onChange: () => void) {

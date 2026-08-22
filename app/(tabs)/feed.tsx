@@ -134,7 +134,7 @@ export default function FeedScreen() {
       </View>
 
       <View style={[styles.composer, composerOpen && styles.composerOpen]}>
-        <Avatar label={profile?.displayName || 'You'} size={40} />
+        <Avatar label={profile?.displayName || 'You'} path={profile?.avatarPath} size={40} />
         <View style={styles.composerMain}>
           <TextInput
             accessibilityLabel="New post"
@@ -182,7 +182,7 @@ export default function FeedScreen() {
           return (
             <View key={post.post_id} style={styles.post}>
               <Pressable accessibilityRole="button" onPress={() => router.push({ pathname: '/people/[userId]', params: { userId: post.author_id } })}>
-                <Avatar label={authorName} size={40} />
+                <Avatar label={authorName} path={post.author_avatar_path} size={40} />
               </Pressable>
               <View style={styles.postMain}>
                 <Pressable onPress={() => router.push({ pathname: '/people/[userId]', params: { userId: post.author_id } })} style={styles.authorLine}>

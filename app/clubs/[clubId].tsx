@@ -246,7 +246,7 @@ export default function ClubDetailScreen() {
       {club.is_member ? (
         <Card style={styles.composer}>
           <View style={styles.composeRow}>
-            <Avatar label={profile?.displayName || 'You'} size={40} />
+            <Avatar label={profile?.displayName || 'You'} path={profile?.avatarPath} size={40} />
             <TextInput
               accessibilityLabel="New club post"
               maxLength={500}
@@ -278,7 +278,7 @@ export default function ClubDetailScreen() {
           return (
             <Card key={post.post_id}>
               <Pressable onPress={() => router.push({ pathname: '/people/[userId]', params: { userId: post.author_id } })} style={styles.authorRow}>
-                <Avatar label={authorName} size={40} />
+                <Avatar label={authorName} path={post.author_avatar_path} size={40} />
                 <View style={styles.authorCopy}><Text style={styles.authorName}>{authorName}</Text><Text style={styles.meta}>@{post.author_handle || 'member'} · {relativeTime(post.created_at)}</Text></View>
               </Pressable>
               <Text style={styles.postBody}>{post.body}</Text>
@@ -307,7 +307,7 @@ export default function ClubDetailScreen() {
               onPress={() => router.push({ pathname: '/people/[userId]', params: { userId: member.user_id } })}
               style={styles.memberRow}
             >
-              <Avatar label={name} size={38} />
+              <Avatar label={name} path={member.avatar_path} size={38} />
               <View style={styles.memberCopy}><Text style={styles.memberName}>{name}</Text><Text style={styles.memberMeta}>{member.country_code || 'Worldwide'}</Text></View>
               {member.role !== 'member' ? <Pill label={member.role} tone={member.role === 'owner' ? 'accent' : 'success'} /> : null}
               {club.member_role === 'owner' && member.role !== 'owner' ? <Text style={styles.manageHint}>•••</Text> : null}

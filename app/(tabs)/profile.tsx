@@ -69,7 +69,7 @@ export default function ProfileScreen() {
       </View>
 
       <View style={styles.profileHeader}>
-        <Avatar label={profile.displayName} size={78} />
+        <Avatar label={profile.displayName} path={profile.avatarPath} size={78} />
         <View style={styles.profileCopy}>
           <Text style={styles.bio}>{profile.bio || 'Here for good conversations and unexpected connections.'}</Text>
           <Pressable accessibilityRole="button" onPress={() => router.push('/profile/edit')} style={styles.editButton}><Text style={styles.editLabel}>Edit profile</Text></Pressable>

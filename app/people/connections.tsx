@@ -138,7 +138,7 @@ export default function ProfileConnectionsScreen() {
                 onPress={() => router.push({ pathname: '/people/[userId]', params: { userId: profile.id } })}
                 style={styles.personLink}
               >
-                <Avatar label={name} size={50} />
+                <Avatar label={name} path={profile.avatar_path} size={50} />
                 <View style={styles.personCopy}>
                   <Text numberOfLines={1} style={styles.name}>{name}</Text>
                   <Text numberOfLines={1} style={styles.handle}>@{profile.handle ?? 'member'} · {profile.country_code || 'Worldwide'}</Text>

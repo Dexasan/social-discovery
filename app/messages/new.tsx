@@ -92,7 +92,7 @@ export default function NewMessageScreen() {
               onPress={() => void startConversation(person)}
               style={({ pressed }) => [styles.personRow, pressed && styles.pressed]}
             >
-              <Avatar label={name} size={48} />
+              <Avatar label={name} path={person.avatar_path} size={48} />
               <View style={styles.personCopy}>
                 <View style={styles.nameRow}>
                   <Text numberOfLines={1} style={styles.name}>{name}</Text>

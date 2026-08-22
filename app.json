@@ -2,7 +2,7 @@
   "expo": {
     "name": "YAPPIE",
     "slug": "social-discovery",
-    "version": "0.1.2",
+    "version": "0.1.3",
     "orientation": "portrait",
     "userInterfaceStyle": "light",
     "icon": "./assets/brand/yappie-logo-transparent.png",
@@ -18,6 +18,13 @@
     "plugins": [
       "expo-router",
       [
+        "expo-image-picker",
+        {
+          "cameraPermission": false,
+          "photosPermission": "Allow YAPPIE to choose one profile picture."
+        }
+      ],
+      [
         "expo-splash-screen",
         {
           "backgroundColor": "#F3F0E7",
@@ -30,7 +37,7 @@
     ],
     "android": {
       "package": "com.socialdiscovery.app",
-      "versionCode": 5,
+      "versionCode": 6,
       "adaptiveIcon": {
         "backgroundColor": "#F3F0E7",
         "foregroundImage": "./assets/brand/yappie-logo-transparent.png"

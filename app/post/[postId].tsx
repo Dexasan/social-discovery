@@ -5,6 +5,7 @@ import { ActivityIndicator, Pressable, StyleSheet, Text, TextInput, View } from 
 import { Avatar, Card, Heading, Muted, PrimaryButton, Screen } from '@/components/ui';
 import { useSession } from '@/context/SessionContext';
 import { createReply, loadPostReplies, type FeedReply } from '@/features/feed/api';
+import { loadAvatarPathMap } from '@/features/profile/avatar-data';
 import { colors, radius, spacing } from '@/theme/tokens';
 
 function first(value: string | string[] | undefined) {
@@ -23,11 +24,17 @@ export default function PostDetailScreen() {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
+  const [authorAvatarPath, setAuthorAvatarPath] = useState<string | null>(null);
 
   const refresh = async () => {
     if (!postId) return;
     try {
-      setReplies(await loadPostReplies(postId));
+      const [nextReplies, avatars] = await Promise.all([
+        loadPostReplies(postId),
+        loadAvatarPathMap([authorId]),
+      ]);
+      setReplies(nextReplies);
+      setAuthorAvatarPath(authorId ? avatars.get(authorId) ?? null : null);
     } catch (nextError) {
       setError(nextError instanceof Error ? nextError.message : 'Could not load replies.');
     } finally {
@@ -37,7 +44,7 @@ export default function PostDetailScreen() {
 
   useEffect(() => {
     void refresh();
-  }, [postId]);
+  }, [authorId, postId]);
 
   const reply = async () => {
     if (!postId || !user || !draft.trim() || submitting) return;
@@ -68,7 +75,7 @@ export default function PostDetailScreen() {
           onPress={() => authorId && router.push({ pathname: '/people/[userId]', params: { userId: authorId } })}
           style={styles.authorRow}
         >
-          <Avatar label={author} size={42} />
+          <Avatar label={author} path={authorAvatarPath} size={42} />
           <Text style={styles.author}>{author}</Text>
         </Pressable>
         <Text style={styles.body}>{body}</Text>
@@ -101,7 +108,7 @@ export default function PostDetailScreen() {
                 accessibilityRole="button"
                 onPress={() => router.push({ pathname: '/people/[userId]', params: { userId: item.author_id } })}
               >
-                <Avatar label={name} size={38} />
+                <Avatar label={name} path={item.author_avatar_path} size={38} />
               </Pressable>
               <View style={styles.replyCopy}>
                 <Pressable accessibilityRole="button" onPress={() => router.push({ pathname: '/people/[userId]', params: { userId: item.author_id } })}>

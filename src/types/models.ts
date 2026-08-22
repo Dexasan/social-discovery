@@ -1,4 +1,5 @@
 export type Profile = {
+  avatarPath: string | null;
   birthDate: string | null;
   handle: string;
   displayName: string;
