@@ -1,10 +1,13 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { router } from 'expo-router';
 import { ActivityIndicator, AppState, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import { BrandLockup } from '@/components/Brand';
 import { Avatar, Card, Muted, Pill, PrimaryButton, Screen } from '@/components/ui';
 import { useSession } from '@/context/SessionContext';
+import { useCalls } from '@/context/CallContext';
+import { ensureDirectCallMicrophonePermission } from '@/features/calls/audio';
+import { listAvailableCallers, requestDirectCall, type AvailableCaller } from '@/features/calls/api';
 import {
   cancelQuickChatSearch,
   joinQuickChat,
@@ -30,6 +33,7 @@ function readableMatchError(error: unknown) {
 
 export default function QuickChatScreen() {
   const { profile } = useSession();
+  const { isAvailable, isAvailabilityBusy, setAvailable } = useCalls();
   const [matchState, setMatchState] = useState<MatchState>('idle');
   const [match, setMatch] = useState<MatchResult | null>(null);
   const [partner, setPartner] = useState<PublicProfile | null>(null);
@@ -39,6 +43,26 @@ export default function QuickChatScreen() {
   const activeSearchRef = useRef(false);
   const pollTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const searchGenerationRef = useRef(0);
+  const [availableCallers, setAvailableCallers] = useState<AvailableCaller[]>([]);
+  const [callersLoading, setCallersLoading] = useState(true);
+  const [callingUserId, setCallingUserId] = useState<string | null>(null);
+
+  const refreshAvailableCallers = useCallback(async () => {
+    try {
+      const callers = await listAvailableCallers();
+      setAvailableCallers(callers);
+    } catch {
+      setAvailableCallers([]);
+    } finally {
+      setCallersLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    void refreshAvailableCallers();
+    const interval = setInterval(() => void refreshAvailableCallers(), 10_000);
+    return () => clearInterval(interval);
+  }, [refreshAvailableCallers]);
 
   useEffect(() => {
     const stopActiveSearch = () => {
@@ -137,11 +161,87 @@ export default function QuickChatScreen() {
 
   const partnerName = partner?.display_name || (partner?.handle ? `@${partner.handle}` : 'New connection');
 
+  const callPerson = async (caller: AvailableCaller) => {
+    if (callingUserId) return;
+    setCallingUserId(caller.user_id);
+    setError('');
+    try {
+      if (!(await ensureDirectCallMicrophonePermission())) {
+        throw new Error('Allow microphone access to make an audio call.');
+      }
+      const callId = await requestDirectCall(caller.user_id);
+      setAvailableCallers((current) => current.filter((item) => item.user_id !== caller.user_id));
+      router.push(`/calls/${callId}` as never);
+    } catch (nextError) {
+      setError(readableMatchError(nextError));
+      void refreshAvailableCallers();
+    } finally {
+      setCallingUserId(null);
+    }
+  };
+
   return (
     <Screen>
       <View style={styles.topBar}>
         <BrandLockup compact />
         <View style={styles.online}><View style={styles.onlineDot} /><Text style={styles.onlineText}>Online</Text></View>
+      </View>
+
+      <View style={styles.callShelf}>
+        <View style={styles.callShelfHeader}>
+          <View style={styles.callShelfTitleWrap}>
+            <View style={styles.pulseMark}><View style={styles.pulseCore} /></View>
+            <View>
+              <Text style={styles.callShelfTitle}>Available for a call</Text>
+              <Text style={styles.callShelfSubtitle}>Tap a person. Talk instantly.</Text>
+            </View>
+          </View>
+          <Pressable
+            accessibilityRole="switch"
+            accessibilityState={{ checked: isAvailable, disabled: isAvailabilityBusy }}
+            disabled={isAvailabilityBusy}
+            onPress={() => void setAvailable(!isAvailable)}
+            style={[styles.availabilityToggle, isAvailable && styles.availabilityToggleOn]}
+          >
+            <View style={[styles.toggleKnob, isAvailable && styles.toggleKnobOn]} />
+          </Pressable>
+        </View>
+
+        {callersLoading ? (
+          <ActivityIndicator color={colors.signal} style={styles.callersLoading} />
+        ) : availableCallers.length ? (
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.callersScroller}>
+            <View style={styles.callerCards}>
+              {availableCallers.map((caller) => {
+                const name = caller.display_name || (caller.handle ? `@${caller.handle}` : 'YAPPIE member');
+                const isCalling = callingUserId === caller.user_id;
+                return (
+                  <View key={caller.user_id} style={styles.callerCard}>
+                    <View style={styles.callerAvatarWrap}>
+                      <Avatar label={name} size={62} />
+                      <View style={styles.callerOnlineDot} />
+                    </View>
+                    <Text numberOfLines={1} style={styles.callerName}>{name}</Text>
+                    <Text numberOfLines={1} style={styles.callerMeta}>{caller.country_code ?? 'Worldwide'} · {caller.languages[0] ?? 'Any language'}</Text>
+                    <Pressable
+                      accessibilityLabel={`Call ${name}`}
+                      disabled={Boolean(callingUserId)}
+                      onPress={() => void callPerson(caller)}
+                      style={({ pressed }) => [styles.callButton, pressed && styles.callButtonPressed, Boolean(callingUserId) && styles.disabled]}
+                    >
+                      {isCalling ? <ActivityIndicator color={colors.primary} /> : <><Text style={styles.callGlyph}>⌕</Text><Text style={styles.callButtonText}>Call</Text></>}
+                    </Pressable>
+                  </View>
+                );
+              })}
+            </View>
+          </ScrollView>
+        ) : (
+          <View style={styles.noCallers}>
+            <Text style={styles.noCallersText}>{isAvailable ? 'You are visible. Waiting for more people to come online.' : 'Nobody is open right now. Switch yourself on and be the first.'}</Text>
+          </View>
+        )}
+        <Text style={styles.callSafety}>No topic, no phone number, no setup · block or report anytime</Text>
       </View>
 
       {matchState === 'matched' ? (
@@ -238,6 +338,32 @@ const styles = StyleSheet.create({
   online: { alignItems: 'center', backgroundColor: colors.successSoft, borderRadius: radius.pill, flexDirection: 'row', gap: 7, paddingHorizontal: 11, paddingVertical: 7 },
   onlineDot: { backgroundColor: colors.success, borderRadius: 4, height: 7, width: 7 },
   onlineText: { color: colors.success, fontSize: 12, fontWeight: '900', letterSpacing: 0.5, textTransform: 'uppercase' },
+  callShelf: { backgroundColor: colors.surface, borderColor: colors.border, borderRadius: 25, borderWidth: 1, gap: spacing.md, marginBottom: spacing.lg, overflow: 'hidden', paddingVertical: spacing.lg },
+  callShelfHeader: { alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between', paddingHorizontal: spacing.lg },
+  callShelfTitleWrap: { alignItems: 'center', flexDirection: 'row', flex: 1, gap: spacing.md },
+  pulseMark: { alignItems: 'center', backgroundColor: colors.successSoft, borderRadius: 19, height: 38, justifyContent: 'center', width: 38 },
+  pulseCore: { backgroundColor: colors.success, borderRadius: 7, height: 13, width: 13 },
+  callShelfTitle: { color: colors.text, fontSize: 18, fontWeight: '900', letterSpacing: -0.4 },
+  callShelfSubtitle: { color: colors.textMuted, fontSize: 13, marginTop: 2 },
+  availabilityToggle: { backgroundColor: colors.surfaceRaised, borderColor: colors.borderStrong, borderRadius: 18, borderWidth: 1, height: 34, justifyContent: 'center', paddingHorizontal: 3, width: 58 },
+  availabilityToggleOn: { backgroundColor: colors.signal, borderColor: colors.signal },
+  toggleKnob: { backgroundColor: colors.textSubtle, borderRadius: 13, height: 26, width: 26 },
+  toggleKnobOn: { backgroundColor: colors.primary, transform: [{ translateX: 24 }] },
+  callersLoading: { height: 150 },
+  callersScroller: { marginTop: spacing.xs },
+  callerCards: { flexDirection: 'row', gap: spacing.md, paddingHorizontal: spacing.lg },
+  callerCard: { alignItems: 'center', backgroundColor: colors.surfaceSoft, borderColor: colors.border, borderRadius: 21, borderWidth: 1, padding: spacing.md, width: 154 },
+  callerAvatarWrap: { marginBottom: spacing.sm, position: 'relative' },
+  callerOnlineDot: { backgroundColor: colors.success, borderColor: colors.surfaceSoft, borderRadius: 7, borderWidth: 3, bottom: 1, height: 15, position: 'absolute', right: 1, width: 15 },
+  callerName: { color: colors.text, fontSize: 16, fontWeight: '900', maxWidth: '100%' },
+  callerMeta: { color: colors.textMuted, fontSize: 11.5, marginTop: 3, maxWidth: '100%' },
+  callButton: { alignItems: 'center', backgroundColor: colors.signal, borderRadius: radius.pill, flexDirection: 'row', gap: 5, justifyContent: 'center', marginTop: spacing.md, minHeight: 42, width: '100%' },
+  callButtonPressed: { opacity: 0.82, transform: [{ scale: 0.97 }] },
+  callGlyph: { color: colors.primary, fontSize: 17, fontWeight: '900', transform: [{ rotate: '-45deg' }] },
+  callButtonText: { color: colors.primary, fontSize: 14, fontWeight: '900' },
+  noCallers: { backgroundColor: colors.surfaceSoft, borderRadius: radius.md, marginHorizontal: spacing.lg, padding: spacing.lg },
+  noCallersText: { color: colors.textMuted, fontSize: 14, lineHeight: 20, textAlign: 'center' },
+  callSafety: { color: colors.textSubtle, fontSize: 11.5, fontWeight: '700', paddingHorizontal: spacing.lg, textAlign: 'center' },
   hero: { backgroundColor: colors.surface, borderColor: colors.border, borderRadius: 28, borderWidth: 1, gap: spacing.lg, padding: 20 },
   peopleVisual: { alignItems: 'center', alignSelf: 'center', flexDirection: 'row', justifyContent: 'center', marginBottom: spacing.xs, marginTop: spacing.sm },
   person: { alignItems: 'center', borderColor: colors.primary, borderRadius: 34, borderWidth: 3, height: 68, justifyContent: 'center', width: 68 },

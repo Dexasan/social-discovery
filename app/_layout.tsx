@@ -9,6 +9,7 @@ import * as SystemUI from 'expo-system-ui';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { SessionProvider } from '@/context/SessionContext';
+import { CallProvider } from '@/context/CallContext';
 import { colors } from '@/theme/tokens';
 
 function UpdatePrompt() {
@@ -38,8 +39,10 @@ export default function RootLayout() {
     <SafeAreaProvider>
       <UpdatePrompt />
       <SessionProvider>
-        <StatusBar style="light" />
-        <Stack screenOptions={{ contentStyle: { backgroundColor: colors.background }, headerShown: false }} />
+        <CallProvider>
+          <StatusBar style="light" />
+          <Stack screenOptions={{ contentStyle: { backgroundColor: colors.background }, headerShown: false }} />
+        </CallProvider>
       </SessionProvider>
     </SafeAreaProvider>
   );

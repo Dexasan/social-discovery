@@ -76,6 +76,35 @@ export type Database = {
         }
         Relationships: []
       }
+      call_availability: {
+        Row: {
+          created_at: string
+          last_seen_at: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          last_seen_at?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          last_seen_at?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "call_availability_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       club_memberships: {
         Row: {
           club_id: string
@@ -300,6 +329,73 @@ export type Database = {
           {
             foreignKeyName: "direct_conversations_user_low_id_fkey"
             columns: ["user_low_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      direct_calls: {
+        Row: {
+          accepted_at: string | null
+          callee_last_seen_at: string | null
+          callee_id: string
+          caller_last_seen_at: string | null
+          caller_id: string
+          created_at: string
+          end_reason: string | null
+          ended_at: string | null
+          ended_by: string | null
+          id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          accepted_at?: string | null
+          callee_last_seen_at?: string | null
+          callee_id: string
+          caller_last_seen_at?: string | null
+          caller_id: string
+          created_at?: string
+          end_reason?: string | null
+          ended_at?: string | null
+          ended_by?: string | null
+          id?: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          accepted_at?: string | null
+          callee_last_seen_at?: string | null
+          callee_id?: string
+          caller_last_seen_at?: string | null
+          caller_id?: string
+          created_at?: string
+          end_reason?: string | null
+          ended_at?: string | null
+          ended_by?: string | null
+          id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "direct_calls_callee_id_fkey"
+            columns: ["callee_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "direct_calls_caller_id_fkey"
+            columns: ["caller_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "direct_calls_ended_by_fkey"
+            columns: ["ended_by"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
@@ -633,45 +729,55 @@ export type Database = {
       }
       room_audio_sessions: {
         Row: {
+          call_id: string | null
           created_at: string
           id: string
           provider: string
           provider_session_id: string
           provider_track_mid: string | null
           published_track_name: string | null
-          room_id: string
+          room_id: string | null
           session_kind: string
           status: string
           updated_at: string
           user_id: string
         }
         Insert: {
+          call_id?: string | null
           created_at?: string
           id?: string
           provider?: string
           provider_session_id: string
           provider_track_mid?: string | null
           published_track_name?: string | null
-          room_id: string
+          room_id?: string | null
           session_kind: string
           status?: string
           updated_at?: string
           user_id: string
         }
         Update: {
+          call_id?: string | null
           created_at?: string
           id?: string
           provider?: string
           provider_session_id?: string
           provider_track_mid?: string | null
           published_track_name?: string | null
-          room_id?: string
+          room_id?: string | null
           session_kind?: string
           status?: string
           updated_at?: string
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "room_audio_sessions_call_id_fkey"
+            columns: ["call_id"]
+            isOneToOne: false
+            referencedRelation: "direct_calls"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "room_audio_sessions_room_id_fkey"
             columns: ["room_id"]
@@ -826,7 +932,15 @@ export type Database = {
       }
       end_club_room: { Args: { target_room_id: string }; Returns: undefined }
       delete_my_account: { Args: never; Returns: undefined }
+      end_direct_call: {
+        Args: { reason?: string; target_call_id: string }
+        Returns: string
+      }
       get_activity_unread_count: { Args: never; Returns: number }
+      heartbeat_direct_call: {
+        Args: { target_call_id: string }
+        Returns: boolean
+      }
       heartbeat_club_room: {
         Args: { target_room_id: string }
         Returns: undefined
@@ -1033,6 +1147,18 @@ export type Database = {
           user_id: string
         }[]
       }
+      list_available_call_profiles: {
+        Args: never
+        Returns: {
+          avatar_path: string | null
+          country_code: string | null
+          display_name: string | null
+          handle: string | null
+          languages: string[]
+          last_seen_at: string
+          user_id: string
+        }[]
+      }
       list_profile_gifts: {
         Args: { gift_limit?: number; target_user_id: string }
         Returns: {
@@ -1069,6 +1195,18 @@ export type Database = {
       set_room_hand_raised: {
         Args: { raised: boolean; target_room_id: string }
         Returns: undefined
+      }
+      request_direct_call: {
+        Args: { target_user_id: string }
+        Returns: string
+      }
+      respond_direct_call: {
+        Args: { accept_call: boolean; target_call_id: string }
+        Returns: string
+      }
+      set_call_availability: {
+        Args: { target_available: boolean }
+        Returns: boolean
       }
       mark_conversation_read: {
         Args: { target_conversation_id: string }

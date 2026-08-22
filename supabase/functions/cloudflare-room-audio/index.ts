@@ -5,6 +5,7 @@ type SessionDescription = { sdp: string; type: 'offer' | 'answer' };
 type RequestBody = {
   action?: 'create_session' | 'publish' | 'pull' | 'renegotiate' | 'close_session' | 'revoke_publisher' | 'close_room' | 'disconnect';
   media_session_id?: string;
+  call_id?: string;
   room_id?: string;
   session_description?: SessionDescription;
   session_kind?: 'publisher' | 'subscriber';
@@ -99,6 +100,19 @@ Deno.serve(async (request) => {
       return participant;
     };
 
+    const loadAcceptedCall = async (callId: string) => {
+      const { data: directCall } = await admin
+        .from('direct_calls')
+        .select('id, caller_id, callee_id, status')
+        .eq('id', callId)
+        .maybeSingle();
+      if (!directCall || directCall.status !== 'accepted') throw new Error('This call is no longer active.');
+      if (![directCall.caller_id, directCall.callee_id].includes(userData.user.id)) {
+        throw new Error('You are not part of this call.');
+      }
+      return directCall;
+    };
+
     const loadOwnedSession = async (mediaSessionId: string) => {
       const { data } = await admin
         .from('room_audio_sessions')
@@ -108,7 +122,9 @@ Deno.serve(async (request) => {
         .eq('status', 'active')
         .maybeSingle();
       if (!data) throw new Error('The audio session is not active.');
-      await loadJoinedParticipant(data.room_id);
+      if (data.call_id) await loadAcceptedCall(data.call_id);
+      else if (data.room_id) await loadJoinedParticipant(data.room_id);
+      else throw new Error('The audio session has no valid scope.');
       return data;
     };
 
@@ -121,37 +137,48 @@ Deno.serve(async (request) => {
     };
 
     if (body.action === 'create_session') {
-      if (!body.room_id || !body.session_kind) return response({ error: 'room_id and session_kind are required.' }, 400);
-      const participant = await loadJoinedParticipant(body.room_id);
-      if (body.session_kind === 'publisher' && !['host', 'speaker'].includes(participant.role)) {
-        return response({ error: 'Only users on stage can publish audio.' }, 403);
+      if ((!body.room_id && !body.call_id) || (body.room_id && body.call_id) || !body.session_kind) {
+        return response({ error: 'Exactly one audio scope and session_kind are required.' }, 400);
+      }
+      if (body.call_id) {
+        await loadAcceptedCall(body.call_id);
+      } else if (body.room_id) {
+        const participant = await loadJoinedParticipant(body.room_id);
+        if (body.session_kind === 'publisher' && !['host', 'speaker'].includes(participant.role)) {
+          return response({ error: 'Only users on stage can publish audio.' }, 403);
+        }
       }
 
-      const { data: existingSessions } = await admin
+      let existingQuery = admin
         .from('room_audio_sessions')
         .select('id, provider_session_id, provider_track_mid, session_kind')
-        .eq('room_id', body.room_id)
         .eq('user_id', userData.user.id)
         .eq('session_kind', body.session_kind)
         .eq('status', 'active');
+      existingQuery = body.call_id ? existingQuery.eq('call_id', body.call_id) : existingQuery.eq('room_id', body.room_id!);
+      const { data: existingSessions } = await existingQuery;
 
       if (body.session_kind === 'publisher') {
         await Promise.allSettled((existingSessions ?? []).map((session) => forceCloseProviderTrack(session)));
       }
-      await admin
+      let closeExistingQuery = admin
         .from('room_audio_sessions')
         .update({ status: 'closed' })
-        .eq('room_id', body.room_id)
         .eq('user_id', userData.user.id)
         .eq('session_kind', body.session_kind)
         .eq('status', 'active');
+      closeExistingQuery = body.call_id
+        ? closeExistingQuery.eq('call_id', body.call_id)
+        : closeExistingQuery.eq('room_id', body.room_id!);
+      await closeExistingQuery;
 
       const provider = await cloudflareRequest('/sessions/new', 'POST');
       if (typeof provider.sessionId !== 'string') throw new Error('Cloudflare did not return a session ID.');
       const { data: mediaSession, error: insertError } = await admin
         .from('room_audio_sessions')
         .insert({
-          room_id: body.room_id,
+          room_id: body.room_id ?? null,
+          call_id: body.call_id ?? null,
           user_id: userData.user.id,
           provider_session_id: provider.sessionId,
           session_kind: body.session_kind,
@@ -163,24 +190,43 @@ Deno.serve(async (request) => {
     }
 
     if (body.action === 'disconnect') {
-      if (!body.room_id) return response({ error: 'room_id is required.' }, 400);
-      const { data: ownedSessions } = await admin
+      if ((!body.room_id && !body.call_id) || (body.room_id && body.call_id)) {
+        return response({ error: 'Exactly one audio scope is required.' }, 400);
+      }
+      if (body.call_id) await loadAcceptedCall(body.call_id);
+      let ownedQuery = admin
         .from('room_audio_sessions')
         .select('id, provider_session_id, provider_track_mid, session_kind')
-        .eq('room_id', body.room_id)
         .eq('user_id', userData.user.id)
         .eq('status', 'active');
+      ownedQuery = body.call_id ? ownedQuery.eq('call_id', body.call_id) : ownedQuery.eq('room_id', body.room_id!);
+      const { data: ownedSessions } = await ownedQuery;
       const results = await Promise.allSettled(
         (ownedSessions ?? [])
           .filter((session) => session.session_kind === 'publisher')
           .map((session) => forceCloseProviderTrack(session)),
       );
-      await admin
+      let closeOwnedQuery = admin
         .from('room_audio_sessions')
         .update({ status: 'closed' })
-        .eq('room_id', body.room_id)
         .eq('user_id', userData.user.id)
         .eq('status', 'active');
+      closeOwnedQuery = body.call_id
+        ? closeOwnedQuery.eq('call_id', body.call_id)
+        : closeOwnedQuery.eq('room_id', body.room_id!);
+      await closeOwnedQuery;
+
+      if (body.call_id) {
+        await admin
+          .from('direct_calls')
+          .update({ status: 'ended', ended_at: new Date().toISOString(), ended_by: userData.user.id, end_reason: 'Disconnected' })
+          .eq('id', body.call_id)
+          .eq('status', 'accepted');
+        return response({
+          closed: true,
+          failedTrackCount: results.filter((result) => result.status === 'rejected').length,
+        });
+      }
 
       const { data: room } = await admin
         .from('club_rooms')
@@ -221,8 +267,12 @@ Deno.serve(async (request) => {
       if (!mediaSession) return response({ error: 'media_session_id is required.' }, 400);
       if (mediaSession.session_kind !== 'publisher') return response({ error: 'A publisher session is required.' }, 400);
       if (!isSessionDescription(body.session_description)) return response({ error: 'A valid offer is required.' }, 400);
-      const participant = await loadJoinedParticipant(mediaSession.room_id);
-      if (!['host', 'speaker'].includes(participant.role)) return response({ error: 'Publishing permission was revoked.' }, 403);
+      if (mediaSession.call_id) {
+        await loadAcceptedCall(mediaSession.call_id);
+      } else {
+        const participant = await loadJoinedParticipant(mediaSession.room_id);
+        if (!['host', 'speaker'].includes(participant.role)) return response({ error: 'Publishing permission was revoked.' }, 403);
+      }
 
       const provider = await cloudflareRequest(`/sessions/${mediaSession.provider_session_id}/tracks/new`, 'POST', {
         autoDiscover: true,
@@ -296,14 +346,27 @@ Deno.serve(async (request) => {
 
     if (body.action === 'pull') {
       if (mediaSession.session_kind !== 'subscriber') return response({ error: 'A subscriber session is required.' }, 400);
-      const { data: publishers } = await admin
+      let publisherQuery = admin
         .from('room_audio_sessions')
         .select('provider_session_id, published_track_name, user_id')
-        .eq('room_id', mediaSession.room_id)
         .eq('session_kind', 'publisher')
         .eq('status', 'active')
         .neq('user_id', userData.user.id)
         .not('published_track_name', 'is', null);
+      publisherQuery = mediaSession.call_id
+        ? publisherQuery.eq('call_id', mediaSession.call_id)
+        : publisherQuery.eq('room_id', mediaSession.room_id);
+      const { data: publishers } = await publisherQuery;
+      if (mediaSession.call_id) {
+        const tracks = (publishers ?? []).map((publisher) => ({
+          location: 'remote',
+          sessionId: publisher.provider_session_id,
+          trackName: publisher.published_track_name,
+        }));
+        if (tracks.length === 0) return response({ provider: null, trackCount: 0 });
+        const provider = await cloudflareRequest(`/sessions/${mediaSession.provider_session_id}/tracks/new`, 'POST', { tracks });
+        return response({ provider, trackCount: tracks.length });
+      }
       const publisherIds = [...new Set((publishers ?? []).map((publisher) => publisher.user_id))];
       const { data: currentSpeakers } = publisherIds.length
         ? await admin
