@@ -258,17 +258,24 @@ export default function QuickChatScreen() {
         </Card>
       ) : (
         <View style={styles.hero}>
-          <View style={styles.peopleVisual}>
-            <View style={[styles.person, styles.personLeft]}><Text style={styles.personGlyph}>?</Text></View>
-            <View style={styles.connection}><View style={styles.connectionDot} /><View style={styles.connectionDot} /><View style={styles.connectionDot} /></View>
-            <View style={[styles.person, styles.personRight]}><Text style={styles.personGlyph}>?</Text></View>
+          <View style={styles.heroTopLine}>
+            <Text style={styles.heroKicker}>Quick match</Text>
+            <View style={styles.heroStatus}><View style={styles.heroStatusDot} /><Text style={styles.heroStatusText}>Ready when you are</Text></View>
           </View>
-          <Text style={styles.heroTitle}>{matchState === 'searching' ? 'Looking for your person…' : 'Meet someone new'}</Text>
+          <Text style={styles.heroTitle}>{matchState === 'searching' ? 'Finding a voice worth meeting…' : 'Skip the profile.\nMeet the person.'}</Text>
           <Text style={styles.heroCopy}>
             {matchState === 'searching'
-              ? `Matching you with someone who wants to talk about ${topic.toLowerCase()}.`
-              : 'Pick an interest, or leave it open. We will connect you one-to-one with someone who is here now.'}
+              ? `Looking for someone open to ${topic === 'Anything' ? 'anything' : topic.toLowerCase()}.`
+              : 'A private one-to-one chat with someone new. Keep it open, or give the match one thing to go on.'}
           </Text>
+
+          <View style={styles.matchPromises}>
+            <Text style={styles.matchPromise}>Anonymous first</Text>
+            <View style={styles.promiseDivider} />
+            <Text style={styles.matchPromise}>Text · 1:1</Text>
+            <View style={styles.promiseDivider} />
+            <Text style={styles.matchPromise}>Leave anytime</Text>
+          </View>
 
           <View style={styles.interestBlock}>
             <View style={styles.interestHeadingRow}>
@@ -317,7 +324,7 @@ export default function QuickChatScreen() {
 
           {matchState === 'searching' ? (
             <View style={styles.searchingPanel}>
-              <ActivityIndicator color={colors.cobalt} />
+              <ActivityIndicator color={colors.accent} />
               <Pressable onPress={() => void cancelSearch()} style={styles.secondaryButton}><Text style={styles.secondaryText}>Cancel search</Text></Pressable>
             </View>
           ) : (
@@ -364,20 +371,21 @@ const styles = StyleSheet.create({
   noCallers: { backgroundColor: colors.surfaceSoft, borderRadius: radius.md, marginHorizontal: spacing.lg, padding: spacing.lg },
   noCallersText: { color: colors.textMuted, fontSize: 14, lineHeight: 20, textAlign: 'center' },
   callSafety: { color: colors.textSubtle, fontSize: 11.5, fontWeight: '700', paddingHorizontal: spacing.lg, textAlign: 'center' },
-  hero: { backgroundColor: colors.surface, borderColor: colors.border, borderRadius: 28, borderWidth: 1, gap: spacing.lg, padding: 20 },
-  peopleVisual: { alignItems: 'center', alignSelf: 'center', flexDirection: 'row', justifyContent: 'center', marginBottom: spacing.xs, marginTop: spacing.sm },
-  person: { alignItems: 'center', borderColor: colors.primary, borderRadius: 34, borderWidth: 3, height: 68, justifyContent: 'center', width: 68 },
-  personLeft: { backgroundColor: colors.surfaceRaised },
-  personRight: { backgroundColor: colors.cobalt },
-  personGlyph: { color: colors.white, fontSize: 27, fontWeight: '900' },
-  connection: { alignItems: 'center', flexDirection: 'row', gap: 5, marginHorizontal: 10 },
-  connectionDot: { backgroundColor: colors.accent, borderRadius: 4, height: 7, width: 7 },
-  heroTitle: { color: colors.text, fontSize: 31, fontWeight: '900', letterSpacing: -1.1, lineHeight: 35, textAlign: 'center' },
-  heroCopy: { alignSelf: 'center', color: colors.textMuted, fontSize: 16, lineHeight: 23, maxWidth: 320, textAlign: 'center' },
+  hero: { backgroundColor: '#15171B', borderColor: colors.border, borderLeftColor: colors.accent, borderLeftWidth: 4, borderRadius: 28, borderWidth: 1, gap: spacing.lg, padding: 20 },
+  heroTopLine: { alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between' },
+  heroKicker: { color: colors.accent, fontSize: 12, fontWeight: '900', letterSpacing: 1.5, textTransform: 'uppercase' },
+  heroStatus: { alignItems: 'center', flexDirection: 'row', gap: 6 },
+  heroStatusDot: { backgroundColor: colors.success, borderRadius: 4, height: 7, width: 7 },
+  heroStatusText: { color: colors.textSubtle, fontSize: 11.5, fontWeight: '700' },
+  heroTitle: { color: colors.text, fontSize: 37, fontWeight: '900', letterSpacing: -1.7, lineHeight: 40 },
+  heroCopy: { color: colors.textMuted, fontSize: 16, lineHeight: 23, maxWidth: 330 },
+  matchPromises: { alignItems: 'center', flexDirection: 'row', flexWrap: 'wrap', gap: 9 },
+  matchPromise: { color: colors.textSubtle, fontSize: 11.5, fontWeight: '800' },
+  promiseDivider: { backgroundColor: colors.borderStrong, borderRadius: 2, height: 4, width: 4 },
   interestBlock: { gap: spacing.md, marginTop: spacing.sm },
   interestHeadingRow: { alignItems: 'center', flexDirection: 'row', gap: spacing.md, justifyContent: 'space-between' },
   interestHeading: { color: colors.text, flex: 1, fontSize: 15, fontWeight: '900' },
-  activeInterest: { color: colors.cobalt, fontSize: 13, fontWeight: '900', maxWidth: 120 },
+  activeInterest: { color: colors.accent, fontSize: 13, fontWeight: '900', maxWidth: 120 },
   customRow: { flexDirection: 'row', gap: spacing.sm },
   interestInput: { backgroundColor: colors.surfaceSoft, borderColor: colors.borderStrong, borderRadius: 16, borderWidth: 1, color: colors.text, flex: 1, fontSize: 16, minHeight: 54, paddingHorizontal: spacing.lg },
   useButton: { alignItems: 'center', backgroundColor: colors.primary, borderRadius: 16, justifyContent: 'center', minWidth: 64, paddingHorizontal: spacing.md },
@@ -386,17 +394,17 @@ const styles = StyleSheet.create({
   topicScroller: { marginHorizontal: -20 },
   topicChoices: { flexDirection: 'row', gap: spacing.sm, paddingHorizontal: 20 },
   topicChoice: { backgroundColor: colors.surfaceRaised, borderColor: colors.border, borderRadius: radius.pill, borderWidth: 1, paddingHorizontal: 14, paddingVertical: 10 },
-  topicChoiceSelected: { backgroundColor: colors.primary, borderColor: colors.primary },
+  topicChoiceSelected: { backgroundColor: colors.accentSoft, borderColor: colors.accent },
   topicChoiceText: { color: colors.textMuted, fontSize: 14, fontWeight: '800' },
-  topicChoiceTextSelected: { color: colors.white },
-  matchButton: { alignItems: 'center', backgroundColor: colors.cobalt, borderRadius: 19, flexDirection: 'row', justifyContent: 'space-between', minHeight: 64, paddingHorizontal: 22 },
+  topicChoiceTextSelected: { color: colors.accent },
+  matchButton: { alignItems: 'center', backgroundColor: colors.accent, borderRadius: 19, flexDirection: 'row', justifyContent: 'space-between', minHeight: 66, paddingHorizontal: 22 },
   matchButtonPressed: { opacity: 0.84, transform: [{ scale: 0.985 }] },
-  matchButtonText: { color: colors.white, fontSize: 18, fontWeight: '900' },
-  matchArrow: { color: colors.white, fontSize: 25, fontWeight: '900' },
+  matchButtonText: { color: colors.primary, fontSize: 18, fontWeight: '900' },
+  matchArrow: { color: colors.primary, fontSize: 25, fontWeight: '900' },
   searchingPanel: { alignItems: 'center', gap: spacing.md },
   safetyNote: { color: colors.textSubtle, fontSize: 12, fontWeight: '700', textAlign: 'center' },
   error: { color: colors.danger, fontSize: 14, lineHeight: 21, textAlign: 'center' },
-  matchCard: { alignItems: 'center', backgroundColor: colors.cobaltSoft, borderColor: '#34458F', gap: spacing.lg, paddingVertical: spacing.xl },
+  matchCard: { alignItems: 'center', backgroundColor: colors.surface, borderColor: colors.accent, gap: spacing.lg, paddingVertical: spacing.xl },
   avatarHalo: { backgroundColor: colors.signal, borderRadius: 34, padding: 9 },
   centered: { alignItems: 'center', gap: spacing.sm },
   matchName: { color: colors.text, fontSize: 30, fontWeight: '900', letterSpacing: -1 },
