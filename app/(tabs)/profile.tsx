@@ -1,10 +1,10 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { router, useFocusEffect } from 'expo-router';
+import type { Href } from 'expo-router';
 
 import { Avatar, Screen } from '@/components/ui';
 import { useSession } from '@/context/SessionContext';
-import { loadActivityUnreadCount, subscribeToActivity } from '@/features/activity/api';
 import { loadCoinWallet, type CoinWallet } from '@/features/gifts/api';
 import { loadOwnSocialStats, type SocialStats } from '@/features/social/api';
 import { isSupabaseConfigured } from '@/lib/supabase';
@@ -23,11 +23,6 @@ export default function ProfileScreen() {
   const { profile, signOut, user } = useSession();
   const [stats, setStats] = useState<SocialStats | null>(null);
   const [wallet, setWallet] = useState<CoinWallet | null>(null);
-  const [activityUnread, setActivityUnread] = useState(0);
-
-  const refreshActivityUnread = useCallback(() => {
-    void loadActivityUnreadCount().then(setActivityUnread).catch(() => setActivityUnread(0));
-  }, []);
 
   useFocusEffect(useCallback(() => {
     let active = true;
@@ -37,14 +32,8 @@ export default function ProfileScreen() {
     }
     void loadOwnSocialStats(user.id).then((nextStats) => { if (active) setStats(nextStats); }).catch(() => { if (active) setStats({ followers: 0, following: 0, posts: 0 }); });
     void loadCoinWallet().then((nextWallet) => { if (active) setWallet(nextWallet); }).catch(() => { if (active) setWallet(null); });
-    refreshActivityUnread();
     return () => { active = false; };
-  }, [refreshActivityUnread, user]));
-
-  useEffect(() => {
-    if (!user || !isSupabaseConfigured) return;
-    return subscribeToActivity(user.id, refreshActivityUnread);
-  }, [refreshActivityUnread, user]);
+  }, [user]));
 
   if (!profile) return null;
 
@@ -59,13 +48,7 @@ export default function ProfileScreen() {
     <Screen>
       <View style={styles.topBar}>
         <View><Text style={styles.topName}>{profile.displayName}</Text><Text style={styles.topHandle}>@{profile.handle}</Text></View>
-        <View style={styles.topActions}>
-          <Pressable accessibilityLabel="Activity" onPress={() => router.push('/activity')} style={styles.iconButton}>
-            <Text style={styles.iconGlyph}>✦</Text>
-            {activityUnread > 0 ? <View style={styles.notificationBadge}><Text style={styles.notificationText}>{Math.min(activityUnread, 9)}</Text></View> : null}
-          </Pressable>
-          <Pressable accessibilityLabel="Account settings" onPress={() => router.push('/settings/account')} style={styles.iconButton}><Text style={styles.iconGlyph}>⚙</Text></Pressable>
-        </View>
+        <Pressable accessibilityLabel="Account settings" onPress={() => router.push('/settings/account')} style={styles.iconButton}><Text style={styles.iconGlyph}>⚙</Text></Pressable>
       </View>
 
       <View style={styles.profileHeader}>
@@ -97,18 +80,17 @@ export default function ProfileScreen() {
         ))}
       </View>
 
-      <View style={styles.quickGrid}>
-        <Pressable onPress={() => router.push('/activity')} style={[styles.quickTile, styles.quickCobalt]}>
-          <Text style={styles.quickGlyph}>✦</Text><Text style={styles.quickTitle}>Activity</Text><Text style={styles.quickMeta}>{activityUnread > 0 ? `${activityUnread} new` : 'All caught up'}</Text>
+      <Pressable accessibilityRole="button" onPress={() => router.push('/wallet' as Href)} style={styles.walletStrip}>
+        <View><Text style={styles.walletKicker}>YAPPIE WALLET</Text><Text style={styles.walletTitle}>{wallet ? `${wallet.balance} coins` : 'Your coins'}</Text><Text style={styles.walletMeta}>Small gifts for conversations worth remembering</Text></View>
+        <View style={styles.walletArrow}><Text style={styles.walletArrowText}>›</Text></View>
+      </Pressable>
+
+      <View style={styles.utilityRow}>
+        <Pressable onPress={() => router.push('/settings/safety')} style={styles.utilityButton}>
+          <Text style={styles.utilityGlyph}>✓</Text><View style={styles.utilityCopy}><Text style={styles.utilityTitle}>Safety</Text><Text style={styles.utilityMeta}>Privacy & blocks</Text></View>
         </Pressable>
-        <View style={[styles.quickTile, styles.quickWarm]}>
-          <Text style={styles.quickGlyph}>◎</Text><Text style={styles.quickTitle}>Coins</Text><Text style={styles.quickMeta}>{wallet ? `${wallet.balance} available` : 'Wallet'}</Text>
-        </View>
-        <Pressable onPress={() => router.push('/settings/safety')} style={[styles.quickTile, styles.quickGreen]}>
-          <Text style={styles.quickGlyph}>✓</Text><Text style={styles.quickTitle}>Safety</Text><Text style={styles.quickMeta}>Privacy & blocks</Text>
-        </Pressable>
-        <Pressable onPress={() => router.push({ pathname: '/legal/[document]', params: { document: 'community-guidelines' } })} style={styles.quickTile}>
-          <Text style={styles.quickGlyph}>§</Text><Text style={styles.quickTitle}>Guidelines</Text><Text style={styles.quickMeta}>Community rules</Text>
+        <Pressable onPress={() => router.push({ pathname: '/legal/[document]', params: { document: 'community-guidelines' } })} style={styles.utilityButton}>
+          <Text style={styles.utilityGlyph}>§</Text><View style={styles.utilityCopy}><Text style={styles.utilityTitle}>Guidelines</Text><Text style={styles.utilityMeta}>How YAPPIE works</Text></View>
         </Pressable>
       </View>
 
@@ -124,11 +106,8 @@ const styles = StyleSheet.create({
   topBar: { alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between' },
   topName: { color: colors.text, fontSize: 24, fontWeight: '900', letterSpacing: -0.7 },
   topHandle: { color: colors.textMuted, fontSize: 14, marginTop: 2 },
-  topActions: { flexDirection: 'row', gap: spacing.sm },
   iconButton: { alignItems: 'center', backgroundColor: colors.surface, borderColor: colors.border, borderRadius: 17, borderWidth: 1, height: 46, justifyContent: 'center', width: 46 },
   iconGlyph: { color: colors.text, fontSize: 19, fontWeight: '800' },
-  notificationBadge: { alignItems: 'center', backgroundColor: colors.accent, borderColor: colors.background, borderRadius: 9, borderWidth: 2, height: 18, justifyContent: 'center', position: 'absolute', right: -3, top: -3, width: 18 },
-  notificationText: { color: colors.white, fontSize: 10, fontWeight: '900' },
   profileHeader: { alignItems: 'flex-start', flexDirection: 'row', gap: spacing.lg, marginTop: spacing.xl },
   profileCopy: { flex: 1, gap: spacing.md },
   bio: { color: colors.text, fontSize: 16, lineHeight: 23 },
@@ -143,14 +122,18 @@ const styles = StyleSheet.create({
   metadataItem: { backgroundColor: colors.surface, borderColor: colors.border, borderRadius: 18, borderWidth: 1, minHeight: 82, padding: spacing.md, width: '47.8%' },
   metadataLabel: { color: colors.textSubtle, fontSize: 11, fontWeight: '900', letterSpacing: 0.7, textTransform: 'uppercase' },
   metadataValue: { color: colors.text, fontSize: 15, fontWeight: '800', lineHeight: 20, marginTop: 7 },
-  quickGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.md, marginTop: spacing.xl },
-  quickTile: { backgroundColor: colors.surfaceRaised, borderColor: colors.border, borderRadius: 20, borderWidth: 1, minHeight: 126, padding: spacing.lg, width: '47.8%' },
-  quickCobalt: { backgroundColor: colors.cobaltSoft, borderColor: '#34458F' },
-  quickWarm: { backgroundColor: colors.warningSoft, borderColor: '#6D5520' },
-  quickGreen: { backgroundColor: colors.signalSoft, borderColor: '#3B5421' },
-  quickGlyph: { color: colors.text, fontSize: 21, fontWeight: '900' },
-  quickTitle: { color: colors.text, fontSize: 16, fontWeight: '900', marginTop: 12 },
-  quickMeta: { color: colors.textMuted, fontSize: 12, marginTop: 4 },
+  walletStrip: { alignItems: 'center', backgroundColor: colors.warningSoft, borderColor: '#6D5520', borderRadius: radius.lg, borderWidth: 1, flexDirection: 'row', justifyContent: 'space-between', marginTop: spacing.xl, minHeight: 122, padding: spacing.lg },
+  walletKicker: { color: colors.warning, fontSize: 10, fontWeight: '900', letterSpacing: 1.1 },
+  walletTitle: { color: colors.text, fontSize: 25, fontWeight: '900', letterSpacing: -0.6, marginTop: 7 },
+  walletMeta: { color: colors.textMuted, fontSize: 12, marginTop: 4, maxWidth: 250 },
+  walletArrow: { alignItems: 'center', backgroundColor: colors.warning, borderRadius: radius.pill, height: 42, justifyContent: 'center', width: 42 },
+  walletArrowText: { color: colors.black, fontSize: 28, fontWeight: '700', lineHeight: 30 },
+  utilityRow: { flexDirection: 'row', gap: spacing.md, marginTop: spacing.md },
+  utilityButton: { alignItems: 'center', backgroundColor: colors.surface, borderColor: colors.border, borderRadius: radius.md, borderWidth: 1, flex: 1, flexDirection: 'row', gap: spacing.sm, minHeight: 78, padding: spacing.md },
+  utilityGlyph: { color: colors.signal, fontSize: 20, fontWeight: '900' },
+  utilityCopy: { flex: 1 },
+  utilityTitle: { color: colors.text, fontSize: 14, fontWeight: '900' },
+  utilityMeta: { color: colors.textSubtle, fontSize: 10, marginTop: 3 },
   accountFooter: { alignItems: 'center', borderTopColor: colors.border, borderTopWidth: StyleSheet.hairlineWidth, flexDirection: 'row', gap: spacing.md, justifyContent: 'space-between', marginTop: spacing.xl, paddingTop: spacing.lg },
   email: { color: colors.textSubtle, flex: 1, fontSize: 13 },
   signOutButton: { borderColor: '#603128', borderRadius: radius.pill, borderWidth: 1, paddingHorizontal: spacing.lg, paddingVertical: 10 },

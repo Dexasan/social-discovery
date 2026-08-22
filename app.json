@@ -4,7 +4,7 @@
     "slug": "social-discovery",
     "version": "0.1.3",
     "orientation": "portrait",
-    "userInterfaceStyle": "light",
+    "userInterfaceStyle": "dark",
     "icon": "./assets/brand/yappie-logo-transparent.png",
     "scheme": "socialdiscovery",
     "runtimeVersion": {
@@ -27,7 +27,7 @@
       [
         "expo-splash-screen",
         {
-          "backgroundColor": "#F3F0E7",
+          "backgroundColor": "#0D0F12",
           "image": "./assets/brand/yappie-logo-transparent.png",
           "imageWidth": 220,
           "resizeMode": "contain"
@@ -37,9 +37,9 @@
     ],
     "android": {
       "package": "com.socialdiscovery.app",
-      "versionCode": 6,
+      "versionCode": 7,
       "adaptiveIcon": {
-        "backgroundColor": "#F3F0E7",
+        "backgroundColor": "#0D0F12",
         "foregroundImage": "./assets/brand/yappie-logo-transparent.png"
       },
       "permissions": [

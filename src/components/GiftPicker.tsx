@@ -24,6 +24,7 @@ export function GiftPicker({
   const [wallet, setWallet] = useState<CoinWallet | null>(null);
   const [catalog, setCatalog] = useState<GiftCatalogItem[]>([]);
   const [loading, setLoading] = useState(false);
+  const [selectedSlug, setSelectedSlug] = useState<string | null>(null);
   const [sendingSlug, setSendingSlug] = useState<string | null>(null);
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
@@ -45,11 +46,15 @@ export function GiftPicker({
   useEffect(() => {
     if (!visible) return;
     setNotice('');
+    setSelectedSlug(null);
     void refresh();
   }, [refresh, recipientId, visible]);
 
-  const send = async (gift: GiftCatalogItem) => {
-    if (!wallet || wallet.balance < gift.coin_cost || sendingSlug) return;
+  const selectedGift = catalog.find((gift) => gift.slug === selectedSlug) ?? null;
+
+  const send = async () => {
+    const gift = selectedGift;
+    if (!gift || !wallet || wallet.balance < gift.coin_cost || sendingSlug) return;
     setSendingSlug(gift.slug);
     setError('');
     setNotice('');
@@ -57,6 +62,7 @@ export function GiftPicker({
       const result = await sendVirtualGift({ contextId, contextKind, giftSlug: gift.slug, recipientId });
       setWallet((current) => current ? { ...current, balance: result.balance, lifetime_spent: current.lifetime_spent + result.coin_cost } : current);
       setNotice(`${gift.emoji} ${gift.name} sent!`);
+      setSelectedSlug(null);
       onSent?.(result, gift);
     } catch (nextError) {
       setError(nextError instanceof Error ? nextError.message : 'Could not send this gift.');
@@ -72,7 +78,7 @@ export function GiftPicker({
         <View style={styles.giftSheet}>
           <View style={styles.sheetHandle} />
           <View style={styles.sheetHeader}>
-            <View style={styles.sheetTitleCopy}><Text style={styles.sheetTitle}>Send a little signal</Text><Text numberOfLines={1} style={styles.sheetSubtitle}>to {recipientName}</Text></View>
+            <View style={styles.sheetTitleCopy}><Text style={styles.sheetTitle}>Make their day</Text><Text numberOfLines={1} style={styles.sheetSubtitle}>Pick something for {recipientName}</Text></View>
             <View style={styles.sheetBalance}><Text style={styles.sheetBalanceValue}>{wallet?.balance ?? '—'}</Text><Text style={styles.sheetBalanceLabel}>coins</Text></View>
           </View>
 
@@ -82,18 +88,19 @@ export function GiftPicker({
               {catalog.map((gift) => {
                 const unavailable = !wallet || wallet.balance < gift.coin_cost;
                 const busy = sendingSlug === gift.slug;
+                const selected = selectedSlug === gift.slug;
                 return (
                   <Pressable
                     key={gift.slug}
-                    accessibilityLabel={`Send ${gift.name} for ${gift.coin_cost} coins`}
+                    accessibilityLabel={`${gift.name}, ${gift.coin_cost} coins`}
                     accessibilityRole="button"
-                    accessibilityState={{ disabled: unavailable || Boolean(sendingSlug) }}
+                    accessibilityState={{ disabled: unavailable || Boolean(sendingSlug), selected }}
                     disabled={unavailable || Boolean(sendingSlug)}
-                    onPress={() => void send(gift)}
-                    style={[styles.giftChoice, unavailable && styles.giftChoiceUnavailable, busy && styles.giftChoiceBusy]}
+                    onPress={() => { setSelectedSlug(gift.slug); setNotice(''); }}
+                    style={[styles.giftChoice, selected && styles.giftChoiceSelected, unavailable && styles.giftChoiceUnavailable, busy && styles.giftChoiceBusy]}
                   >
                     <Text style={styles.giftEmoji}>{gift.emoji}</Text>
-                    <Text style={styles.giftName}>{busy ? 'Sending…' : gift.name}</Text>
+                    <Text style={styles.giftName}>{gift.name}</Text>
                     <Text style={styles.giftCost}>{gift.coin_cost} coins</Text>
                   </Pressable>
                 );
@@ -101,11 +108,28 @@ export function GiftPicker({
             </View>
           ) : null}
 
+          {selectedGift ? (
+            <View style={styles.previewRow}>
+              <Text style={styles.previewEmoji}>{selectedGift.emoji}</Text>
+              <View style={styles.previewCopy}><Text style={styles.previewTitle}>{selectedGift.name} is ready</Text><Text style={styles.previewMeta}>Your balance after sending: {(wallet?.balance ?? 0) - selectedGift.coin_cost} coins</Text></View>
+            </View>
+          ) : null}
           {notice ? <Text accessibilityRole="alert" style={styles.success}>{notice}</Text> : null}
           {error ? <Text accessibilityRole="alert" style={styles.error}>{error}</Text> : null}
           {error && catalog.length === 0 ? <Pressable accessibilityRole="button" onPress={() => void refresh()} style={styles.retry}><Text style={styles.retryLabel}>Retry gifts</Text></Pressable> : null}
-          <Text style={styles.footnote}>Virtual gifts are social status items only. They cannot be withdrawn or converted to money.</Text>
-          <Pressable accessibilityRole="button" onPress={onClose} style={styles.doneButton}><Text style={styles.doneLabel}>Done</Text></Pressable>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityState={{ disabled: !selectedGift || Boolean(sendingSlug) }}
+            disabled={!selectedGift || Boolean(sendingSlug)}
+            onPress={() => void send()}
+            style={[styles.sendButton, (!selectedGift || Boolean(sendingSlug)) && styles.sendButtonDisabled]}
+          >
+            {sendingSlug ? <ActivityIndicator color={colors.primaryInk} /> : <Text style={styles.sendLabel}>{selectedGift ? `Send ${selectedGift.name} · ${selectedGift.coin_cost} coins` : 'Choose a gift'}</Text>}
+          </Pressable>
+          <View style={styles.sheetFooter}>
+            <Text style={styles.footnote}>Gifts are social-only and never convert to cash.</Text>
+            <Pressable accessibilityRole="button" onPress={onClose}><Text style={styles.closeLabel}>Close</Text></Pressable>
+          </View>
         </View>
       </View>
     </Modal>
@@ -127,16 +151,25 @@ const styles = StyleSheet.create({
   loading: { marginVertical: spacing.xl },
   giftGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
   giftChoice: { alignItems: 'center', backgroundColor: colors.surfaceRaised, borderColor: colors.borderStrong, borderRadius: radius.lg, borderWidth: 1, gap: 3, paddingHorizontal: spacing.sm, paddingVertical: spacing.md, width: '31%' },
+  giftChoiceSelected: { backgroundColor: colors.signalSoft, borderColor: colors.signal, borderWidth: 2, paddingHorizontal: spacing.sm - 1, paddingVertical: spacing.md - 1 },
   giftChoiceUnavailable: { opacity: 0.35 },
-  giftChoiceBusy: { backgroundColor: colors.cobaltSoft, borderColor: '#34458F' },
+  giftChoiceBusy: { backgroundColor: colors.signalSoft, borderColor: colors.signal },
   giftEmoji: { fontSize: 31, marginBottom: 2 },
   giftName: { color: colors.text, fontSize: 14, fontWeight: '900' },
   giftCost: { color: colors.warning, fontSize: 12, fontWeight: '800' },
+  previewRow: { alignItems: 'center', backgroundColor: colors.backgroundRaised, borderColor: colors.border, borderRadius: radius.md, borderWidth: 1, flexDirection: 'row', gap: spacing.md, padding: spacing.md },
+  previewEmoji: { fontSize: 34 },
+  previewCopy: { flex: 1 },
+  previewTitle: { color: colors.text, fontSize: 15, fontWeight: '900' },
+  previewMeta: { color: colors.textMuted, fontSize: 12, marginTop: 3 },
   success: { color: colors.success, fontSize: 14, fontWeight: '900', textAlign: 'center' },
   error: { color: colors.danger, fontSize: 12, textAlign: 'center' },
   retry: { alignItems: 'center', alignSelf: 'center', backgroundColor: colors.surfaceRaised, borderColor: colors.borderStrong, borderRadius: radius.pill, borderWidth: 1, paddingHorizontal: spacing.lg, paddingVertical: spacing.sm },
   retryLabel: { color: colors.text, fontSize: 14, fontWeight: '900' },
-  footnote: { color: colors.textSubtle, fontSize: 12, lineHeight: 18, textAlign: 'center' },
-  doneButton: { alignItems: 'center', backgroundColor: colors.primary, borderRadius: radius.md, justifyContent: 'center', minHeight: 48 },
-  doneLabel: { color: colors.primaryInk, fontSize: 14, fontWeight: '900' },
+  sendButton: { alignItems: 'center', backgroundColor: colors.signal, borderRadius: radius.md, justifyContent: 'center', minHeight: 52 },
+  sendButtonDisabled: { backgroundColor: colors.surfaceRaised },
+  sendLabel: { color: colors.black, fontSize: 15, fontWeight: '900' },
+  sheetFooter: { alignItems: 'center', flexDirection: 'row', gap: spacing.md, justifyContent: 'space-between' },
+  footnote: { color: colors.textSubtle, flex: 1, fontSize: 11, lineHeight: 16 },
+  closeLabel: { color: colors.text, fontSize: 13, fontWeight: '900', padding: spacing.sm },
 });
