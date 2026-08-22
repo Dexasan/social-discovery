@@ -8,12 +8,10 @@ import { createClub } from '@/features/clubs/api';
 import { chooseClubAvatar, uploadClubAvatar } from '@/features/clubs/avatar';
 import { colors, radius, spacing } from '@/theme/tokens';
 
-const topics = ['Late Night', 'Music', 'Gaming', 'Languages', 'Study', 'Travel', 'Relationships', 'Movies'];
-
 export default function CreateClubScreen() {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
-  const [topic, setTopic] = useState('Late Night');
+  const [topic, setTopic] = useState('');
   const [allowMemberRooms, setAllowMemberRooms] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
@@ -114,20 +112,18 @@ export default function CreateClubScreen() {
         </View>
 
         <View style={styles.field}>
-          <Text style={styles.label}>Topic</Text>
-          <View style={styles.topicGrid}>
-            {topics.map((option) => (
-              <Pressable
-                key={option}
-                accessibilityRole="radio"
-                accessibilityState={{ checked: topic === option }}
-                onPress={() => setTopic(option)}
-                style={[styles.topic, topic === option && styles.topicSelected]}
-              >
-                <Text style={[styles.topicLabel, topic === option && styles.topicLabelSelected]}>{option}</Text>
-              </Pressable>
-            ))}
-          </View>
+          <View style={styles.labelRow}><Text style={styles.label}>Topic</Text><Text style={styles.counter}>{topic.length}/32</Text></View>
+          <TextInput
+            accessibilityLabel="Club topic"
+            autoCapitalize="sentences"
+            maxLength={32}
+            onChangeText={setTopic}
+            placeholder="Anything: street photography, indie games…"
+            placeholderTextColor={colors.textSubtle}
+            style={styles.input}
+            value={topic}
+          />
+          <Muted>Write the subject in your own words. This helps people find the Club.</Muted>
         </View>
 
         <View style={styles.settingRow}>
@@ -177,11 +173,6 @@ const styles = StyleSheet.create({
   counter: { color: colors.textSubtle, fontSize: 12, fontWeight: '700' },
   input: { backgroundColor: colors.surfaceSoft, borderColor: colors.borderStrong, borderRadius: radius.md, borderWidth: 1, color: colors.text, fontSize: 15, minHeight: 52, paddingHorizontal: spacing.lg, paddingVertical: spacing.md },
   descriptionInput: { lineHeight: 22, minHeight: 112 },
-  topicGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
-  topic: { backgroundColor: colors.surfaceRaised, borderColor: colors.border, borderRadius: radius.pill, borderWidth: 1, paddingHorizontal: spacing.md, paddingVertical: 9 },
-  topicSelected: { backgroundColor: colors.cobaltSoft, borderColor: colors.cobalt },
-  topicLabel: { color: colors.textMuted, fontSize: 14, fontWeight: '800' },
-  topicLabelSelected: { color: colors.link },
   settingRow: { alignItems: 'center', backgroundColor: colors.surfaceSoft, borderRadius: radius.md, flexDirection: 'row', gap: spacing.lg, padding: spacing.lg },
   settingCopy: { flex: 1, gap: 3 },
   settingTitle: { color: colors.text, fontSize: 13, fontWeight: '900' },
