@@ -1,9 +1,11 @@
 import { useMemo, useState } from 'react';
 import { router } from 'expo-router';
 import { ActivityIndicator, Pressable, StyleSheet, Switch, Text, TextInput, View } from 'react-native';
+import type { ImagePickerAsset } from 'expo-image-picker';
 
-import { Card, Eyebrow, Heading, Muted, PrimaryButton, Screen } from '@/components/ui';
+import { Avatar, Card, Eyebrow, Heading, Muted, PrimaryButton, Screen } from '@/components/ui';
 import { createClub } from '@/features/clubs/api';
+import { chooseClubAvatar, uploadClubAvatar } from '@/features/clubs/avatar';
 import { colors, radius, spacing } from '@/theme/tokens';
 
 const topics = ['Late Night', 'Music', 'Gaming', 'Languages', 'Study', 'Travel', 'Relationships', 'Movies'];
@@ -15,18 +17,38 @@ export default function CreateClubScreen() {
   const [allowMemberRooms, setAllowMemberRooms] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
+  const [clubImage, setClubImage] = useState<ImagePickerAsset | null>(null);
+  const [createdClubId, setCreatedClubId] = useState<string | null>(null);
+  const [imageBusy, setImageBusy] = useState(false);
 
   const isValid = useMemo(
-    () => name.trim().length >= 3 && description.trim().length >= 10 && topic.trim().length >= 2,
-    [description, name, topic],
+    () => Boolean(clubImage) && name.trim().length >= 3 && description.trim().length >= 10 && topic.trim().length >= 2,
+    [clubImage, description, name, topic],
   );
+
+  const pickImage = async () => {
+    if (imageBusy || submitting) return;
+    setImageBusy(true);
+    setError('');
+    try {
+      const asset = await chooseClubAvatar();
+      if (asset) setClubImage(asset);
+    } catch (nextError) {
+      setError(nextError instanceof Error ? nextError.message : 'Could not choose this picture.');
+    } finally {
+      setImageBusy(false);
+    }
+  };
 
   const submit = async () => {
     if (!isValid || submitting) return;
     setSubmitting(true);
     setError('');
     try {
-      const clubId = await createClub({ allowMemberRooms, description, name, topic });
+      if (!clubImage) throw new Error('Choose a Club picture first.');
+      const clubId = createdClubId ?? await createClub({ allowMemberRooms, description, name, topic });
+      setCreatedClubId(clubId);
+      await uploadClubAvatar(clubId, clubImage, null);
       router.replace({ pathname: '/clubs/[clubId]', params: { clubId } });
     } catch (nextError) {
       setError(nextError instanceof Error ? nextError.message : 'Could not create this club.');
@@ -50,6 +72,18 @@ export default function CreateClubScreen() {
       </View>
 
       <Card style={styles.form}>
+        <View style={styles.field}>
+          <Text style={styles.label}>Club picture</Text>
+          <Pressable accessibilityRole="button" disabled={imageBusy || submitting} onPress={() => void pickImage()} style={styles.imagePicker}>
+            <Avatar imageUrl={clubImage?.uri} label={name.trim() || 'New club'} size={82} />
+            <View style={styles.imageCopy}>
+              <Text style={styles.imageAction}>{imageBusy ? 'Opening photos…' : clubImage ? 'Change picture' : 'Choose a picture'}</Text>
+              <Muted>Square crop · JPG, PNG or WebP · 5 MB max</Muted>
+            </View>
+            <Text style={styles.imageArrow}>›</Text>
+          </Pressable>
+        </View>
+
         <View style={styles.field}>
           <View style={styles.labelRow}><Text style={styles.label}>Club name</Text><Text style={styles.counter}>{name.length}/60</Text></View>
           <TextInput
@@ -115,7 +149,7 @@ export default function CreateClubScreen() {
       <View style={styles.submit}>
         <PrimaryButton
           disabled={!isValid || submitting}
-          label={submitting ? 'Creating club…' : 'Create club'}
+          label={submitting ? createdClubId ? 'Uploading picture…' : 'Creating club…' : createdClubId ? 'Retry picture upload' : 'Create club'}
           onPress={() => void submit()}
           icon={submitting ? <ActivityIndicator color={colors.primaryInk} size="small" /> : undefined}
         />
@@ -134,6 +168,10 @@ const styles = StyleSheet.create({
   hero: { gap: spacing.sm, marginTop: spacing.xl },
   form: { gap: spacing.xl, marginTop: spacing.xl },
   field: { gap: spacing.sm },
+  imagePicker: { alignItems: 'center', backgroundColor: colors.surfaceSoft, borderColor: colors.borderStrong, borderRadius: radius.lg, borderWidth: 1, flexDirection: 'row', gap: spacing.md, padding: spacing.md },
+  imageCopy: { flex: 1, gap: 3 },
+  imageAction: { color: colors.signal, fontSize: 15, fontWeight: '900' },
+  imageArrow: { color: colors.textMuted, fontSize: 27 },
   labelRow: { alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between' },
   label: { color: colors.text, fontSize: 13, fontWeight: '900' },
   counter: { color: colors.textSubtle, fontSize: 12, fontWeight: '700' },

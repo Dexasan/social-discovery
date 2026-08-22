@@ -2,8 +2,9 @@ import { useCallback, useState } from 'react';
 import { router, useFocusEffect } from 'expo-router';
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 
-import { EmptyState, Screen, SignalBars } from '@/components/ui';
+import { Avatar, EmptyState, Screen, SignalBars } from '@/components/ui';
 import { joinClub, leaveClub, loadClubs, startClubRoom, type ClubSummary } from '@/features/clubs/api';
+import { clubAvatarPublicUrl } from '@/features/clubs/avatar';
 import { colors, radius, spacing } from '@/theme/tokens';
 
 export default function ClubsScreen() {
@@ -113,7 +114,7 @@ export default function ClubsScreen() {
         {visibleClubs.map((club, index) => (
           <View key={club.club_id} style={[styles.clubTile, index % 3 === 1 && styles.clubTileCobalt, index % 3 === 2 && styles.clubTileWarm]}>
             <Pressable accessibilityRole="button" onPress={() => router.push({ pathname: '/clubs/[clubId]', params: { clubId: club.club_id } })} style={styles.clubLink}>
-              <View style={[styles.clubMark, index % 3 === 1 && styles.clubMarkCobalt, index % 3 === 2 && styles.clubMarkWarm]}><Text style={styles.clubMarkText}>{club.name.slice(0, 2).toUpperCase()}</Text></View>
+              <View style={styles.clubMark}><Avatar imageUrl={clubAvatarPublicUrl(club.avatar_path)} label={club.name} size={50} /></View>
               <Text numberOfLines={2} style={styles.clubName}>{club.name}</Text>
               <Text numberOfLines={1} style={styles.clubTopic}>{club.topic}</Text>
               <Text style={styles.memberCount}>{club.member_count} members</Text>
@@ -178,10 +179,7 @@ const styles = StyleSheet.create({
   clubTileCobalt: { backgroundColor: colors.cobaltSoft, borderColor: '#34458F' },
   clubTileWarm: { backgroundColor: colors.warningSoft, borderColor: '#6D5520' },
   clubLink: { flex: 1 },
-  clubMark: { alignItems: 'center', backgroundColor: colors.primary, borderRadius: 15, height: 48, justifyContent: 'center', marginBottom: spacing.md, width: 48 },
-  clubMarkCobalt: { backgroundColor: colors.cobalt },
-  clubMarkWarm: { backgroundColor: colors.accent },
-  clubMarkText: { color: colors.white, fontSize: 17, fontWeight: '900' },
+  clubMark: { alignItems: 'center', height: 52, justifyContent: 'center', marginBottom: spacing.md, width: 52 },
   clubName: { color: colors.text, fontSize: 17, fontWeight: '900', letterSpacing: -0.35, lineHeight: 21 },
   clubTopic: { color: colors.textMuted, fontSize: 13, fontWeight: '700', marginTop: 4 },
   memberCount: { color: colors.textSubtle, fontSize: 12, marginTop: 7 },

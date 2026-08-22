@@ -3,6 +3,7 @@ import type { Tables } from '@/types/database';
 import { loadAvatarPathMap } from '@/features/profile/avatar-data';
 
 export type ClubSummary = {
+  avatar_path: string | null;
   club_id: string;
   description: string;
   is_member: boolean;
@@ -59,7 +60,7 @@ export type RoomParticipant = {
   user_id: string;
 };
 
-export type ClubRoom = Tables<'club_rooms'> & { clubs: Pick<Tables<'clubs'>, 'name' | 'topic'> | null };
+export type ClubRoom = Tables<'club_rooms'> & { clubs: Pick<Tables<'clubs'>, 'name' | 'topic' | 'avatar_path'> | null };
 
 function client() {
   if (!supabase) throw new Error('Supabase is not configured.');
@@ -69,8 +70,14 @@ function client() {
 export async function loadClubs() {
   const { data, error } = await client().rpc('list_clubs');
   if (error) throw error;
-  return (data as Omit<ClubSummary, 'member_role'>[]).map((club) => ({
+  const rows = data as Omit<ClubSummary, 'member_role' | 'avatar_path'>[];
+  if (rows.length === 0) return [];
+  const { data: images, error: imageError } = await client().from('clubs').select('id, avatar_path').in('id', rows.map((club) => club.club_id));
+  if (imageError) throw imageError;
+  const imageByClub = new Map(images.map((club) => [club.id, club.avatar_path]));
+  return rows.map((club) => ({
     ...club,
+    avatar_path: imageByClub.get(club.club_id) ?? null,
     member_role: club.is_member ? 'member' as const : null,
   }));
 }
@@ -96,7 +103,9 @@ export async function loadClubDetail(clubId: string) {
   if (error) throw error;
   const detail = (data as ClubDetail[])[0];
   if (!detail) throw new Error('This club is unavailable.');
-  return detail;
+  const { data: image, error: imageError } = await client().from('clubs').select('avatar_path').eq('id', clubId).single();
+  if (imageError) throw imageError;
+  return { ...detail, avatar_path: image.avatar_path };
 }
 
 export async function loadClubMembers(clubId: string) {
@@ -163,7 +172,7 @@ export async function startClubRoom(clubId: string, title: string) {
 export async function loadClubRoom(roomId: string) {
   const { data, error } = await client()
     .from('club_rooms')
-    .select('*, clubs(name, topic)')
+    .select('*, clubs(name, topic, avatar_path)')
     .eq('id', roomId)
     .single();
   if (error) throw error;

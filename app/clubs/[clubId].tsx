@@ -18,6 +18,7 @@ import {
   type ClubPost,
 } from '@/features/clubs/api';
 import { setPostLiked } from '@/features/feed/api';
+import { chooseClubAvatar, clubAvatarPublicUrl, uploadClubAvatar } from '@/features/clubs/avatar';
 import { colors, radius, spacing } from '@/theme/tokens';
 
 function first(value: string | string[] | undefined) {
@@ -47,6 +48,7 @@ export default function ClubDetailScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
+  const [imageBusy, setImageBusy] = useState(false);
 
   const refresh = useCallback(async (showIndicator = false) => {
     if (!clubId) return;
@@ -74,6 +76,23 @@ export default function ClubDetailScreen() {
   const canHost = useMemo(() => Boolean(
     club?.is_member && (club.allow_member_rooms || club.member_role === 'owner' || club.member_role === 'moderator'),
   ), [club]);
+  const canEditImage = club?.member_role === 'owner' || club?.member_role === 'moderator';
+
+  const changeClubImage = async () => {
+    if (!clubId || !club || !canEditImage || imageBusy) return;
+    setImageBusy(true);
+    setError('');
+    try {
+      const asset = await chooseClubAvatar();
+      if (!asset) return;
+      await uploadClubAvatar(clubId, asset, club.avatar_path);
+      await refresh();
+    } catch (nextError) {
+      setError(nextError instanceof Error ? nextError.message : 'Could not update the Club picture.');
+    } finally {
+      setImageBusy(false);
+    }
+  };
 
   const toggleMembership = async () => {
     if (!clubId || !club || busy || club.member_role === 'owner') return;
@@ -187,7 +206,10 @@ export default function ClubDetailScreen() {
         <Pill label={club.topic} tone="accent" />
       </View>
 
-      <View style={styles.heroMark}><Text style={styles.heroLetter}>{club.name.slice(0, 1).toUpperCase()}</Text></View>
+      <Pressable accessibilityLabel={canEditImage ? 'Change Club picture' : `${club.name} picture`} disabled={!canEditImage || imageBusy} onPress={() => void changeClubImage()} style={styles.heroImageAction}>
+        <Avatar imageUrl={clubAvatarPublicUrl(club.avatar_path)} label={club.name} size={76} />
+        {canEditImage ? <View style={styles.imageEditBadge}>{imageBusy ? <ActivityIndicator color={colors.primary} size="small" /> : <Text style={styles.imageEditGlyph}>+</Text>}</View> : null}
+      </Pressable>
       <Heading compact>{club.name}</Heading>
       <Muted style={styles.description}>{club.description}</Muted>
       <View style={styles.statsRow}>
@@ -326,8 +348,9 @@ const styles = StyleSheet.create({
   backButton: { alignItems: 'center', flexDirection: 'row', gap: 4, paddingVertical: spacing.sm },
   backGlyph: { color: colors.text, fontSize: 28, lineHeight: 28 },
   backLabel: { color: colors.text, fontSize: 14, fontWeight: '800' },
-  heroMark: { alignItems: 'center', backgroundColor: colors.signal, borderColor: '#52752A', borderRadius: radius.lg, borderWidth: 1, height: 72, justifyContent: 'center', marginBottom: spacing.md, marginTop: spacing.xl, transform: [{ rotate: '-4deg' }], width: 72 },
-  heroLetter: { color: colors.primary, fontSize: 30, fontWeight: '900' },
+  heroImageAction: { alignSelf: 'flex-start', marginBottom: spacing.md, marginTop: spacing.xl, position: 'relative' },
+  imageEditBadge: { alignItems: 'center', backgroundColor: colors.signal, borderColor: colors.background, borderRadius: 16, borderWidth: 3, bottom: -3, height: 32, justifyContent: 'center', position: 'absolute', right: -3, width: 32 },
+  imageEditGlyph: { color: colors.primary, fontSize: 21, fontWeight: '900', lineHeight: 23 },
   description: { fontSize: 15, lineHeight: 23, marginTop: spacing.md },
   statsRow: { alignItems: 'center', flexDirection: 'row', flexWrap: 'wrap', marginTop: spacing.lg },
   memberCount: { color: colors.text, fontSize: 13, fontWeight: '900' },

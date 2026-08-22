@@ -20,6 +20,7 @@ import {
   type RoomParticipant,
 } from '@/features/clubs/api';
 import { closeRoomAudio, disconnectRoomAudio, revokeRoomAudioPublisher, useClubRoomAudio } from '@/features/clubs/audio';
+import { clubAvatarPublicUrl } from '@/features/clubs/avatar';
 import { colors, radius, spacing } from '@/theme/tokens';
 
 function first(value: string | string[] | undefined) {
@@ -246,7 +247,10 @@ export default function ClubRoomScreen() {
         <Pill label={room?.status === 'live' ? `Live · ${participants.length}` : 'Ended'} tone={room?.status === 'live' ? 'live' : 'default'} />
       </View>
       <View style={styles.roomHeader}>
-        <Text style={styles.clubName}>{room?.clubs?.name ?? 'Club room'}</Text>
+        <View style={styles.clubIdentity}>
+          <Avatar imageUrl={clubAvatarPublicUrl(room?.clubs?.avatar_path)} label={room?.clubs?.name ?? 'Club room'} size={42} />
+          <Text style={styles.clubName}>{room?.clubs?.name ?? 'Club room'}</Text>
+        </View>
         <Heading compact>{room?.title ?? 'Live conversation'}</Heading>
         <Text style={styles.roomMeta}>{stage.length} on stage · {audience.length} listening</Text>
       </View>
@@ -365,6 +369,7 @@ const styles = StyleSheet.create({
   leaveGlyph: { color: colors.textMuted, fontSize: 20, fontWeight: '400', lineHeight: 20 },
   leave: { color: colors.textMuted, fontSize: 14, fontWeight: '800' },
   roomHeader: { gap: spacing.sm, marginTop: spacing.xl },
+  clubIdentity: { alignItems: 'center', flexDirection: 'row', gap: spacing.md },
   clubName: { color: colors.link, fontSize: 13, fontWeight: '900', letterSpacing: 1.5, textTransform: 'uppercase' },
   roomMeta: { color: colors.textSubtle, fontSize: 12, fontWeight: '700' },
   error: { color: colors.danger, fontSize: 13, marginTop: spacing.md, textAlign: 'center' },

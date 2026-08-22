@@ -108,8 +108,8 @@ export function PrimaryButton({
   );
 }
 
-export function Avatar({ label, path, size = 48 }: { label: string; path?: string | null; size?: number }) {
-  const source = avatarPublicUrl(path);
+export function Avatar({ imageUrl, label, path, size = 48 }: { imageUrl?: string | null; label: string; path?: string | null; size?: number }) {
+  const source = imageUrl || avatarPublicUrl(path);
   const [imageFailed, setImageFailed] = useState(false);
   useEffect(() => setImageFailed(false), [source]);
   const palettes = [

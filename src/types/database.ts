@@ -201,6 +201,7 @@ export type Database = {
       clubs: {
         Row: {
           allow_member_rooms: boolean
+          avatar_path: string | null
           created_at: string
           created_by: string | null
           description: string
@@ -211,6 +212,7 @@ export type Database = {
         }
         Insert: {
           allow_member_rooms?: boolean
+          avatar_path?: string | null
           created_at?: string
           created_by?: string | null
           description: string
@@ -221,6 +223,7 @@ export type Database = {
         }
         Update: {
           allow_member_rooms?: boolean
+          avatar_path?: string | null
           created_at?: string
           created_by?: string | null
           description?: string
@@ -1207,6 +1210,10 @@ export type Database = {
       set_call_availability: {
         Args: { target_available: boolean }
         Returns: boolean
+      }
+      set_club_avatar: {
+        Args: { target_avatar_path: string; target_club_id: string }
+        Returns: string
       }
       mark_conversation_read: {
         Args: { target_conversation_id: string }
