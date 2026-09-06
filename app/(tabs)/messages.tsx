@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useState } from 'react';
 import { router, useFocusEffect } from 'expo-router';
-import { ActivityIndicator, Pressable, RefreshControl, StyleSheet, Text, View } from 'react-native';
+import { AppState, Pressable, RefreshControl, StyleSheet, Text, TextInput, View } from 'react-native';
 
-import { Avatar, Card, EmptyState, Screen } from '@/components/ui';
+import { Avatar, Card, EmptyState, PrimaryButton, RetroGlyph, RetroHeader, Screen, SkeletonRows } from '@/components/ui';
 import { useSession } from '@/context/SessionContext';
 import { listDirectConversations, subscribeToInbox, type DirectConversation } from '@/features/messages/api';
 import { colors, spacing } from '@/theme/tokens';
@@ -22,6 +22,14 @@ export default function MessagesScreen() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState('');
+  const [query, setQuery] = useState('');
+  const [unreadOnly, setUnreadOnly] = useState(false);
+  const [appIsActive, setAppIsActive] = useState(AppState.currentState === 'active');
+
+  useEffect(() => {
+    const subscription = AppState.addEventListener('change', (state) => setAppIsActive(state === 'active'));
+    return () => subscription.remove();
+  }, []);
 
   const refresh = useCallback(async (showIndicator = false) => {
     if (showIndicator) setRefreshing(true);
@@ -40,29 +48,38 @@ export default function MessagesScreen() {
     void refresh();
   }, [refresh]));
 
-  useEffect(() => {
-    if (!user) return;
-    return subscribeToInbox(user.id, () => void refresh());
-  }, [refresh, user]);
+  useFocusEffect(useCallback(() => {
+    if (!user || !appIsActive) return;
+    const unsubscribe = subscribeToInbox(user.id, () => void refresh());
+    const presenceRefresh = setInterval(() => void refresh(), 15_000);
+    return () => {
+      clearInterval(presenceRefresh);
+      unsubscribe();
+    };
+  }, [appIsActive, refresh, user]));
 
   const totalUnread = conversations.reduce((total, conversation) => total + conversation.unread_count, 0);
+  const visibleConversations = conversations.filter((chat) => (!unreadOnly || chat.unread_count > 0) &&
+    [chat.partner_display_name, chat.partner_handle, chat.last_message_body].some((value) => value?.toLowerCase().includes(query.trim().toLowerCase())));
 
   return (
-    <Screen refreshControl={<RefreshControl colors={[colors.primary]} onRefresh={() => void refresh(true)} progressBackgroundColor={colors.surfaceRaised} refreshing={refreshing} />}>
-      <View style={styles.headerRow}>
-        <Text style={styles.navTitle}>Messages</Text>
-        <Pressable accessibilityLabel="Start a new message" accessibilityRole="button" onPress={() => router.push('/messages/new')} style={styles.composeMark}>
-          <Text style={styles.composeGlyph}>＋</Text>
-        </Pressable>
-      </View>
-      {loading ? <ActivityIndicator color={colors.primary} style={styles.loading} /> : null}
-      {error ? <Text style={styles.error}>{error}</Text> : null}
-      {!loading && conversations.length === 0 ? (
-        <EmptyState description="Follow someone after Quick Chat and your conversation will live here." glyph="⌁" title="Turn a moment into a connection" />
+    <Screen refreshControl={<RefreshControl colors={[colors.accent]} tintColor={colors.accent} onRefresh={() => void refresh(true)} progressBackgroundColor={colors.surfaceRaised} refreshing={refreshing} />}>
+      <RetroHeader
+        action={<Pressable accessibilityLabel="Start a new message" accessibilityRole="button" onPress={() => router.push('/messages/new')}><RetroGlyph glyph="＋" tone="accent" /></Pressable>}
+        eyebrow="KEEP THE CONVERSATION GOING"
+        title="Inbox"
+        tone="signal"
+      />
+      <View style={styles.searchWrap}><Text style={styles.searchGlyph}>⌕</Text><TextInput accessibilityLabel="Search conversations" autoCapitalize="none" onChangeText={setQuery} placeholder="Find a person or a conversation" placeholderTextColor={colors.textSubtle} style={styles.searchInput} value={query} />{query ? <Pressable accessibilityRole="button" accessibilityLabel="Clear conversation search" onPress={() => setQuery('')} style={styles.clearSearch}><Text style={styles.searchGlyph}>×</Text></Pressable> : null}</View>
+      <View style={styles.filters}>{[false, true].map((onlyUnread) => <Pressable key={String(onlyUnread)} accessibilityRole="tab" accessibilityState={{ selected: unreadOnly === onlyUnread }} onPress={() => setUnreadOnly(onlyUnread)} style={[styles.filter, unreadOnly === onlyUnread && styles.filterSelected]}><Text style={[styles.filterText, unreadOnly === onlyUnread && styles.filterTextSelected]}>{onlyUnread ? 'Unread' + (totalUnread ? '  ' + totalUnread : '') : 'All messages'}</Text></Pressable>)}</View>
+      {loading ? <SkeletonRows count={4} /> : null}
+      {error ? <><Text accessibilityRole="alert" style={styles.error}>{error}</Text><Pressable accessibilityRole="button" onPress={() => void refresh(true)} style={styles.retryButton}><Text style={styles.filterTextSelected}>Try again</Text></Pressable></> : null}
+      {!loading && !error && conversations.length === 0 ? (
+        <EmptyState action={<PrimaryButton label="Meet someone new" onPress={() => router.push('/(tabs)/quick-chat')} />} description="The best conversations don’t have to end. Meet someone, connect, and pick up right here." glyph="⌁" title="Your next favorite conversation" />
       ) : null}
-      {conversations.length > 0 && totalUnread > 0 ? <View style={styles.unreadSummary}><Text style={styles.unreadSummaryText}>{totalUnread} new</Text></View> : null}
+      {!loading && !error && conversations.length > 0 && visibleConversations.length === 0 ? <EmptyState description={query ? 'Try a different name or a word from your chat.' : 'You’re all caught up. Your conversations are in All messages.'} glyph={query ? '⌕' : '✓'} title={query ? 'No conversations found' : 'A clean slate'} /> : null}
       <View style={styles.list}>
-        {conversations.map((chat) => {
+        {visibleConversations.map((chat) => {
           const name = chat.partner_display_name || (chat.partner_handle ? `@${chat.partner_handle}` : 'Connection');
           return (
             <Pressable
@@ -75,14 +92,14 @@ export default function MessagesScreen() {
               style={({ pressed }) => pressed && styles.pressed}
             >
               <Card style={[styles.chat, chat.unread_count > 0 && styles.unreadChat]}>
-                <View><Avatar label={name} path={chat.partner_avatar_path} size={52} /><View style={styles.presence} /></View>
+                <View><Avatar label={name} path={chat.partner_avatar_path} size={52} />{chat.partner_is_online ? <View accessibilityLabel="Online now" style={styles.presence} /> : null}</View>
                 <View style={styles.copy}>
-                  <Text style={styles.name}>{name}</Text>
+                  <Text numberOfLines={1} style={styles.name}>{name}</Text>
                   <Text numberOfLines={1} style={[styles.preview, chat.unread_count > 0 && styles.unreadPreview]}>{chat.last_message_body ?? 'Start your conversation'}</Text>
                 </View>
                 <View style={styles.trailing}>
                   <Text style={styles.time}>{relativeTime(chat.last_message_at)}</Text>
-                  {chat.unread_count > 0 ? <View style={styles.unreadBadge}><Text style={styles.unreadBadgeText}>{Math.min(chat.unread_count, 99)}</Text></View> : <Text style={styles.chevron}>›</Text>}
+                  {chat.unread_count > 0 ? <View style={styles.unreadBadge}><Text style={styles.unreadBadgeText}>{chat.unread_count > 99 ? '99+' : chat.unread_count}</Text></View> : null}
                 </View>
               </Card>
             </Pressable>
@@ -94,26 +111,29 @@ export default function MessagesScreen() {
 }
 
 const styles = StyleSheet.create({
-  headerRow: { alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between' },
-  navTitle: { color: colors.text, fontSize: 25, fontWeight: '900', letterSpacing: -0.8 },
-  composeMark: { alignItems: 'center', backgroundColor: colors.primary, borderRadius: 18, height: 48, justifyContent: 'center', width: 48 },
-  composeGlyph: { color: colors.white, fontSize: 26, fontWeight: '700' },
+  searchGlyph: { color: colors.textSubtle, fontSize: 25 },
+  filters: { flexDirection: 'row', gap: 8, marginTop: 16 },
+  filter: { borderRadius: 24, paddingHorizontal: 18, minHeight: 44, justifyContent: 'center', backgroundColor: colors.surface },
+  filterSelected: { backgroundColor: colors.cobaltSoft },
+  filterText: { color: colors.textSubtle, fontSize: 13, fontWeight: '600' },
+  filterTextSelected: { color: colors.cobalt, fontSize: 13, fontWeight: '700' },
+  retryButton: { alignSelf: 'center', padding: 16 },
+  searchWrap: { alignItems: 'center', backgroundColor: colors.surface, borderColor: colors.border, borderRadius: 16, borderWidth: 1, flexDirection: 'row', gap: 10, marginTop: 22, paddingHorizontal: 14 },
+  searchInput: { color: colors.text, flex: 1, fontSize: 13, minHeight: 52 },
+  clearSearch: { alignItems: 'center', justifyContent: 'center', minHeight: 44, width: 32 },
   loading: { marginVertical: spacing.xl },
   error: { color: colors.danger, fontSize: 14, lineHeight: 21, marginTop: spacing.lg, textAlign: 'center' },
-  list: { gap: spacing.sm, marginTop: spacing.lg },
-  chat: { alignItems: 'center', backgroundColor: colors.surface, borderRadius: 20, flexDirection: 'row', gap: spacing.md, minHeight: 78, paddingVertical: 12 },
-  unreadChat: { borderColor: colors.accent, borderWidth: 2 },
-  copy: { flex: 1, gap: 3 },
-  name: { color: colors.text, fontSize: 18, fontWeight: '900', letterSpacing: -0.3 },
-  preview: { color: colors.textMuted, fontSize: 15, lineHeight: 21 },
-  unreadPreview: { color: colors.textMuted, fontWeight: '700' },
+  list: { gap: 4, marginTop: 20 },
+  chat: { alignItems: 'center', backgroundColor: colors.background, borderColor: 'transparent', borderRadius: 20, borderWidth: 1, elevation: 0, flexDirection: 'row', gap: 14, minHeight: 90, paddingHorizontal: 10, paddingVertical: 16, shadowOpacity: 0 },
+  unreadChat: { backgroundColor: colors.surface, borderColor: colors.border },
+  copy: { flex: 1, gap: 6 },
+  name: { color: colors.text, fontSize: 16, fontWeight: '700', letterSpacing: -0.3 },
+  preview: { color: colors.textSubtle, fontSize: 13, lineHeight: 20 },
+  unreadPreview: { color: colors.textMuted, fontWeight: '600' },
   presence: { backgroundColor: colors.success, borderColor: colors.surfaceSoft, borderRadius: 5, borderWidth: 2, bottom: 0, height: 11, position: 'absolute', right: 0, width: 11 },
   trailing: { alignItems: 'flex-end', gap: 5 },
-  time: { color: colors.textSubtle, fontSize: 12, fontWeight: '800' },
-  chevron: { color: colors.textSubtle, fontSize: 22, fontWeight: '300' },
-  unreadSummary: { alignSelf: 'flex-start', backgroundColor: colors.accentSoft, borderRadius: 999, marginTop: spacing.lg, paddingHorizontal: 12, paddingVertical: 8 },
-  unreadSummaryText: { color: colors.danger, fontSize: 12, fontWeight: '900', textTransform: 'uppercase' },
-  unreadBadge: { alignItems: 'center', backgroundColor: colors.accent, borderRadius: 13, height: 26, justifyContent: 'center', minWidth: 26, paddingHorizontal: 7 },
-  unreadBadgeText: { color: colors.white, fontSize: 12, fontWeight: '900' },
+  time: { color: colors.textSubtle, fontSize: 11, fontWeight: '500' },
+  unreadBadge: { alignItems: 'center', backgroundColor: colors.accent, borderRadius: 12, height: 23, justifyContent: 'center', minWidth: 23, paddingHorizontal: 6 },
+  unreadBadgeText: { color: colors.primary, fontSize: 11, fontWeight: '800' },
   pressed: { opacity: 0.72, transform: [{ scale: 0.99 }] },
 });

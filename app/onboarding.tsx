@@ -5,6 +5,7 @@ import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { BrandLockup } from '@/components/Brand';
 import { Card, Eyebrow, Heading, Muted, PrimaryButton, Screen } from '@/components/ui';
 import { useSession } from '@/context/SessionContext';
+import { isHandleAvailable } from '@/features/social/api';
 import { colors, radius, spacing } from '@/theme/tokens';
 
 const languageOptions = ['English', 'Spanish', 'German', 'Italian', 'French', 'Portuguese', 'Hindi', 'Arabic', 'Nepali', 'Japanese'];
@@ -42,6 +43,7 @@ export default function OnboardingScreen() {
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
+  const [handleStatus, setHandleStatus] = useState<'idle' | 'checking' | 'available' | 'taken'>('idle');
 
   const normalizedHandle = useMemo(
     () => handle.trim().toLowerCase().replace(/[^a-z0-9_]/g, ''),
@@ -56,6 +58,8 @@ export default function OnboardingScreen() {
     countryCodeValid &&
     languages.length > 0 &&
     termsAccepted &&
+    handleStatus !== 'checking' &&
+    handleStatus !== 'taken' &&
     !submitting;
 
   if (!isLoading && !user) return <Redirect href="/auth" />;
@@ -67,6 +71,12 @@ export default function OnboardingScreen() {
     setError('');
 
     try {
+      setHandleStatus('checking');
+      if (!(await isHandleAvailable(normalizedHandle))) {
+        setHandleStatus('taken');
+        throw new Error('That username is already taken. Try another one.');
+      }
+      setHandleStatus('available');
       await completeOnboarding({
         birthDate,
         countryCode: normalizedCountryCode,
@@ -79,6 +89,19 @@ export default function OnboardingScreen() {
       setError(readableOnboardingError(nextError));
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  const checkUsername = async () => {
+    if (normalizedHandle.length < 3) {
+      setHandleStatus('idle');
+      return;
+    }
+    setHandleStatus('checking');
+    try {
+      setHandleStatus(await isHandleAvailable(normalizedHandle) ? 'available' : 'taken');
+    } catch {
+      setHandleStatus('idle');
     }
   };
 
@@ -113,13 +136,21 @@ export default function OnboardingScreen() {
           <TextInput
             accessibilityLabel="Username"
             autoCapitalize="none"
-            onChangeText={setHandle}
+            maxLength={25}
+            onBlur={() => void checkUsername()}
+            onChangeText={(value) => {
+              setHandle(value.replace(/^@+/, ''));
+              setHandleStatus('idle');
+            }}
             placeholder="alexaroundtheworld"
             placeholderTextColor={colors.textMuted}
             style={styles.handleInput}
             value={handle}
           />
         </View>
+        <Text style={[styles.handleStatus, handleStatus === 'taken' && styles.handleTaken, handleStatus === 'available' && styles.handleAvailable]}>
+          {handleStatus === 'checking' ? 'Checking…' : handleStatus === 'taken' ? 'Already taken' : handleStatus === 'available' ? `@${normalizedHandle} is yours` : 'One unique @username per person'}
+        </Text>
 
         <View style={styles.splitRow}>
           <View style={styles.splitField}>
@@ -216,6 +247,9 @@ const styles = StyleSheet.create({
   handleRow: { alignItems: 'center', backgroundColor: colors.surfaceRaised, borderColor: colors.borderStrong, borderRadius: 18, borderWidth: 1, flexDirection: 'row', minHeight: 60, paddingHorizontal: spacing.lg },
   at: { color: colors.cobalt, fontSize: 19, fontWeight: '900' },
   handleInput: { color: colors.text, flex: 1, fontSize: 17, paddingLeft: spacing.xs },
+  handleStatus: { color: colors.textSubtle, fontSize: 12, marginTop: -spacing.sm },
+  handleTaken: { color: colors.danger, fontWeight: '800' },
+  handleAvailable: { color: colors.success, fontWeight: '800' },
   splitRow: { flexDirection: 'row', gap: spacing.md },
   splitField: { flex: 1 },
   countryField: { width: 96 },

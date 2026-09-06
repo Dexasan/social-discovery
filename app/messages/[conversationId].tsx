@@ -1,11 +1,13 @@
 import { useEffect, useRef, useState } from 'react';
 import { router, useLocalSearchParams } from 'expo-router';
-import { Alert, FlatList, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Alert, FlatList, KeyboardAvoidingView, Platform, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { GiftPicker } from '@/components/GiftPicker';
+import { GiftArtwork } from '@/components/GiftArtwork';
 import { Avatar, Muted } from '@/components/ui';
 import { useSession } from '@/context/SessionContext';
+import { giftCheckoutEnabled } from '@/features/gifts/api';
 import { markConversationRead } from '@/features/messages/api';
 import {
   blockProfile,
@@ -28,6 +30,7 @@ export default function DirectConversationScreen() {
   const partnerId = first(params.partnerId);
   const partnerName = first(params.partnerName) ?? 'Connection';
   const { user } = useSession();
+  const checkoutEnabled = giftCheckoutEnabled();
   const [messages, setMessages] = useState<Message[]>([]);
   const [draft, setDraft] = useState('');
   const [sending, setSending] = useState(false);
@@ -115,7 +118,8 @@ export default function DirectConversationScreen() {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <View style={styles.header}>
+      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.keyboardAvoider}>
+        <View style={styles.header}>
         <Pressable accessibilityLabel="Back to messages" onPress={() => router.back()} style={styles.backButton}>
           <Text style={styles.backText}>‹</Text>
         </Pressable>
@@ -134,28 +138,32 @@ export default function DirectConversationScreen() {
         </Pressable>
         <Pressable accessibilityRole="button" onPress={confirmReport} style={styles.action}><Text style={styles.report}>Report</Text></Pressable>
         <Pressable accessibilityRole="button" onPress={confirmBlock} style={styles.action}><Text style={styles.block}>Block</Text></Pressable>
-      </View>
+        </View>
 
-      <FlatList
-        contentContainerStyle={styles.messages}
-        data={messages}
-        keyExtractor={(item) => item.id}
-        ListEmptyComponent={<Text style={styles.empty}>This is the beginning of your conversation.</Text>}
-        ref={listRef}
-        renderItem={({ item }) => {
-          const own = item.sender_id === user?.id;
-          return (
-            <View style={[styles.bubble, own ? styles.ownBubble : styles.theirBubble]}>
-              <Text style={[styles.messageText, own && styles.ownMessageText]}>{item.body}</Text>
-            </View>
-          );
-        }}
-      />
+        <FlatList
+          automaticallyAdjustKeyboardInsets
+          contentContainerStyle={styles.messages}
+          data={messages}
+          keyboardDismissMode={Platform.OS === 'ios' ? 'interactive' : 'on-drag'}
+          keyboardShouldPersistTaps="handled"
+          keyExtractor={(item) => item.id}
+          ListEmptyComponent={<Text style={styles.empty}>This is the beginning of your conversation.</Text>}
+          ref={listRef}
+          renderItem={({ item }) => {
+            const own = item.sender_id === user?.id;
+            return (
+              <View style={[styles.bubble, own ? styles.ownBubble : styles.theirBubble]}>
+                <Text style={[styles.messageText, own && styles.ownMessageText]}>{item.body}</Text>
+              </View>
+            );
+          }}
+        />
 
-      {error ? <Text style={styles.error}>{error}</Text> : null}
-      <View style={styles.composer}>
-        <Pressable accessibilityLabel="Send a virtual gift" accessibilityRole="button" onPress={() => setGiftPickerVisible(true)} style={styles.giftButton}>
-          <Text style={styles.giftGlyph}>✦</Text>
+        {error ? <Text style={styles.error}>{error}</Text> : null}
+        <View style={styles.composer}>
+        <Pressable accessibilityLabel={checkoutEnabled ? 'Send a gift' : 'Preview future gifts'} accessibilityRole="button" onPress={() => setGiftPickerVisible(true)} style={styles.giftButton}>
+          <GiftArtwork size={38} slug="gift_vault" />
+          {!checkoutEnabled ? <Text style={styles.giftLabBadge}>LAB</Text> : null}
         </Pressable>
         <TextInput
           accessibilityLabel="Message"
@@ -170,24 +178,26 @@ export default function DirectConversationScreen() {
         <Pressable accessibilityLabel="Send message" accessibilityRole="button" disabled={!draft.trim() || sending} onPress={() => void send()} style={[styles.sendButton, (!draft.trim() || sending) && styles.sendDisabled]}>
           <Text style={styles.sendLabel}>↑</Text>
         </Pressable>
-      </View>
-      {conversationId && partnerId ? (
-        <GiftPicker
-          contextId={conversationId}
-          contextKind="direct_message"
-          onClose={() => setGiftPickerVisible(false)}
-          recipientId={partnerId}
-          recipientName={partnerName}
-          visible={giftPickerVisible}
-        />
-      ) : null}
+        </View>
+        {conversationId && partnerId ? (
+          <GiftPicker
+            contextId={conversationId}
+            contextKind="direct_message"
+            onClose={() => setGiftPickerVisible(false)}
+            recipientId={partnerId}
+            recipientName={partnerName}
+            visible={giftPickerVisible}
+          />
+        ) : null}
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   safeArea: { backgroundColor: colors.background, flex: 1 },
-  header: { alignItems: 'center', backgroundColor: colors.surfaceSoft, borderBottomColor: colors.border, borderBottomWidth: StyleSheet.hairlineWidth, flexDirection: 'row', gap: spacing.sm, paddingHorizontal: spacing.md, paddingVertical: spacing.md },
+  keyboardAvoider: { flex: 1 },
+  header: { alignItems: 'center', backgroundColor: colors.background, borderBottomColor: colors.border, borderBottomWidth: StyleSheet.hairlineWidth, flexDirection: 'row', gap: 8, paddingHorizontal: 12, paddingVertical: 14 },
   backButton: { alignItems: 'center', height: 48, justifyContent: 'center', width: 40 },
   backText: { color: colors.text, fontSize: 36, fontWeight: '300' },
   identity: { flex: 1 },
@@ -198,17 +208,17 @@ const styles = StyleSheet.create({
   block: { color: colors.danger, fontSize: 14, fontWeight: '800' },
   messages: { flexGrow: 1, gap: spacing.sm, justifyContent: 'flex-end', padding: spacing.lg },
   empty: { color: colors.textMuted, fontSize: 13, marginBottom: spacing.xl, textAlign: 'center' },
-  bubble: { borderRadius: radius.md, maxWidth: '82%', paddingHorizontal: spacing.lg, paddingVertical: spacing.md },
-  ownBubble: { alignSelf: 'flex-end', backgroundColor: colors.primary },
-  theirBubble: { alignSelf: 'flex-start', backgroundColor: colors.surfaceRaised, borderColor: colors.border, borderWidth: StyleSheet.hairlineWidth },
-  messageText: { color: colors.text, fontSize: 15, lineHeight: 21 },
-  ownMessageText: { color: colors.primaryInk },
+  bubble: { borderRadius: 22, maxWidth: '82%', paddingHorizontal: 18, paddingVertical: 13 },
+  ownBubble: { alignSelf: 'flex-end', backgroundColor: colors.cobalt, borderBottomRightRadius: 6 },
+  theirBubble: { alignSelf: 'flex-start', backgroundColor: colors.surfaceSoft, borderBottomLeftRadius: 6 },
+  messageText: { color: colors.text, fontSize: 16, lineHeight: 24 },
+  ownMessageText: { color: colors.primary },
   error: { color: colors.danger, fontSize: 12, paddingHorizontal: spacing.lg, paddingVertical: spacing.sm, textAlign: 'center' },
-  composer: { alignItems: 'flex-end', backgroundColor: colors.surfaceSoft, borderTopColor: colors.border, borderTopWidth: StyleSheet.hairlineWidth, flexDirection: 'row', gap: spacing.sm, padding: spacing.md },
-  giftButton: { alignItems: 'center', backgroundColor: colors.warningSoft, borderColor: '#6D5520', borderRadius: 27, borderWidth: 1, height: 54, justifyContent: 'center', width: 54 },
-  giftGlyph: { color: colors.warning, fontSize: 20, fontWeight: '900' },
-  input: { backgroundColor: colors.surfaceRaised, borderColor: colors.borderStrong, borderRadius: 27, borderWidth: 1, color: colors.text, flex: 1, fontSize: 17, maxHeight: 132, minHeight: 54, paddingHorizontal: spacing.lg, paddingVertical: 14 },
-  sendButton: { alignItems: 'center', backgroundColor: colors.primary, borderRadius: 27, height: 54, justifyContent: 'center', width: 54 },
+  composer: { alignItems: 'flex-end', backgroundColor: colors.background, borderTopColor: colors.border, borderTopWidth: StyleSheet.hairlineWidth, flexDirection: 'row', gap: 8, padding: 12 },
+  giftButton: { alignItems: 'center', backgroundColor: colors.surface, borderRadius: 16, height: 48, justifyContent: 'center', width: 44 },
+  giftLabBadge: { backgroundColor: colors.warning, borderColor: colors.black, borderRadius: 5, borderWidth: 1, color: colors.black, fontSize: 6, fontWeight: '900', letterSpacing: 0.5, paddingHorizontal: 4, paddingVertical: 2, position: 'absolute', right: -3, top: -5 },
+  input: { backgroundColor: colors.surface, borderColor: colors.border, borderRadius: 22, borderWidth: 1, color: colors.text, flex: 1, fontSize: 15, maxHeight: 132, minHeight: 48, paddingHorizontal: 16, paddingVertical: 12 },
+  sendButton: { alignItems: 'center', backgroundColor: colors.accent, borderRadius: 18, height: 48, justifyContent: 'center', width: 48 },
   sendDisabled: { opacity: 0.4 },
-  sendLabel: { color: colors.primaryInk, fontSize: 24, fontWeight: '900' },
+  sendLabel: { color: colors.primary, fontSize: 24, fontWeight: '800' },
 });

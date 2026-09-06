@@ -15,6 +15,7 @@ function readableError(error: unknown, fallback: string) {
 export default function AccountSettingsScreen() {
   const { deleteAccount, updatePassword, user } = useSession();
   const [newPassword, setNewPassword] = useState('');
+  const [changeCurrentPassword, setChangeCurrentPassword] = useState('');
   const [confirmation, setConfirmation] = useState('');
   const [savingPassword, setSavingPassword] = useState(false);
   const [passwordNotice, setPasswordNotice] = useState('');
@@ -24,8 +25,8 @@ export default function AccountSettingsScreen() {
   const [deleting, setDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState('');
 
-  const passwordReady = newPassword.length >= 8 && newPassword === confirmation && !savingPassword;
-  const deletionReady = currentPassword.length >= 8 && deletePhrase.trim().toUpperCase() === 'DELETE' && !deleting;
+  const passwordReady = changeCurrentPassword.length > 0 && newPassword.length >= 10 && /[A-Za-z]/.test(newPassword) && /\d/.test(newPassword) && newPassword === confirmation && !savingPassword;
+  const deletionReady = currentPassword.length > 0 && deletePhrase.trim().toUpperCase() === 'DELETE' && !deleting;
 
   const savePassword = async () => {
     if (!passwordReady) return;
@@ -33,7 +34,8 @@ export default function AccountSettingsScreen() {
     setPasswordError('');
     setPasswordNotice('');
     try {
-      await updatePassword(newPassword);
+      await updatePassword(newPassword, changeCurrentPassword);
+      setChangeCurrentPassword('');
       setNewPassword('');
       setConfirmation('');
       setPasswordNotice('Your password has been updated.');
@@ -93,14 +95,26 @@ export default function AccountSettingsScreen() {
 
       <SectionHeader title="Change password" />
       <Card style={styles.formCard}>
-        <Muted>Use at least eight characters. Changing it does not sign you out of this device.</Muted>
+        <Muted>Use at least ten characters with a letter and number. Other signed-in devices will be logged out.</Muted>
+        <Text style={styles.fieldLabel}>Current password</Text>
+        <TextInput
+          accessibilityLabel="Current password before changing it"
+          autoCapitalize="none"
+          autoComplete="current-password"
+          onChangeText={setChangeCurrentPassword}
+          placeholder="Confirm it is really you"
+          placeholderTextColor={colors.textSubtle}
+          secureTextEntry
+          style={styles.input}
+          value={changeCurrentPassword}
+        />
         <Text style={styles.fieldLabel}>New password</Text>
         <TextInput
           accessibilityLabel="New password"
           autoCapitalize="none"
           autoComplete="new-password"
           onChangeText={setNewPassword}
-          placeholder="At least 8 characters"
+          placeholder="10+ characters, letter + number"
           placeholderTextColor={colors.textSubtle}
           secureTextEntry
           style={styles.input}
@@ -130,7 +144,7 @@ export default function AccountSettingsScreen() {
           <View style={styles.dangerIcon}><Text style={styles.dangerGlyph}>!</Text></View>
           <View style={styles.dangerCopy}>
             <Text style={styles.dangerTitle}>Delete account permanently</Text>
-            <Muted>This removes your profile, posts, messages, room history, coins, gifts, and clubs you own. It cannot be reversed.</Muted>
+            <Muted>This removes your profile, posts, messages, room history, gift history, and clubs you own. It cannot be reversed.</Muted>
           </View>
         </View>
         <Text style={styles.fieldLabel}>Current password</Text>

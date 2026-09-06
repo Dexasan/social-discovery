@@ -20,7 +20,8 @@ const documents: Record<LegalDocument, {
       { heading: 'Who can use the app', body: 'You must be at least 18 years old, provide accurate account information, and be legally able to accept these terms. One person should control each account.' },
       { heading: 'Your conduct', body: 'You may meet strangers, publish posts, join clubs, and message people. You may not harass, exploit, threaten, impersonate, spam, or use the service for illegal activity. The Community Guidelines are part of these terms.' },
       { heading: 'Your content', body: 'You keep ownership of content you create. You give the service permission to store, process, display, and distribute it only as needed to operate and improve the app. You are responsible for what you publish.' },
-      { heading: 'Coins and gifts', body: 'Coins and virtual gifts are entertainment features. They have no cash value, cannot be withdrawn, and do not create a financial claim against another user or the service.' },
+      { heading: 'Gift preview', body: 'Paid gifting, earnings, and withdrawals are not available in the free beta. Gift artwork and catalogue entries are illustrative previews only: they cannot be purchased, sent, redeemed, or exchanged for money. If paid gifting launches later, updated terms and final storefront pricing will be shown before the first purchase.' },
+      { heading: 'Future paid features', body: 'Previewing a planned gift does not create a balance, payout right, Premium entitlement, or promise that the feature will launch. Any future purchase and payout program will require separate eligibility rules, verification, supported-country checks, and your acceptance of the terms that apply at that time.' },
       { heading: 'Moderation and access', body: 'We may remove content, restrict features, suspend accounts, or preserve evidence when needed for safety, legal compliance, or service integrity. You can report users, posts, messages, and rooms from inside the app.' },
       { heading: 'Beta availability', body: 'The app is provided during an early beta and may change, experience downtime, or lose experimental data. Do not rely on it for emergencies or essential communications.' },
     ],
@@ -34,7 +35,8 @@ const documents: Record<LegalDocument, {
       { heading: 'Public profile and content', body: 'Your display name, username, country code, languages, bio, posts, replies, follower relationships, club activity, and received gifts can be visible to other authenticated users.' },
       { heading: 'Conversations and live rooms', body: 'Messages and room participation are processed to deliver the features, enforce blocks, investigate reports, and maintain service reliability. Live audio is transmitted through the configured realtime provider and is not designed as a recording feature.' },
       { heading: 'Safety records', body: 'Blocks, reports, moderation actions, and limited technical logs may be retained to prevent abuse and investigate incidents. Blocking hides interactions between the affected accounts.' },
-      { heading: 'Service providers', body: 'The beta relies on infrastructure providers including Supabase for authentication and data services, Expo for application delivery, and Cloudflare for live audio. They process data only to provide their services under their own security obligations.' },
+      { heading: 'Payments and payouts', body: 'The free beta does not collect gift-payment, payout, tax, or bank-account information because purchases and withdrawals are disabled. If those features are activated later, this notice will be updated before that data is collected.' },
+      { heading: 'Service providers', body: 'The beta relies on infrastructure providers including Supabase for authentication and data services, Expo for application delivery, and Cloudflare for live audio. They process data to provide their services under their own security obligations.' },
       { heading: 'Your choices', body: 'You can edit profile details, control who may start a direct message, block accounts, change your password, and permanently delete your account inside the app. Formal privacy-request contact details must be added before a public store launch.' },
     ],
   },
@@ -72,7 +74,7 @@ export default function LegalScreen() {
         <Eyebrow>{document.eyebrow}</Eyebrow>
         <Heading compact>{document.title}</Heading>
         <Muted>{document.summary}</Muted>
-        <Text style={styles.updated}>Beta revision · 21 August 2026</Text>
+        <Text style={styles.updated}>Beta revision · 5 September 2026</Text>
       </View>
 
       <View style={styles.tabs}>

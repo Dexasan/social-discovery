@@ -4,7 +4,7 @@ import { ActivityIndicator, Alert, Pressable, StyleSheet, Text, TextInput, View 
 
 import { Avatar, Card, Eyebrow, Heading, Muted, PrimaryButton, Screen } from '@/components/ui';
 import { useSession } from '@/context/SessionContext';
-import { updateOwnProfile } from '@/features/social/api';
+import { isHandleAvailable, updateOwnProfile } from '@/features/social/api';
 import { chooseAndUploadAvatar, removeAvatar } from '@/features/profile/avatar';
 import { colors, radius, spacing } from '@/theme/tokens';
 
@@ -27,6 +27,7 @@ export default function EditProfileScreen() {
   const [bio, setBio] = useState(profile?.bio ?? '');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
+  const [handleStatus, setHandleStatus] = useState<'idle' | 'checking' | 'available' | 'taken'>('idle');
   const [avatarPath, setAvatarPath] = useState(profile?.avatarPath ?? null);
   const [avatarBusy, setAvatarBusy] = useState(false);
 
@@ -43,6 +44,8 @@ export default function EditProfileScreen() {
     languages.length > 0 &&
     (normalizedCountryCode.length === 0 || /^[A-Z]{2}$/.test(normalizedCountryCode)) &&
     bio.trim().length <= 240 &&
+    handleStatus !== 'checking' &&
+    handleStatus !== 'taken' &&
     !submitting
   );
 
@@ -52,6 +55,12 @@ export default function EditProfileScreen() {
     setError('');
 
     try {
+      setHandleStatus('checking');
+      if (!(await isHandleAvailable(normalizedHandle))) {
+        setHandleStatus('taken');
+        throw new Error('That username is already taken. Try another one.');
+      }
+      setHandleStatus('available');
       await updateOwnProfile(user.id, {
         bio: bio.trim(),
         countryCode: normalizedCountryCode || null,
@@ -65,6 +74,19 @@ export default function EditProfileScreen() {
       setError(readableProfileError(nextError));
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  const checkUsername = async () => {
+    if (normalizedHandle.length < 3) {
+      setHandleStatus('idle');
+      return;
+    }
+    setHandleStatus('checking');
+    try {
+      setHandleStatus(await isHandleAvailable(normalizedHandle) ? 'available' : 'taken');
+    } catch {
+      setHandleStatus('idle');
     }
   };
 
@@ -157,14 +179,21 @@ export default function EditProfileScreen() {
           <TextInput
             accessibilityLabel="Username"
             autoCapitalize="none"
-            maxLength={24}
-            onChangeText={setHandle}
+            maxLength={25}
+            onBlur={() => void checkUsername()}
+            onChangeText={(value) => {
+              setHandle(value.replace(/^@+/, ''));
+              setHandleStatus('idle');
+            }}
             placeholder="alexaroundtheworld"
             placeholderTextColor={colors.textMuted}
             style={styles.handleInput}
             value={handle}
           />
         </View>
+        <Text style={[styles.handleStatus, handleStatus === 'taken' && styles.handleTaken, handleStatus === 'available' && styles.handleAvailable]}>
+          {handleStatus === 'checking' ? 'Checking…' : handleStatus === 'taken' ? 'Already taken' : handleStatus === 'available' ? `@${normalizedHandle} is available` : 'Your @username is unique'}
+        </Text>
 
         <Text style={styles.label}>Bio</Text>
         <TextInput
@@ -244,6 +273,9 @@ const styles = StyleSheet.create({
   handleRow: { alignItems: 'center', backgroundColor: colors.surfaceRaised, borderColor: colors.borderStrong, borderRadius: radius.md, borderWidth: 1, flexDirection: 'row', minHeight: 52, paddingHorizontal: spacing.lg },
   at: { color: colors.text, fontSize: 17, fontWeight: '800' },
   handleInput: { color: colors.text, flex: 1, fontSize: 16, paddingLeft: spacing.xs },
+  handleStatus: { color: colors.textSubtle, fontSize: 12, marginTop: -spacing.sm },
+  handleTaken: { color: colors.danger, fontWeight: '800' },
+  handleAvailable: { color: colors.success, fontWeight: '800' },
   languages: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
   choice: { backgroundColor: colors.surfaceRaised, borderColor: colors.border, borderRadius: radius.pill, borderWidth: 1, paddingHorizontal: spacing.md, paddingVertical: 9 },
   choiceSelected: { backgroundColor: colors.cobaltSoft, borderColor: '#34458F' },

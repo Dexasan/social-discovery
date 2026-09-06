@@ -13,8 +13,8 @@ export function BrandLockup({ compact = false, inverted = false }: { compact?: b
     <View style={[styles.lockup, compact && styles.lockupCompact]}>
       <BrandMark size={compact ? 42 : 72} />
       <View style={styles.wordmarkCopy}>
-        <Text style={[styles.wordmark, compact && styles.wordmarkCompact, inverted && styles.inverted]}>YAPPIE</Text>
-        <Text style={[styles.tagline, inverted && styles.invertedMuted]}>TALK TO STRANGERS</Text>
+        <Text style={[styles.wordmark, compact && styles.wordmarkCompact, inverted && styles.inverted]}>yappie<Text style={styles.wordmarkDot}>.</Text></Text>
+        {!compact ? <Text style={[styles.tagline, inverted && styles.invertedMuted]}>A little hello. A whole new world.</Text> : null}
       </View>
     </View>
   );
@@ -24,9 +24,10 @@ const styles = StyleSheet.create({
   lockup: { alignItems: 'center', flexDirection: 'row', gap: spacing.md },
   lockupCompact: { gap: spacing.sm },
   wordmarkCopy: { gap: 1 },
-  wordmark: { color: colors.text, fontSize: 28, fontWeight: '900', letterSpacing: -1.4 },
-  wordmarkCompact: { fontSize: 21, letterSpacing: -0.8 },
-  tagline: { color: colors.textMuted, fontSize: 11.5, fontWeight: '900', letterSpacing: 1.8 },
+  wordmark: { color: colors.text, fontSize: 38, fontWeight: '900', letterSpacing: -2 },
+  wordmarkCompact: { fontSize: 30, letterSpacing: -1.5 },
+  wordmarkDot: { color: colors.accent },
+  tagline: { color: colors.textMuted, fontSize: 12, fontWeight: '500' },
   inverted: { color: colors.white },
   invertedMuted: { color: '#D7D3C9' },
 });

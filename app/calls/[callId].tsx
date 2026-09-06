@@ -46,12 +46,13 @@ export default function DirectCallScreen() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [elapsed, setElapsed] = useState(0);
+  const [appIsActive, setAppIsActive] = useState(AppState.currentState === 'active');
   const callStatusRef = useRef<CallStatus | null>(null);
   const leavingRef = useRef(false);
   const audio = useDirectCallAudio(callId, call?.status === 'accepted');
 
   useEffect(() => {
-    if (!callId || !user) return;
+    if (!callId || !user || !appIsActive) return;
     let active = true;
     const applyCall = async (nextCall: DirectCall) => {
       callStatusRef.current = nextCall.status;
@@ -71,7 +72,7 @@ export default function DirectCallScreen() {
     });
     const unsubscribe = subscribeToDirectCall(callId, (nextCall) => void applyCall(nextCall));
     return () => { active = false; unsubscribe(); };
-  }, [callId, user]);
+  }, [appIsActive, callId, user]);
 
   useEffect(() => {
     if (call?.status !== 'accepted' || !call.accepted_at) {
@@ -95,7 +96,7 @@ export default function DirectCallScreen() {
       });
     };
     heartbeat();
-    const interval = setInterval(heartbeat, 10_000);
+    const interval = setInterval(heartbeat, 6_000);
     return () => { active = false; clearInterval(interval); };
   }, [call?.status, callId]);
 
@@ -109,6 +110,7 @@ export default function DirectCallScreen() {
     };
     let previousState = AppState.currentState;
     const subscription = AppState.addEventListener('change', (nextState) => {
+      setAppIsActive(nextState === 'active');
       if (previousState === 'active' && nextState !== 'active') void close('App closed');
       previousState = nextState;
     });

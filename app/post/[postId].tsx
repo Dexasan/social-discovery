@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { router, useLocalSearchParams } from 'expo-router';
 import { ActivityIndicator, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
-import { Avatar, Card, Heading, Muted, PrimaryButton, Screen } from '@/components/ui';
+import { Avatar, PixelRule, RetroGlyph, RetroHeader, Screen } from '@/components/ui';
 import { useSession } from '@/context/SessionContext';
 import { createReply, loadPostReplies, type FeedReply } from '@/features/feed/api';
 import { loadAvatarPathMap } from '@/features/profile/avatar-data';
@@ -18,7 +18,7 @@ export default function PostDetailScreen() {
   const body = first(params.body) ?? 'Conversation';
   const author = first(params.author) ?? 'Community member';
   const authorId = first(params.authorId);
-  const { user } = useSession();
+  const { profile, user } = useSession();
   const [replies, setReplies] = useState<FeedReply[]>([]);
   const [draft, setDraft] = useState('');
   const [loading, setLoading] = useState(true);
@@ -63,11 +63,19 @@ export default function PostDetailScreen() {
 
   return (
     <Screen>
-      <Pressable accessibilityLabel="Back to feed" accessibilityRole="button" onPress={() => router.back()} style={styles.back}>
-        <Text style={styles.backText}>‹ Feed</Text>
+      <RetroHeader
+        action={<View style={styles.replyBadge}><Text style={styles.replyBadgeText}>{String(replies.length).padStart(2, '0')} REPLIES</Text></View>}
+        eyebrow="PUBLIC THREAD"
+        glyph="▤"
+        title="Conversation"
+        tone="cobalt"
+      />
+      <Pressable accessibilityLabel="Back to feed" accessibilityRole="button" onPress={() => router.back()} style={styles.backStrip}>
+        <RetroGlyph glyph="‹" size="sm" tone="neutral" /><Text style={styles.backLabel}>BACK TO DISCOVER</Text><View style={styles.backPixels}><View style={styles.backPixel} /><View style={styles.backPixel} /></View>
       </Pressable>
-      <Heading compact>Replies</Heading>
-      <Card style={styles.postCard}>
+
+      <View style={styles.postCard}>
+        <Text style={styles.originalLabel}>ORIGINAL YAP / 01</Text>
         <Pressable
           accessibilityLabel={`Open ${author}'s profile`}
           accessibilityRole="button"
@@ -79,30 +87,42 @@ export default function PostDetailScreen() {
           <Text style={styles.author}>{author}</Text>
         </Pressable>
         <Text style={styles.body}>{body}</Text>
-      </Card>
+        <View style={styles.threadStem} />
+      </View>
 
-      <Card style={styles.composer}>
+      <View style={styles.composer}>
+        <Avatar label={profile?.displayName || 'You'} path={profile?.avatarPath} size={36} />
         <TextInput
           accessibilityLabel="Reply"
           maxLength={500}
           multiline
           onChangeText={setDraft}
-          placeholder="Add to the conversation…"
+          placeholder={`Reply to ${author}`}
           placeholderTextColor={colors.textMuted}
           style={styles.input}
           value={draft}
         />
-        <PrimaryButton disabled={!draft.trim() || submitting} label={submitting ? 'Replying…' : 'Reply'} onPress={() => void reply()} />
-      </Card>
+        <Pressable
+          accessibilityLabel="Send reply"
+          accessibilityRole="button"
+          disabled={!draft.trim() || submitting}
+          onPress={() => void reply()}
+          style={[styles.sendButton, (!draft.trim() || submitting) && styles.sendButtonDisabled]}
+        >
+          {submitting ? <ActivityIndicator color={colors.primary} size="small" /> : <Text style={styles.sendGlyph}>↑</Text>}
+        </Pressable>
+      </View>
 
       {error ? <Text style={styles.error}>{error}</Text> : null}
       {loading ? <ActivityIndicator color={colors.primary} style={styles.loading} /> : null}
-      {!loading && replies.length === 0 ? <Muted>No replies yet. Start the conversation.</Muted> : null}
+      <PixelRule label={replies.length ? `${replies.length} ${replies.length === 1 ? 'reply' : 'replies'}` : 'replies'} />
+      {!loading && replies.length === 0 ? <View style={styles.empty}><RetroGlyph glyph="⌁" tone="neutral" /><View><Text style={styles.emptyTitle}>NO SIGNAL YET</Text><Text style={styles.emptyText}>Be the first reply.</Text></View></View> : null}
       <View style={styles.replies}>
-        {replies.map((item) => {
+        {replies.map((item, index) => {
           const name = item.author_display_name || (item.author_handle ? `@${item.author_handle}` : 'Community member');
           return (
-            <Card key={item.reply_id} style={styles.replyCard}>
+            <View key={item.reply_id} style={styles.replyCard}>
+              <Text style={styles.replySerial}>R/{String(index + 1).padStart(2, '0')}</Text>
               <Pressable
                 accessibilityLabel={`Open ${name}'s profile`}
                 accessibilityRole="button"
@@ -116,7 +136,7 @@ export default function PostDetailScreen() {
                 </Pressable>
                 <Text style={styles.replyBody}>{item.body}</Text>
               </View>
-            </Card>
+            </View>
           );
         })}
       </View>
@@ -125,18 +145,31 @@ export default function PostDetailScreen() {
 }
 
 const styles = StyleSheet.create({
-  back: { alignSelf: 'flex-start', paddingVertical: spacing.sm },
-  backText: { color: colors.text, fontSize: 13, fontWeight: '900' },
-  postCard: { backgroundColor: colors.surfaceSoft, gap: spacing.lg, marginTop: spacing.lg },
+  replyBadge: { backgroundColor: colors.cobaltSoft, borderColor: '#34458F', borderRadius: 7, borderWidth: 1, paddingHorizontal: 9, paddingVertical: 7 },
+  replyBadgeText: { color: colors.cobalt, fontSize: 8, fontWeight: '900', letterSpacing: 1 },
+  backStrip: { alignItems: 'center', flexDirection: 'row', gap: spacing.sm, marginTop: spacing.md },
+  backLabel: { color: colors.textSubtle, fontSize: 9, fontWeight: '900', letterSpacing: 1.1 },
+  backPixels: { flexDirection: 'row', gap: 3, marginLeft: 'auto' },
+  backPixel: { backgroundColor: colors.accent, height: 4, width: 4 },
+  postCard: { backgroundColor: colors.surface, borderColor: colors.borderStrong, borderRadius: 12, borderWidth: 2, gap: spacing.md, marginTop: spacing.md, padding: spacing.lg, position: 'relative', shadowColor: colors.cobalt, shadowOffset: { height: 4, width: 4 }, shadowOpacity: 0.2, shadowRadius: 0 },
+  originalLabel: { color: colors.accent, fontSize: 8, fontWeight: '900', letterSpacing: 1.1, position: 'absolute', right: 8, top: 7 },
   authorRow: { alignItems: 'center', flexDirection: 'row', gap: spacing.md },
   author: { color: colors.text, fontSize: 14, fontWeight: '800' },
-  body: { color: colors.text, fontSize: 20, fontWeight: '800', letterSpacing: -0.35, lineHeight: 28 },
-  composer: { backgroundColor: colors.surfaceSoft, gap: spacing.md, marginTop: spacing.lg },
-  input: { backgroundColor: colors.surfaceRaised, borderColor: colors.borderStrong, borderRadius: radius.md, borderWidth: 1, color: colors.text, fontSize: 15, minHeight: 82, padding: spacing.md, textAlignVertical: 'top' },
+  body: { color: colors.text, fontSize: 19, fontWeight: '700', letterSpacing: -0.25, lineHeight: 27 },
+  threadStem: { backgroundColor: colors.borderStrong, bottom: -34, height: 34, left: 39, position: 'absolute', width: 2 },
+  composer: { alignItems: 'center', backgroundColor: colors.backgroundRaised, borderColor: colors.border, borderRadius: 10, borderWidth: 1, flexDirection: 'row', gap: spacing.sm, marginTop: spacing.md, minHeight: 66, paddingHorizontal: spacing.sm, paddingVertical: spacing.sm },
+  input: { backgroundColor: colors.surface, borderColor: colors.border, borderRadius: 8, borderWidth: 1, color: colors.text, flex: 1, fontSize: 14.5, maxHeight: 86, minHeight: 42, paddingHorizontal: spacing.md, paddingVertical: 10, textAlignVertical: 'center' },
+  sendButton: { alignItems: 'center', backgroundColor: colors.accent, borderColor: colors.primary, borderRadius: 7, borderWidth: 2, height: 40, justifyContent: 'center', width: 40 },
+  sendButtonDisabled: { opacity: 0.35 },
+  sendGlyph: { color: colors.primary, fontSize: 22, fontWeight: '900', lineHeight: 24 },
   error: { color: colors.danger, fontSize: 13, marginVertical: spacing.md, textAlign: 'center' },
   loading: { marginVertical: spacing.xl },
-  replies: { gap: spacing.md, marginTop: spacing.lg },
-  replyCard: { alignItems: 'flex-start', backgroundColor: colors.surfaceSoft, flexDirection: 'row', gap: spacing.md },
+  empty: { alignItems: 'center', backgroundColor: colors.backgroundRaised, borderColor: colors.border, borderRadius: 10, borderStyle: 'dashed', borderWidth: 1, flexDirection: 'row', gap: spacing.md, padding: spacing.lg },
+  emptyTitle: { color: colors.text, fontSize: 11, fontWeight: '900', letterSpacing: 1 },
+  emptyText: { color: colors.textSubtle, fontSize: 13, marginTop: 3 },
+  replies: { gap: spacing.sm },
+  replyCard: { alignItems: 'flex-start', backgroundColor: colors.backgroundRaised, borderColor: colors.border, borderRadius: 9, borderWidth: 1, flexDirection: 'row', gap: spacing.md, padding: spacing.md, position: 'relative' },
+  replySerial: { color: colors.borderStrong, fontSize: 7, fontWeight: '900', letterSpacing: 0.8, position: 'absolute', right: 6, top: 5 },
   replyCopy: { flex: 1, gap: spacing.sm },
   replyBody: { color: colors.text, fontSize: 15, lineHeight: 21 },
 });

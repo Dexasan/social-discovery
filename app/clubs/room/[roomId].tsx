@@ -5,6 +5,7 @@ import { ActivityIndicator, Alert, AppState, Pressable, StyleSheet, Text, View }
 import { GiftPicker } from '@/components/GiftPicker';
 import { Avatar, Card, Heading, Muted, Pill, Screen } from '@/components/ui';
 import { useSession } from '@/context/SessionContext';
+import { giftCheckoutEnabled } from '@/features/gifts/api';
 import {
   endClubRoom,
   heartbeatClubRoom,
@@ -31,6 +32,7 @@ export default function ClubRoomScreen() {
   const params = useLocalSearchParams<{ roomId: string }>();
   const roomId = first(params.roomId);
   const { user } = useSession();
+  const checkoutEnabled = giftCheckoutEnabled();
   const [room, setRoom] = useState<ClubRoom | null>(null);
   const [participants, setParticipants] = useState<RoomParticipant[]>([]);
   const [loading, setLoading] = useState(true);
@@ -296,7 +298,7 @@ export default function ClubRoomScreen() {
               <Pill label={participant.role} tone={participant.role === 'host' ? 'accent' : 'default'} />
               {participant.user_id !== user?.id ? (
                 <Pressable accessibilityRole="button" onPress={() => setGiftRecipient(participant)} style={styles.giftButton}>
-                  <Text style={styles.giftLabel}>✦ Gift</Text>
+                  <Text style={styles.giftLabel}>{checkoutEnabled ? '✦ Gift' : '✦ Preview'}</Text>
                 </Pressable>
               ) : null}
               {canModerate && participant.role === 'speaker' ? (

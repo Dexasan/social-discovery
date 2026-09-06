@@ -105,6 +105,29 @@ export type Database = {
           },
         ]
       }
+      app_presence: {
+        Row: {
+          last_seen_at: string
+          user_id: string
+        }
+        Insert: {
+          last_seen_at?: string
+          user_id: string
+        }
+        Update: {
+          last_seen_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "app_presence_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       club_memberships: {
         Row: {
           club_id: string
@@ -581,6 +604,7 @@ export type Database = {
       quick_chat_queue: {
         Row: {
           expires_at: string
+          interests: string[]
           languages: string[]
           queued_at: string
           topic: string | null
@@ -588,6 +612,7 @@ export type Database = {
         }
         Insert: {
           expires_at: string
+          interests?: string[]
           languages: string[]
           queued_at?: string
           topic?: string | null
@@ -595,6 +620,7 @@ export type Database = {
         }
         Update: {
           expires_at?: string
+          interests?: string[]
           languages?: string[]
           queued_at?: string
           topic?: string | null
@@ -609,6 +635,7 @@ export type Database = {
           ended_at: string | null
           ended_by: string | null
           id: string
+          matched_interests: string[]
           started_at: string
           status: string
           user_a_id: string
@@ -620,6 +647,7 @@ export type Database = {
           ended_at?: string | null
           ended_by?: string | null
           id?: string
+          matched_interests?: string[]
           started_at?: string
           status?: string
           user_a_id: string
@@ -631,6 +659,7 @@ export type Database = {
           ended_at?: string | null
           ended_by?: string | null
           id?: string
+          matched_interests?: string[]
           started_at?: string
           status?: string
           user_a_id?: string
@@ -889,6 +918,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      is_handle_available: {
+        Args: { candidate_handle: string }
+        Returns: boolean
+      }
       can_send_message: {
         Args: { target_conversation_id: string; target_user_id: string }
         Returns: boolean
@@ -934,7 +967,6 @@ export type Database = {
         }
       }
       end_club_room: { Args: { target_room_id: string }; Returns: undefined }
-      delete_my_account: { Args: never; Returns: undefined }
       end_direct_call: {
         Args: { reason?: string; target_call_id: string }
         Returns: string
@@ -954,6 +986,18 @@ export type Database = {
           balance: number
           lifetime_earned: number
           lifetime_spent: number
+        }[]
+      }
+      get_earnings_wallet: {
+        Args: never
+        Returns: {
+          available_cents: number
+          lifetime_earned_cents: number
+          lifetime_paid_cents: number
+          payout_status: string
+          pending_cents: number
+          premium_until: string | null
+          withdrawal_minimum_cents: number
         }[]
       }
       get_club_detail: {
@@ -1075,6 +1119,15 @@ export type Database = {
         Args: { target_conversation_id: string; target_user_id: string }
         Returns: boolean
       }
+      get_quick_chat_waiting_count: {
+        Args: { match_languages: string[]; match_topic: string }
+        Returns: number
+      }
+      get_quick_chat_matching_count: { Args: never; Returns: number }
+      heartbeat_quick_chat: {
+        Args: { target_session_id: string }
+        Returns: boolean
+      }
       join_club: { Args: { target_club_id: string }; Returns: undefined }
       join_club_room: { Args: { target_room_id: string }; Returns: undefined }
       join_quick_chat: {
@@ -1084,6 +1137,16 @@ export type Database = {
           match_status: string
           matched_profile_id: string
           session_id: string
+        }[]
+      }
+      join_quick_chat_v2: {
+        Args: { match_interests: string[] }
+        Returns: {
+          conversation_id: string | null
+          match_status: string
+          matched_interests: string[]
+          matched_profile_id: string | null
+          session_id: string | null
         }[]
       }
       leave_club: { Args: { target_club_id: string }; Returns: undefined }
@@ -1120,6 +1183,19 @@ export type Database = {
           unread_count: number
         }[]
       }
+      list_online_profiles: {
+        Args: { target_user_ids: string[] }
+        Returns: { user_id: string }[]
+      }
+      list_trending_match_interests: {
+        Args: { limit_count?: number }
+        Returns: {
+          glyph: string
+          label: string
+          score: number
+          source: string
+        }[]
+      }
       list_club_members: {
         Args: { member_limit?: number; target_club_id: string }
         Returns: {
@@ -1137,6 +1213,22 @@ export type Database = {
           coin_cost: number
           emoji: string
           name: string
+          slug: string
+        }[]
+      }
+      list_paid_gift_catalog: {
+        Args: never
+        Returns: {
+          android_product_id: string
+          animation_key: string
+          emoji: string
+          grants_premium_days: number
+          includes_gift_pack: boolean
+          ios_product_id: string
+          name: string
+          price_usd_cents: number
+          recipient_share_cents: number
+          season_key: string
           slug: string
         }[]
       }
@@ -1171,6 +1263,8 @@ export type Database = {
           gift_id: string
           gift_name: string
           gift_slug: string
+          price_paid_cents: number | null
+          recipient_earnings_cents: number | null
           sender_display_name: string | null
           sender_handle: string | null
           sender_id: string
@@ -1203,6 +1297,7 @@ export type Database = {
         Args: { target_user_id: string }
         Returns: string
       }
+      set_app_presence: { Args: { target_active: boolean }; Returns: boolean }
       respond_direct_call: {
         Args: { accept_call: boolean; target_call_id: string }
         Returns: string
@@ -1234,6 +1329,25 @@ export type Database = {
       set_message_permission: {
         Args: { new_permission: string }
         Returns: string
+      }
+      set_profile_avatar: {
+        Args: { target_avatar_path?: string | null }
+        Returns: string | null
+      }
+      create_gift_purchase_intent: {
+        Args: {
+          gift_context_id?: string
+          gift_context_kind?: string
+          target_gift_slug: string
+          target_user_id: string
+        }
+        Returns: {
+          android_product_id: string
+          ios_product_id: string
+          price_usd_cents: number
+          purchase_intent_id: string
+          recipient_share_cents: number
+        }[]
       }
       send_virtual_gift: {
         Args: {

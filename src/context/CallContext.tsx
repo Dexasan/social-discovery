@@ -15,7 +15,6 @@ import {
   type CallPartner,
   type DirectCall,
 } from '@/features/calls/api';
-import { ensureDirectCallMicrophonePermission } from '@/features/calls/audio';
 import { colors, radius, shadows, spacing } from '@/theme/tokens';
 
 const availabilityPreferenceKey = 'yappie:available-for-calls';
@@ -78,6 +77,12 @@ export function CallProvider({ children }: PropsWithChildren) {
   const [incomingCall, setIncomingCall] = useState<DirectCall | null>(null);
   const [incomingPartner, setIncomingPartner] = useState<CallPartner | null>(null);
   const [incomingBusy, setIncomingBusy] = useState(false);
+  const [appIsActive, setAppIsActive] = useState(AppState.currentState === 'active');
+
+  useEffect(() => {
+    const subscription = AppState.addEventListener('change', (state) => setAppIsActive(state === 'active'));
+    return () => subscription.remove();
+  }, []);
 
   const syncAvailability = useCallback(async (available = desiredAvailability) => {
     if (!user) {
@@ -106,7 +111,9 @@ export function CallProvider({ children }: PropsWithChildren) {
   useEffect(() => {
     if (isAvailabilityBusy || !user) return;
     void syncAvailability();
-    const heartbeat = setInterval(() => void syncAvailability(), 15_000);
+    const heartbeat = setInterval(() => {
+      if (AppState.currentState === 'active') void syncAvailability();
+    }, 8_000);
     const appStateSubscription = AppState.addEventListener('change', () => void syncAvailability());
     return () => {
       clearInterval(heartbeat);
@@ -116,7 +123,7 @@ export function CallProvider({ children }: PropsWithChildren) {
   }, [isAvailabilityBusy, syncAvailability, user]);
 
   useEffect(() => {
-    if (!user) {
+    if (!user || !appIsActive || !desiredAvailability) {
       setIncomingCall(null);
       setIncomingPartner(null);
       return;
@@ -156,7 +163,7 @@ export function CallProvider({ children }: PropsWithChildren) {
       if (expiryTimer) clearTimeout(expiryTimer);
       unsubscribe();
     };
-  }, [user]);
+  }, [appIsActive, desiredAvailability, user]);
 
   const setAvailable = async (available: boolean) => {
     setIsAvailabilityBusy(true);
@@ -174,6 +181,9 @@ export function CallProvider({ children }: PropsWithChildren) {
     if (!incomingCall || incomingBusy) return;
     setIncomingBusy(true);
     try {
+      // WebRTC is one of the heaviest native modules in the app. Load it only
+      // when a person actually answers a call, not during every app launch.
+      const { ensureDirectCallMicrophonePermission } = await import('@/features/calls/audio');
       const microphoneAllowed = await ensureDirectCallMicrophonePermission();
       if (!microphoneAllowed) {
         await respondDirectCall(incomingCall.id, false);

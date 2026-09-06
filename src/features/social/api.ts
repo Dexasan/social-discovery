@@ -67,6 +67,12 @@ export type UpdateProfileInput = {
   languages: string[];
 };
 
+export async function isHandleAvailable(handle: string) {
+  const { data, error } = await client().rpc('is_handle_available', { candidate_handle: handle });
+  if (error) throw error;
+  return Boolean(data);
+}
+
 export async function updateOwnProfile(userId: string, input: UpdateProfileInput) {
   const { error } = await client()
     .from('profiles')

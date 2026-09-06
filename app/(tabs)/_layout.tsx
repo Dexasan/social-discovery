@@ -1,6 +1,8 @@
 import { Redirect, Tabs } from 'expo-router';
 import { StyleSheet, View } from 'react-native';
 
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+
 import { colors, shadows } from '@/theme/tokens';
 import { useSession } from '@/context/SessionContext';
 
@@ -44,6 +46,7 @@ function TabIcon({ name, focused }: { name: string; focused: boolean }) {
 }
 
 export default function TabsLayout() {
+  const insets = useSafeAreaInsets();
   const { isLoading, onboardingComplete, user } = useSession();
 
   if (!isLoading && !user) return <Redirect href="/auth" />;
@@ -54,12 +57,13 @@ export default function TabsLayout() {
       initialRouteName="quick-chat"
       screenOptions={({ route }) => ({
         headerShown: false,
-        tabBarActiveTintColor: colors.signal,
+        tabBarHideOnKeyboard: true,
+        tabBarActiveTintColor: colors.accent,
         tabBarInactiveTintColor: colors.textSubtle,
         tabBarIcon: ({ focused }) => <TabIcon focused={focused} name={route.name} />,
         tabBarItemStyle: styles.tabItem,
         tabBarLabelStyle: styles.label,
-        tabBarStyle: styles.tabBar,
+        tabBarStyle: [styles.tabBar, { bottom: Math.max(insets.bottom, 12) }],
       })}
     >
       <Tabs.Screen name="quick-chat" options={{ title: 'Yap' }} />
@@ -72,11 +76,11 @@ export default function TabsLayout() {
 }
 
 const styles = StyleSheet.create({
-  tabBar: { ...shadows.floating, backgroundColor: colors.primary, borderColor: colors.borderStrong, borderRadius: 27, borderTopColor: colors.borderStrong, borderTopWidth: 1, bottom: 12, height: 84, left: 10, paddingBottom: 10, paddingHorizontal: 6, paddingTop: 8, position: 'absolute', right: 10 },
-  tabItem: { borderRadius: 22 },
-  label: { fontSize: 12, fontWeight: '900', letterSpacing: 0.1, marginTop: 2 },
-  iconWrap: { alignItems: 'center', borderRadius: 14, height: 32, justifyContent: 'center', width: 46 },
-  iconWrapFocused: { backgroundColor: colors.signal, transform: [{ scale: 1.05 }, { rotate: '-2deg' }] },
+  tabBar: { ...shadows.floating, backgroundColor: colors.backgroundRaised, borderColor: colors.border, borderRadius: 26, borderTopColor: colors.border, borderTopWidth: 1, borderWidth: 1, bottom: 0, height: 76, marginHorizontal: 14, paddingBottom: 10, paddingHorizontal: 6, paddingTop: 8, position: 'absolute' },
+  tabItem: { borderRadius: 18 },
+  label: { fontSize: 10, fontWeight: '700', marginTop: 3 },
+  iconWrap: { alignItems: 'center', borderRadius: 14, height: 32, justifyContent: 'center', width: 48 },
+  iconWrapFocused: { backgroundColor: colors.accent },
   chatIcon: { height: 20, position: 'relative', width: 22 },
   chatBubble: { borderRadius: 7, borderWidth: 1.8, height: 13, left: 0, position: 'absolute', top: 1, width: 16 },
   chatBubbleSmall: { borderRadius: 6, borderWidth: 1.8, bottom: 0, height: 11, position: 'absolute', right: 0, width: 14 },

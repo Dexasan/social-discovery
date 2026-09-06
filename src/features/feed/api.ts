@@ -91,3 +91,12 @@ export async function createReply(postId: string, authorId: string, body: string
   if (error) throw error;
   return data;
 }
+
+export function subscribeToNewPosts(onPost: () => void) {
+  const activeClient = client();
+  const channel = activeClient
+    .channel('feed:new-posts')
+    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'posts' }, onPost)
+    .subscribe();
+  return () => { void activeClient.removeChannel(channel); };
+}

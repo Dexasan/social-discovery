@@ -1,34 +1,14 @@
 import 'react-native-gesture-handler';
 
 import { useEffect } from 'react';
-import { Alert } from 'react-native';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import * as Updates from 'expo-updates';
 import * as SystemUI from 'expo-system-ui';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { SessionProvider } from '@/context/SessionContext';
 import { CallProvider } from '@/context/CallContext';
 import { colors } from '@/theme/tokens';
-
-function UpdatePrompt() {
-  const { isUpdatePending } = Updates.useUpdates();
-
-  useEffect(() => {
-    if (!isUpdatePending) return;
-    Alert.alert(
-      'Update ready',
-      'A new test version has downloaded. Restart now to use it.',
-      [
-        { text: 'Later', style: 'cancel' },
-        { text: 'Restart', onPress: () => void Updates.reloadAsync() },
-      ],
-    );
-  }, [isUpdatePending]);
-
-  return null;
-}
 
 export default function RootLayout() {
   useEffect(() => {
@@ -37,7 +17,6 @@ export default function RootLayout() {
 
   return (
     <SafeAreaProvider>
-      <UpdatePrompt />
       <SessionProvider>
         <CallProvider>
           <StatusBar style="light" />
