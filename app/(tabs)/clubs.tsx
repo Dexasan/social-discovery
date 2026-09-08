@@ -4,7 +4,7 @@ import { useCallback, useState } from 'react';
 import { router, useFocusEffect } from 'expo-router';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
-import { Avatar, EmptyState, RetroGlyph, RetroHeader, Screen, SignalBars, SkeletonRows } from '@/components/ui';
+import { Avatar, EmptyState, RetroGlyph, RetroHeader, Screen, SkeletonRows } from '@/components/ui';
 import { joinClub, leaveClub, loadClubs, startClubRoom, type ClubSummary } from '@/features/clubs/api';
 import { clubAvatarPublicUrl } from '@/features/clubs/avatar';
 import { colors, fonts, spacing } from '@/theme/tokens';
@@ -72,15 +72,13 @@ export default function ClubsScreen() {
 
   return (
     <Screen>
-      <RetroHeader
+      <RetroHeader compact
         action={<Pressable accessibilityLabel="Create a club" accessibilityRole="button" onPress={() => router.push('/clubs/create')} style={styles.createButton}><RetroGlyph glyph="＋" tone="accent" /></Pressable>}
         eyebrow="THERE’S A PLACE FOR YOUR PEOPLE"
         title="Clubs"
         tone="warning"
       />
-      <View style={styles.artIntro}><Text style={[styles.introCopy, {flex:1}]}>Big interests.
-Small worlds.
-Find yours.</Text><InkDrawing motif="planet" size={114} color={colors.warning} /></View>
+      <View style={styles.artIntro}><Text style={[styles.introCopy, {flex:1}]}>Small worlds. Your people.</Text><InkDrawing motif="planet" size={38} color={colors.warning} /></View>
 
       <View style={styles.searchWrap}>
         <Text style={styles.searchGlyph}>⌕</Text>
@@ -94,7 +92,6 @@ Find yours.</Text><InkDrawing motif="planet" size={114} color={colors.warning} /
 
       {liveClubs.length > 0 ? (
         <>
-          <View style={styles.sectionLine}><View style={styles.sectionLead}><RetroGlyph glyph="◉" size="sm" tone="accent" /><Text style={styles.sectionTitle}>Live now</Text></View><View style={styles.liveStatus}><View style={styles.liveDot} /><Text style={styles.liveCount}>{liveClubs.length}</Text></View></View>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.liveScroller}>
             <View style={styles.liveRow}>
               {liveClubs.map((club) => (
@@ -104,10 +101,9 @@ Find yours.</Text><InkDrawing motif="planet" size={114} color={colors.warning} /
                   onPress={() => router.push({ pathname: '/clubs/room/[roomId]', params: { roomId: club.live_room_id! } })}
                   style={({ pressed }) => [styles.liveCard, pressed && styles.pressed]}
                 ><PaperSurface variant="ticket" color={colors.accentSoft} ink={colors.accentSolid} />
-                  <View style={styles.liveTop}><View style={styles.liveLabel}><View style={styles.liveDot} /><Text style={styles.liveLabelText}>ON AIR</Text></View><SignalBars /></View>
-                  <Text numberOfLines={2} style={styles.roomTitle}>{club.live_room_title}</Text>
-                  <Text numberOfLines={1} style={styles.liveClubName}>{club.name}</Text>
-                  <View style={styles.listenerRow}><Text style={styles.listenerIcon}>◉</Text><Text style={styles.listenerCopy}>{club.live_listener_count} listening</Text><Text style={styles.enterArrow}>→</Text></View>
+                  <View style={styles.liveTop}><View style={styles.liveLabel}><View style={styles.liveDot} /><Text style={styles.liveLabelText}>ON AIR</Text></View><Text numberOfLines={1} style={styles.liveClubName}>{club.name}</Text></View>
+                  <Text numberOfLines={1} style={styles.roomTitle}>{club.live_room_title}</Text>
+                  <View style={styles.listenerRow}><Text style={styles.listenerCopy}>{club.live_listener_count} listening</Text><Text style={styles.enterArrow}>→</Text></View>
                 </Pressable>
               ))}
             </View>
@@ -120,20 +116,18 @@ Find yours.</Text><InkDrawing motif="planet" size={114} color={colors.warning} /
 
       <View style={styles.clubGrid}>
         {visibleClubs.map((club, index) => (
-          <View key={club.club_id} style={[styles.clubTile, {marginLeft: index % 2 ? 10 : 0, marginRight: index % 2 ? 0 : 10}]}><PaperSurface variant={index % 3 === 1 ? "oval" : "ticket"} color={index % 3 === 1 ? colors.cobaltSoft : index % 3 === 2 ? colors.accentSoft : colors.warningSoft} ink={index % 3 === 1 ? colors.cobalt : colors.warning} /><View style={styles.clubIllustration}><InkDrawing motif={index % 3 === 0 ? "planet" : index % 3 === 1 ? "flower" : "eye"} size={92} color={index % 3 === 1 ? colors.cobalt : colors.warning} /></View>
+          <View key={club.club_id} style={styles.clubTile}>
+            <PaperSurface variant={index % 2 ? "note" : "ticket"} color={index % 3 === 1 ? colors.cobaltSoft : index % 3 === 2 ? colors.accentSoft : colors.warningSoft} ink={index % 3 === 1 ? colors.cobalt : colors.warning} />
             <Pressable accessibilityRole="button" onPress={() => router.push({ pathname: '/clubs/[clubId]', params: { clubId: club.club_id } })} style={styles.clubLink}>
-              <View style={styles.clubMark}><Avatar imageUrl={clubAvatarPublicUrl(club.avatar_path)} label={club.name} size={38} /></View>
-              <Text numberOfLines={2} style={styles.clubName}>{club.name}</Text>
+              <View style={styles.clubHeading}>{club.avatar_path ? <Avatar imageUrl={clubAvatarPublicUrl(club.avatar_path)} label={club.name} size={28} /> : null}<Text numberOfLines={2} style={styles.clubName}>{club.name}</Text></View>
               <Text numberOfLines={1} style={styles.clubTopic}>{club.topic}</Text>
               <Text style={styles.memberCount}>{club.member_count} {club.member_count === 1 ? 'member' : 'members'}</Text>
             </Pressable>
             <View style={styles.tileActions}>
-              <Pressable accessibilityRole="button" accessibilityLabel={`${club.is_member ? 'Leave' : 'Join'} ${club.name}`} disabled={Boolean(busyClubId)} onPress={() => void toggleMembership(club)} style={[styles.joinButton, club.is_member && styles.joinedButton]}>
+              {club.is_member && !club.live_room_id ? <Pressable accessibilityRole="button" accessibilityLabel={"Start a room in " + club.name} onPress={() => { setHostingClubId(club.club_id); setRoomTitle(''); }} style={styles.micButton}><InkDrawing motif="sound" size={30} color={colors.cobalt} /></Pressable> : <InkDrawing motif={index % 3 === 0 ? "planet" : index % 3 === 1 ? "flower" : "eye"} size={36} color={index % 3 === 1 ? colors.cobalt : colors.warning} />}
+              <Pressable accessibilityRole="button" accessibilityLabel={(club.is_member ? 'Leave ' : 'Join ') + club.name} disabled={Boolean(busyClubId)} onPress={() => void toggleMembership(club)} style={[styles.joinButton, club.is_member && styles.joinedButton]}>
                 <Text style={[styles.joinLabel, club.is_member && styles.joinedLabel]}>{busyClubId === club.club_id ? '…' : club.is_member ? 'Joined' : 'Join'}</Text>
               </Pressable>
-              {club.is_member && !club.live_room_id ? (
-                <Pressable accessibilityLabel={`Start a room in ${club.name}`} onPress={() => { setHostingClubId(club.club_id); setRoomTitle(''); }} style={styles.micButton}><Text style={styles.micGlyph}>◉</Text></Pressable>
-              ) : null}
             </View>
           </View>
         ))}
@@ -153,56 +147,51 @@ Find yours.</Text><InkDrawing motif="planet" size={114} color={colors.warning} /
 }
 
 const styles = StyleSheet.create({
-  artIntro: { flexDirection: 'row', alignItems: 'center', marginTop: 8 },
-  clubIllustration: { position: 'absolute', right: 26, top: 52, transform: [{rotate:'12deg'}] },
+  clubHeading: {flexDirection:'row',alignItems:'center',gap:7},
+  artIntro: { flexDirection: 'row', alignItems: 'center', marginTop: 2 },
   searchGlyph: { color: colors.textSubtle, fontSize: 25 },
-  filters: { flexDirection: 'row', gap: 8, marginTop: 20 },
+  filters: { flexDirection: 'row', gap: 8, marginTop: 6 },
   filter: { borderRadius: 40, paddingHorizontal: 22, minHeight: 44, justifyContent: 'center' },
   filterSelected: { backgroundColor: colors.primary, transform: [{rotate:'-3deg'}] },
   filterText: { color: colors.textSubtle, fontSize: 11, fontWeight: '700', letterSpacing: 0.6, textTransform: 'uppercase' },
   filterTextSelected: { color: colors.primaryInk, fontSize: 11, fontWeight: '700', letterSpacing: 0.6, textTransform: 'uppercase' },
   retryButton: { alignSelf: 'center', padding: 16 },
-  introCopy: { color: colors.textMuted, fontFamily: fonts.italic, fontSize: 26, lineHeight: 31, marginTop: 15 },
+  introCopy: { color: colors.textMuted, fontFamily: fonts.italic, fontSize: 23, lineHeight: 28 },
   clearButton: { alignItems: 'center', justifyContent: 'center', minHeight: 44, width: 32 },
   createButton: { borderRadius: 10 },
-  searchWrap: { alignItems: 'center', borderColor: colors.borderStrong, borderBottomWidth: 1, flexDirection: 'row', gap: 10, marginTop: 16, paddingHorizontal: 2 },
-  searchInput: { color: colors.text, flex: 1, fontSize: 14, minHeight: 52 },
+  searchWrap: { alignItems: 'center', borderColor: colors.borderStrong, borderBottomWidth: 1, flexDirection: 'row', gap: 10, marginTop: 2, paddingHorizontal: 2 },
+  searchInput: { color: colors.text, flex: 1, fontSize: 14, minHeight: 44 },
   clearSearch: { color: colors.textMuted, fontSize: 23, paddingHorizontal: spacing.xs },
   error: { color: colors.danger, fontSize: 14, lineHeight: 21, marginTop: spacing.md, textAlign: 'center' },
-  sectionLine: { alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between', marginBottom: spacing.md, marginTop: spacing.xl },
+  sectionLine: { alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between', marginBottom: 6, marginTop: 10 },
   sectionLead: { alignItems: 'center', flexDirection: 'row', gap: spacing.sm },
   sectionTitle: { fontFamily: fonts.display, color: colors.text, fontSize: 21, fontWeight: '800', letterSpacing: -0.5 },
   sectionCount: { color: colors.textSubtle, fontSize: 12, fontWeight: '500' },
-  liveStatus: { alignItems: 'center', flexDirection: 'row', gap: 6 },
   liveDot: { backgroundColor: colors.accent, borderRadius: 4, height: 8, width: 8 },
-  liveCount: { color: colors.accent, fontSize: 13, fontWeight: '900' },
-  liveScroller: { marginHorizontal: -22 },
+  liveScroller: { marginHorizontal: -22, marginTop: 10 },
   liveRow: { flexDirection: 'row', gap: 12, paddingHorizontal: 22 },
-  liveCard: { gap: 10, minHeight: 238, padding: 27, width: 286 },
+  liveCard: { gap: 2, minHeight: 94, paddingHorizontal: 20, paddingVertical: 12, width: 264 },
   liveTop: { alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between' },
   liveLabel: { alignItems: 'center', flexDirection: 'row', gap: 6 },
   liveLabelText: { color: colors.white, fontSize: 9, fontWeight: '700', letterSpacing: 1.8 },
-  roomTitle: { color: colors.white, fontFamily: fonts.editorial, fontSize: 35, lineHeight: 37, marginTop: 8 },
-  liveClubName: { color: colors.white, fontSize: 12 },
+  roomTitle: { color: colors.white, fontFamily: fonts.editorial, fontSize: 25, lineHeight: 28 },
+  liveClubName: { color: colors.textMuted, fontSize: 11, flexShrink: 1, marginLeft: 8 },
   listenerRow: { alignItems: 'center', flexDirection: 'row', marginTop: 'auto' },
-  listenerIcon: { color: colors.white, fontSize: 15 },
-  listenerCopy: { color: colors.white, fontSize: 11, marginLeft: 7 },
+  listenerCopy: { color: colors.textMuted, fontSize: 11 },
   enterArrow: { color: colors.white, fontSize: 22, marginLeft: 'auto' },
   pressed: { opacity: 0.75, transform: [{ scale: 0.985 }] },
-  clubGrid: { gap: 22, paddingTop: 8 },
-  clubTile: { minHeight: 256, paddingHorizontal: 30, paddingVertical: 28 },
-  clubLink: { flex: 1, paddingRight: 76 },
-  clubMark: { height: 42, marginBottom: 12, width: 42 },
-  clubName: { color: colors.text, fontFamily: fonts.display, fontSize: 36, lineHeight: 37, textTransform: 'uppercase' },
-  clubTopic: { color: colors.textMuted, fontFamily: fonts.italic, fontSize: 20, marginTop: 5 },
-  memberCount: { color: colors.textSubtle, fontSize: 11, marginTop: 10 },
-  tileActions: { alignItems: 'center', flexDirection: 'row', gap: 12, marginTop: 18 },
-  joinButton: { alignItems: 'center', backgroundColor: colors.primary, borderRadius: 40, minWidth: 116, minHeight: 44, justifyContent: 'center', paddingHorizontal: 24, transform: [{rotate:'-3deg'}] },
+  clubGrid: { gap: 8 },
+  clubTile: { flexDirection: 'row', alignItems: 'center', gap: 10, minHeight: 112, paddingHorizontal: 20, paddingVertical: 12 },
+  clubLink: { flex: 1, minHeight: 64, justifyContent: 'center' },
+  clubName: { color: colors.text, fontFamily: fonts.display, fontSize: 27, lineHeight: 28, textTransform: 'uppercase', flex: 1 },
+  clubTopic: { color: colors.textMuted, fontFamily: fonts.italic, fontSize: 19, lineHeight: 22, marginTop: 2 },
+  memberCount: { color: colors.textSubtle, fontSize: 11, marginTop: 4 },
+  tileActions: { alignItems: 'center', gap: 2, width: 76 },
+  joinButton: { alignItems: 'center', backgroundColor: colors.primary, borderRadius: 40, minWidth: 76, minHeight: 44, justifyContent: 'center', paddingHorizontal: 10, transform: [{rotate:'-3deg'}] },
   joinedButton: { backgroundColor: colors.surfaceRaised },
-  joinLabel: { color: colors.primaryInk, fontFamily: fonts.display, fontSize: 19, textTransform: 'uppercase', letterSpacing: 1 },
+  joinLabel: { color: colors.primaryInk, fontFamily: fonts.display, fontSize: 18, textTransform: 'uppercase', letterSpacing: 0.5 },
   joinedLabel: { color: colors.text },
-  micButton: { alignItems: 'center', backgroundColor: colors.cobaltSoft, borderRadius: 12, height: 44, justifyContent: 'center', width: 36 },
-  micGlyph: { color: colors.cobalt, fontSize: 16 },
+  micButton: { alignItems:'center',justifyContent:'center',height:44,width:44 },
   hostPanel: { backgroundColor: colors.surface, borderColor: colors.border, borderRadius: 8, borderWidth: 1, gap: 16, marginTop: 16, padding: 20 },
   hostPanelTop: { alignItems: 'flex-start', flexDirection: 'row', justifyContent: 'space-between' },
   hostTitle: { color: colors.text, fontSize: 18, fontWeight: '900' },

@@ -57,7 +57,7 @@ export default function ProfileScreen() {
 
   return (
     <Screen>
-      <RetroHeader
+      <RetroHeader compact
         action={<Pressable accessibilityLabel="Account settings" onPress={() => router.push('/settings/account')}><RetroGlyph glyph="⚙" tone="neutral" /></Pressable>}
         eyebrow="A LITTLE MORE YOU"
         title="Your profile"
@@ -65,8 +65,8 @@ export default function ProfileScreen() {
       />
 
       <View style={styles.profileHeader}>
-        <PaperSurface variant="oval" color={colors.accentSoft} ink={colors.accentSolid} /><View pointerEvents="none" style={styles.portraitFlower}><InkDrawing motif="flower" size={100} color={colors.accent} /></View><View pointerEvents="none" style={styles.portraitStar}><InkDrawing motif="spark" size={65} color={colors.warning} /></View><Text style={styles.portraitCaption}>One of a kind.</Text>
-        <View style={styles.avatarFrame}><Avatar label={profile.displayName} path={profile.avatarPath} size={110} /></View>
+        <PaperSurface variant="oval" color={colors.accentSoft} ink={colors.accentSolid} /><View pointerEvents="none" style={styles.portraitFlower}><InkDrawing motif="flower" size={64} color={colors.accent} /></View><View pointerEvents="none" style={styles.portraitStar}><InkDrawing motif="spark" size={44} color={colors.warning} /></View><Text style={styles.portraitCaption}>One of a kind.</Text>
+        <View style={styles.avatarFrame}><Avatar label={profile.displayName} path={profile.avatarPath} size={72} /></View>
         <Text style={styles.profileName}>{profile.displayName}</Text>
         <Text style={styles.profileHandle}>@{profile.handle}</Text>
         <Text style={styles.bio}>{profile.bio || 'Here for good conversations and unexpected connections.'}</Text>
@@ -135,10 +135,10 @@ export default function ProfileScreen() {
 
       <View style={styles.utilityRow}>
         <Pressable onPress={() => router.push('/settings/safety')} style={styles.utilityButton}><PaperSurface variant="oval" color={colors.signalSoft} ink={colors.signal} />
-          <InkDrawing motif="shield" size={62} color={colors.signal} /><View style={styles.utilityCopy}><Text style={styles.utilityTitle}>Safety</Text><Text style={styles.utilityMeta}>Privacy & blocks</Text></View>
+          <InkDrawing motif="shield" size={40} color={colors.signal} /><View style={styles.utilityCopy}><Text style={styles.utilityTitle}>Safety</Text><Text style={styles.utilityMeta}>Privacy & blocks</Text></View>
         </Pressable>
         <Pressable onPress={() => router.push({ pathname: '/legal/[document]', params: { document: 'community-guidelines' } })} style={styles.utilityButton}><PaperSurface variant="oval" color={colors.cobaltSoft} ink={colors.cobalt} />
-          <InkDrawing motif="book" size={62} color={colors.cobalt} /><View style={styles.utilityCopy}><Text style={styles.utilityTitle}>Guidelines</Text><Text style={styles.utilityMeta}>How YAPPIE works</Text></View>
+          <InkDrawing motif="book" size={40} color={colors.cobalt} /><View style={styles.utilityCopy}><Text style={styles.utilityTitle}>Guidelines</Text><Text style={styles.utilityMeta}>How YAPPIE works</Text></View>
         </Pressable>
       </View>
 
@@ -151,31 +151,31 @@ export default function ProfileScreen() {
 }
 
 const styles = StyleSheet.create({
-  portraitFlower: { position: 'absolute', left: 12, top: 68, transform: [{rotate:'-22deg'}] },
-  portraitStar: { position: 'absolute', right: 18, top: 97, transform: [{rotate:'15deg'}] },
-  portraitCaption: { fontFamily: fonts.italic, color: colors.accent, fontSize: 26, transform: [{rotate:'-6deg'}] },
-  profileHeader: { alignItems: 'center', marginTop: 24, paddingHorizontal: 38, paddingTop: 24, paddingBottom: 36 },
-  avatarFrame: { marginTop: 18, position: 'relative' },
-  profileName: { color: colors.text, fontFamily: fonts.display, fontSize: 46, lineHeight: 50, letterSpacing: -0.5, marginTop: 16, textTransform: 'uppercase' },
+  portraitFlower: { position: 'absolute', left: 14, top: 53, transform: [{rotate:'-22deg'}] },
+  portraitStar: { position: 'absolute', right: 22, top: 66, transform: [{rotate:'15deg'}] },
+  portraitCaption: { fontFamily: fonts.italic, color: colors.accent, fontSize: 22, transform: [{rotate:'-6deg'}] },
+  profileHeader: { alignItems: 'center', marginTop: 10, paddingHorizontal: 34, paddingTop: 16, paddingBottom: 20 },
+  avatarFrame: { marginTop: 8, position: 'relative' },
+  profileName: { color: colors.text, fontFamily: fonts.display, fontSize: 36, lineHeight: 39, letterSpacing: -0.5, marginTop: 8, textTransform: 'uppercase' },
   profileHandle: { color: colors.textMuted, fontSize: 14, marginTop: 2 },
-  bio: { color: colors.text, fontFamily: fonts.italic, fontSize: 24, lineHeight: 28, marginTop: 12, maxWidth: 310, textAlign: 'center' },
-  editButton: { alignItems: 'center', backgroundColor: colors.primary, borderRadius: 40, justifyContent: 'center', marginTop: 18, minHeight: 44, paddingHorizontal: 28, transform: [{rotate:'-3deg'}] },
+  bio: { color: colors.text, fontFamily: fonts.italic, fontSize: 21, lineHeight: 24, marginTop: 6, maxWidth: 310, textAlign: 'center' },
+  editButton: { alignItems: 'center', backgroundColor: colors.primary, borderRadius: 40, justifyContent: 'center', marginTop: 10, minHeight: 44, paddingHorizontal: 28, transform: [{rotate:'-3deg'}] },
   editLabel: { color: colors.primaryInk, fontFamily: fonts.display, fontSize: 19, letterSpacing: 0.8, textTransform:'uppercase' },
-  stats: { alignItems: 'center', flexDirection: 'row', paddingVertical: 24, marginTop: 18 },
+  stats: { alignItems: 'center', flexDirection: 'row', paddingVertical: 12, marginTop: 8 },
   stat: { alignItems: 'center', flex: 1, gap: 2 },
   statDivider: { backgroundColor: colors.border, height: 27, width: StyleSheet.hairlineWidth },
-  statNumber: { color: colors.text, fontFamily: fonts.display, fontSize: 36 },
+  statNumber: { color: colors.text, fontFamily: fonts.display, fontSize: 28 },
   statLabel: { color: colors.textSubtle, fontSize: 12, fontWeight: '500' },
-  metadataGrid: { flexDirection: 'row', flexWrap: 'wrap', columnGap: '4%', rowGap: 12, marginTop: 24 },
-  metadataItem: { minHeight: 112, padding: 14, width: '48%' },
+  metadataGrid: { flexDirection: 'row', flexWrap: 'wrap', columnGap: '4%', rowGap: 6, marginTop: 10 },
+  metadataItem: { minHeight: 82, padding: 10, width: '48%' },
   metadataTop: { alignItems: 'center', flexDirection: 'row', gap: spacing.sm },
   metadataLabel: { color: colors.textMuted, flex: 1, fontFamily: fonts.italic, fontSize: 20 },
-  metadataValue: { color: colors.text, fontSize: 14, fontWeight: '600', lineHeight: 21, marginTop: 10 },
-  walletStrip: { alignItems: 'center', flexDirection: 'row', gap: 12, justifyContent: 'space-between', marginTop: 24, padding: 26 },
+  metadataValue: { color: colors.text, fontSize: 13, fontWeight: '600', lineHeight: 19, marginTop: 4 },
+  walletStrip: { alignItems: 'center', flexDirection: 'row', gap: 10, justifyContent: 'space-between', marginTop: 12, padding: 20 },
   walletKicker: { color: colors.cobalt, fontSize: 10, fontWeight: '700', letterSpacing: 1 },
   walletTitle: { color: colors.text, fontFamily: fonts.editorial, fontSize: 31, marginTop: 8 },
   walletMeta: { color: colors.textMuted, fontSize: 12, lineHeight: 18, marginTop: 6 },
-  giftsSection: { marginTop: 28 },
+  giftsSection: { marginTop: 14 },
   giftsHeader: { alignItems: 'flex-end', flexDirection: 'row', justifyContent: 'space-between', marginBottom: spacing.md },
   giftsTitleRow: { alignItems: 'center', flexDirection: 'row', gap: spacing.sm },
   giftsTitle: { fontFamily: fonts.editorial, color: colors.text, fontSize: 31 },
@@ -185,12 +185,12 @@ const styles = StyleSheet.create({
   giftCard: { alignItems: 'center', backgroundColor: colors.surface, borderColor: colors.border, borderRadius: 8, borderWidth: 1, flex: 1, minWidth: 0, paddingHorizontal: 4, paddingVertical: 16 },
   giftName: { color: colors.text, fontSize: 12, fontWeight: '900', marginTop: spacing.xs, maxWidth: '100%' },
   giftSender: { color: colors.textSubtle, fontSize: 10, marginTop: 2, maxWidth: '100%' },
-  noGifts: { alignItems: 'center', flexDirection: 'row', gap: 16, paddingVertical: 22 },
+  noGifts: { alignItems: 'center', flexDirection: 'row', gap: 12, paddingVertical: 10 },
   noGiftsText: { color: colors.textMuted, flex: 1, fontFamily: fonts.italic, fontSize: 21, lineHeight: 26 },
   utilityRow: { flexDirection: 'row', gap: spacing.md, marginTop: spacing.md },
-  utilityButton: { alignItems: 'center', flex: 1, gap: 8, minHeight: 180, paddingHorizontal: 12, paddingVertical: 24 },
+  utilityButton: { alignItems: 'center', flex: 1, gap: 6, minHeight: 126, paddingHorizontal: 12, paddingVertical: 18 },
   utilityCopy: { alignItems: 'center' },
-  utilityTitle: { color: colors.text, fontFamily: fonts.editorial, fontSize: 26 },
+  utilityTitle: { color: colors.text, fontFamily: fonts.editorial, fontSize: 23 },
   utilityMeta: { color: colors.textMuted, fontSize: 10, marginTop: 5, textAlign: 'center' },
   accountFooter: { alignItems: 'center', borderTopColor: colors.border, borderTopWidth: StyleSheet.hairlineWidth, flexDirection: 'row', gap: spacing.md, justifyContent: 'space-between', marginTop: spacing.lg, paddingTop: spacing.md },
   email: { color: colors.textSubtle, flex: 1, fontSize: 13 },

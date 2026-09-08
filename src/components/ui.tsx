@@ -73,6 +73,7 @@ export function RetroGlyph({
 
 export function RetroHeader({
   action,
+  compact = false,
   eyebrow,
   glyph,
   icon,
@@ -80,6 +81,7 @@ export function RetroHeader({
   tone = 'signal',
 }: {
   action?: ReactNode;
+  compact?: boolean;
   eyebrow: string;
   glyph?: string;
   icon?: ReactNode;
@@ -87,12 +89,12 @@ export function RetroHeader({
   tone?: 'signal' | 'accent' | 'cobalt' | 'warning' | 'neutral';
 }) {
   return (
-    <View><View style={styles.retroHeader}>
+    <View><View style={[styles.retroHeader, compact && { minHeight: 62, paddingBottom: 2 }]}>
       <View style={styles.retroHeaderLead}>
         {icon ?? (glyph ? <RetroGlyph glyph={glyph} tone={tone} /> : null)}
         <View style={{ flexShrink: 1 }}>
           <Text style={styles.retroHeaderEyebrow}>{eyebrow}</Text>
-          <Text style={styles.retroHeaderTitle}>{title}</Text>
+          <Text style={[styles.retroHeaderTitle, compact && { fontSize: 34, lineHeight: 37 }]}>{title}</Text>
         </View>
       </View>
       {action}

@@ -19,6 +19,8 @@ Discover intentionally stays dense: a compact header and composer, 15px reading 
 
 The follow-up review checks the 320px Yap layout, interest selection and matching cancellation, compact Discover, club tickets, Inbox correspondence, and profile utility artwork with local sample data. Native device rendering remains a separate check from Android bundle export.
 
+The tab-density pass shortens the Clubs, Inbox, and Me headers, uses compact club tickets with a horizontal live-room strip, and reduces Inbox envelopes to 84px minimum height. At 390 × 844, the sample Clubs screen shows its live room plus three full club cards; Inbox shows five full conversations and part of a sixth. Inbox snippets use one line while full messages remain in each conversation. Yap and Me also use tighter spacing, smaller artwork, and shorter sections. Long text and larger accessibility text sizes can increase the required scroll distance. Join and filter controls retain 44px minimum tap targets.
+
 ## Local review
 
 Run `pnpm ui:review`, then open `http://localhost:4173`. The review bundles the actual screen components with local sample data. It replaces service modules at build time; no Supabase session, real messages, calls, memberships, or payments are used. The production app has no preview route or authentication bypass.

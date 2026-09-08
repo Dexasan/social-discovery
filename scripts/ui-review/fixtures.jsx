@@ -21,6 +21,11 @@ let conversations = [
   {conversation_id:'2',partner_id:'mika',partner_display_name:'Mika',partner_handle:'mikaonfilm',partner_is_online:false,last_message_body:'Same time, same rabbit hole tomorrow?',last_message_at:now,unread_count:0},
   {conversation_id:'3',partner_id:'sam',partner_display_name:'Sam',partner_handle:'sundayperson',partner_is_online:true,last_message_body:'I knew you’d get it.',last_message_at:now,unread_count:0},
 ];
+conversations.push(
+  {...conversations[0],conversation_id:'4',partner_id:'nia',partner_display_name:'Nia',partner_handle:'niaincolour',last_message_body:'Sending you the address now.',unread_count:0},
+  {...conversations[1],conversation_id:'5',partner_id:'eli',partner_display_name:'Eli',partner_handle:'elioutside',last_message_body:'That is exactly what I meant.'},
+  {...conversations[1],conversation_id:'6',partner_id:'leo',partner_display_name:'Leo',partner_handle:'almostawake',last_message_body:'We should absolutely try that.'}
+);
 let messages = [
   {id:'1',sender_id:'review-other',body:'Important question: what’s your walking-home song?',created_at:now},
   {id:'2',sender_id:'review-me',body:'Depends. Main character walk or missed-the-last-train walk?',created_at:now},

@@ -66,13 +66,13 @@ export default function MessagesScreen() {
 
   return (
     <Screen refreshControl={<RefreshControl colors={[colors.accent]} tintColor={colors.accent} onRefresh={() => void refresh(true)} progressBackgroundColor={colors.surfaceRaised} refreshing={refreshing} />}>
-      <RetroHeader
+      <RetroHeader compact
         action={<Pressable accessibilityLabel="Start a new message" accessibilityRole="button" onPress={() => router.push('/messages/new')}><RetroGlyph glyph="＋" tone="accent" /></Pressable>}
         eyebrow="KEEP THE CONVERSATION GOING"
         title="Inbox"
         tone="signal"
       />
-      <View style={styles.artIntro}><InkDrawing motif="letter" size={100} color={colors.accent} /><View style={{flex:1}}><Text style={styles.artCaption}>For your eyes only.</Text><Text style={styles.artSubline}>Little letters. Lasting connections.</Text></View></View>
+      <View style={styles.artIntro}><InkDrawing motif="letter" size={36} color={colors.accent} /><View style={{flex:1}}><Text style={styles.artCaption}>For your eyes only.</Text></View></View>
       <View style={styles.searchWrap}><Text style={styles.searchGlyph}>⌕</Text><TextInput accessibilityLabel="Search conversations" autoCapitalize="none" onChangeText={setQuery} placeholder="Find a person or a conversation" placeholderTextColor={colors.textSubtle} style={styles.searchInput} value={query} />{query ? <Pressable accessibilityRole="button" accessibilityLabel="Clear conversation search" onPress={() => setQuery('')} style={styles.clearSearch}><Text style={styles.searchGlyph}>×</Text></Pressable> : null}</View>
       <View style={styles.filters}>{[false, true].map((onlyUnread) => <Pressable key={String(onlyUnread)} accessibilityRole="tab" accessibilityState={{ selected: unreadOnly === onlyUnread }} onPress={() => setUnreadOnly(onlyUnread)} style={[styles.filter, unreadOnly === onlyUnread && styles.filterSelected]}><Text style={[styles.filterText, unreadOnly === onlyUnread && styles.filterTextSelected]}>{onlyUnread ? 'Unread' + (totalUnread ? '  ' + totalUnread : '') : 'All messages'}</Text></Pressable>)}</View>
       {loading ? <SkeletonRows count={4} /> : null}
@@ -95,10 +95,10 @@ export default function MessagesScreen() {
               style={({ pressed }) => pressed && styles.pressed}
             >
               <View style={[styles.chat, {marginLeft: index % 2 ? 8 : 0, marginRight: index % 2 ? 0 : 8}]}><PaperSurface variant="letter" color={chat.unread_count > 0 ? colors.accentSoft : colors.surfaceSoft} ink={chat.unread_count > 0 ? colors.accentSolid : colors.borderStrong} />
-                <View><Avatar label={name} path={chat.partner_avatar_path} size={52} />{chat.partner_is_online ? <View accessibilityLabel="Online now" style={styles.presence} /> : null}</View>
+                <View><Avatar label={name} path={chat.partner_avatar_path} size={40} />{chat.partner_is_online ? <View accessibilityLabel="Online now" style={styles.presence} /> : null}</View>
                 <View style={styles.copy}>
                   <Text numberOfLines={1} style={styles.name}>{name}</Text>
-                  <Text numberOfLines={2} style={[styles.preview, chat.unread_count > 0 && styles.unreadPreview]}>{chat.last_message_body ?? 'Start your conversation'}</Text>
+                  <Text numberOfLines={1} style={[styles.preview, chat.unread_count > 0 && styles.unreadPreview]}>{chat.last_message_body ?? 'Start your conversation'}</Text>
                 </View>
                 <View style={styles.trailing}>
                   <Text style={styles.time}>{relativeTime(chat.last_message_at)}</Text>
@@ -114,28 +114,27 @@ export default function MessagesScreen() {
 }
 
 const styles = StyleSheet.create({
-  artIntro: { flexDirection: 'row', alignItems: 'center', gap: 12, marginTop: 12 },
-  artCaption: { fontFamily: fonts.italic, color: colors.text, fontSize: 31, lineHeight: 33 },
-  artSubline: { color: colors.textMuted, fontSize: 12, lineHeight: 18, marginTop: 8 },
+  artIntro: { flexDirection: 'row', alignItems: 'center', gap: 10, marginTop: 0 },
+  artCaption: { fontFamily: fonts.italic, color: colors.text, fontSize: 23, lineHeight: 28 },
   searchGlyph: { color: colors.textSubtle, fontSize: 25 },
-  filters: { flexDirection: 'row', gap: 8, marginTop: 20 },
+  filters: { flexDirection: 'row', gap: 8, marginTop: 6 },
   filter: { borderRadius: 40, paddingHorizontal: 20, minHeight: 44, justifyContent: 'center' },
   filterSelected: { backgroundColor: colors.primary, transform: [{rotate:'-3deg'}] },
   filterText: { color: colors.textSubtle, fontSize: 11, fontWeight: '700', letterSpacing: 0.6, textTransform: 'uppercase' },
   filterTextSelected: { color: colors.primaryInk, fontSize: 11, fontWeight: '700', letterSpacing: 0.6, textTransform: 'uppercase' },
   retryButton: { alignSelf: 'center', padding: 16 },
-  searchWrap: { alignItems: 'center', borderColor: colors.borderStrong, borderBottomWidth: 1, flexDirection: 'row', gap: 10, marginTop: 16, paddingHorizontal: 2 },
-  searchInput: { color: colors.text, flex: 1, fontSize: 13, minHeight: 52 },
+  searchWrap: { alignItems: 'center', borderColor: colors.borderStrong, borderBottomWidth: 1, flexDirection: 'row', gap: 10, marginTop: 2, paddingHorizontal: 2 },
+  searchInput: { color: colors.text, flex: 1, fontSize: 13, minHeight: 44 },
   clearSearch: { alignItems: 'center', justifyContent: 'center', minHeight: 44, width: 32 },
   error: { color: colors.danger, fontSize: 14, lineHeight: 21, marginTop: spacing.lg, textAlign: 'center' },
-  list: { gap: 18, marginTop: 28 },
-  chat: { alignItems: 'center', flexDirection: 'row', gap: 12, minHeight: 142, paddingHorizontal: 22, paddingVertical: 30 },
-  copy: { flex: 1, gap: 6 },
-  name: { color: colors.text, fontFamily: fonts.editorial, fontSize: 27 },
-  preview: { color: colors.textSubtle, fontSize: 13, lineHeight: 20 },
+  list: { gap: 7, marginTop: 12 },
+  chat: { alignItems: 'center', flexDirection: 'row', gap: 10, minHeight: 84, paddingHorizontal: 18, paddingVertical: 12 },
+  copy: { flex: 1, gap: 3 },
+  name: { color: colors.text, fontFamily: fonts.editorial, fontSize: 23, lineHeight: 26 },
+  preview: { color: colors.textSubtle, fontSize: 13, lineHeight: 19 },
   unreadPreview: { color: colors.textMuted, fontWeight: '600' },
   presence: { backgroundColor: colors.success, borderColor: colors.surfaceSoft, borderRadius: 5, borderWidth: 2, bottom: 0, height: 11, position: 'absolute', right: 0, width: 11 },
-  trailing: { alignItems: 'center', gap: 8, alignSelf:'flex-start', paddingTop: 8 },
+  trailing: { alignItems: 'center', gap: 5 },
   time: { color: colors.textSubtle, fontSize: 11, fontWeight: '500' },
   unreadBadge: { alignItems: 'center', backgroundColor: colors.accentSolid, borderRadius: 12, height: 22, justifyContent: 'center', minWidth: 22, paddingHorizontal: 6 },
   unreadBadgeText: { color: colors.white, fontSize: 10, fontWeight: '700' },
