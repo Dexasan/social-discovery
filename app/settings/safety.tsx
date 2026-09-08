@@ -1,3 +1,4 @@
+import { InkDrawing } from '@/components/InkArtwork';
 import { Text } from '@/components/Typography';
 import { useCallback, useState } from 'react';
 import { router, useFocusEffect } from 'expo-router';
@@ -77,7 +78,7 @@ export default function SafetySettingsScreen() {
       </View>
 
       <View style={styles.hero}>
-        <View style={styles.heroIcon}><Text style={styles.heroGlyph}>✓</Text></View>
+        <InkDrawing motif="shield" size={96} color={colors.signal} />
         <Text style={styles.heroTitle}>You control the door.</Text>
         <Muted style={styles.heroCopy}>Set who can reach your inbox and revisit accounts you have blocked.</Muted>
       </View>
@@ -137,8 +138,6 @@ const styles = StyleSheet.create({
   topTitle: { color: colors.textMuted, fontSize: 12, fontWeight: '900', letterSpacing: 0.7, textTransform: 'uppercase' },
   topSpacer: { width: 42 },
   hero: { alignItems: 'flex-start', borderBottomColor: colors.primary, borderBottomWidth: 1.5, gap: 8, marginTop: 24, paddingBottom: 24 },
-  heroIcon: { alignItems: 'center', backgroundColor: colors.successSoft, borderRadius: radius.pill, height: 62, justifyContent: 'center', marginBottom: spacing.xs, width: 62 },
-  heroGlyph: { color: colors.success, fontSize: 28, fontWeight: '900' },
   heroTitle: { color: colors.text, fontFamily: fonts.display, fontSize: 42, lineHeight: 46, textTransform: 'uppercase' },
   heroCopy: { maxWidth: 340, textAlign: 'left' },
   choiceCard: { backgroundColor: colors.surfaceSoft, paddingVertical: 0 },
@@ -148,7 +147,7 @@ const styles = StyleSheet.create({
   radioSelected: { borderColor: colors.primary },
   radioDot: { backgroundColor: colors.primary, borderRadius: 5, height: 10, width: 10 },
   choiceCopy: { flex: 1, gap: 2 },
-  choiceTitle: { color: colors.text, fontSize: 14, fontWeight: '900' },
+  choiceTitle: { color: colors.text, fontFamily: fonts.editorial, fontSize: 23 },
   error: { color: colors.danger, fontSize: 13, marginTop: spacing.md, textAlign: 'center' },
   loading: { marginTop: spacing.xl },
   blockList: { gap: spacing.sm },
@@ -159,5 +158,5 @@ const styles = StyleSheet.create({
   unblockLabel: { color: colors.text, fontSize: 14, fontWeight: '900' },
   inactive: { opacity: 0.5 },
   noteCard: { backgroundColor: colors.cobaltSoft, borderColor: colors.border, gap: spacing.xs, marginTop: spacing.xl },
-  noteTitle: { color: colors.text, fontSize: 14, fontWeight: '900' },
+  noteTitle: { color: colors.text, fontFamily: fonts.italic, fontSize: 27 },
 });

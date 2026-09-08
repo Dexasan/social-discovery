@@ -6,6 +6,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { colors, fonts, radius, spacing } from '@/theme/tokens';
 import { avatarPublicUrl } from '@/features/profile/avatar';
+import { ArtCanvas, InkDrawing, InkRule, PaperSurface, type InkMotif } from './InkArtwork';
 
 export function Screen({
   children,
@@ -30,6 +31,7 @@ export function Screen({
 
   return (
     <SafeAreaView style={styles.screen}>
+      <ArtCanvas />
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.keyboardAvoider}>
         {content}
       </KeyboardAvoidingView>
@@ -46,6 +48,9 @@ export function RetroGlyph({
   size?: 'sm' | 'md' | 'lg';
   tone?: 'signal' | 'accent' | 'cobalt' | 'warning' | 'neutral';
 }) {
+  const motifs: Record<string, InkMotif> = { '▤': 'book', '◎': 'planet', '○': 'planet', '✓': 'shield', '§': 'book', '✦': 'spark', '⚙': 'gear', '⌁': 'sound', '⌖': 'planet', '◷': 'planet', '◉': 'sound', '＋': 'plus', '⌕': 'search', '›': 'arrow', '→': 'arrow', '↗': 'arrow', '♡': 'heart', '♥': 'heart', '$': 'gift' };
+  const motif = motifs[glyph];
+  if (motif) return <InkDrawing motif={motif} size={size === 'sm' ? 34 : size === 'lg' ? 64 : 46} color={tone === 'accent' ? colors.accent : tone === 'cobalt' ? colors.cobalt : tone === 'warning' ? colors.warning : tone === 'neutral' ? colors.textMuted : colors.signal} />;
   return (
     <View style={[
       styles.retroGlyph,
@@ -82,7 +87,7 @@ export function RetroHeader({
   tone?: 'signal' | 'accent' | 'cobalt' | 'warning' | 'neutral';
 }) {
   return (
-    <View style={styles.retroHeader}>
+    <View><View style={styles.retroHeader}>
       <View style={styles.retroHeaderLead}>
         {icon ?? (glyph ? <RetroGlyph glyph={glyph} tone={tone} /> : null)}
         <View style={{ flexShrink: 1 }}>
@@ -91,14 +96,14 @@ export function RetroHeader({
         </View>
       </View>
       {action}
-    </View>
+    </View><InkRule /></View>
   );
 }
 
 export function PixelRule({ label }: { label?: string }) {
   return (
     <View style={styles.pixelRule}>
-      <View style={styles.pixelRuleLine} />
+      <View style={{ flex: 1 }}><InkRule /></View>
       {label ? <Text style={styles.pixelRuleLabel}>{label}</Text> : null}
     </View>
   );
@@ -117,7 +122,9 @@ export function Muted({ children, style }: PropsWithChildren<{ style?: StyleProp
 }
 
 export function Card({ children, style }: PropsWithChildren<{ style?: StyleProp<ViewStyle> }>) {
-  return <View style={[styles.card, style]}>{children}</View>;
+  const flat = StyleSheet.flatten(style);
+  const paper = typeof flat?.backgroundColor === 'string' ? flat.backgroundColor : colors.surfaceSoft;
+  return <View style={[styles.card, style, { backgroundColor: 'transparent', borderWidth: 0, borderTopWidth: 0, borderBottomWidth: 0 }]}><PaperSurface color={paper} />{children}</View>;
 }
 
 export function Pill({ label, tone = 'default' }: { label: string; tone?: 'default' | 'live' | 'accent' | 'success' }) {
@@ -243,7 +250,7 @@ export function IconButton({
 export function EmptyState({ action, description, glyph, title }: { action?: ReactNode; description: string; glyph: string; title: string }) {
   return (
     <View style={styles.emptyState}>
-      <View style={styles.emptyIcon}><Text style={styles.emptyGlyph}>{glyph}</Text></View>
+      <InkDrawing motif={glyph === '⌕' ? 'search' : glyph === '✓' ? 'shield' : 'letter'} size={92} color={colors.textMuted} />
       <Text style={styles.emptyTitle}>{title}</Text>
       <Muted style={styles.emptyDescription}>{description}</Muted>
       {action}
@@ -274,7 +281,7 @@ const styles = StyleSheet.create({
   skeletonLine: { height: 12, borderRadius: 6, backgroundColor: colors.surfaceRaised },
   screen: { backgroundColor: colors.background, flex: 1, overflow: 'hidden' },
   keyboardAvoider: { flex: 1 },
-  screenContent: { alignSelf: 'center', flexGrow: 1, maxWidth: 640, paddingBottom: 104, paddingHorizontal: 22, paddingTop: 12, width: '100%' },
+  screenContent: { alignSelf: 'center', flexGrow: 1, maxWidth: 640, paddingBottom: 132, paddingHorizontal: 22, paddingTop: 12, width: '100%' },
   retroGlyph: { alignItems: 'center', backgroundColor: colors.signalSoft, borderRadius: 999, height: 44, justifyContent: 'center', width: 44 },
   retroGlyphSmall: { borderRadius: 10, height: 32, width: 32 },
   retroGlyphLarge: { borderRadius: 20, height: 58, width: 58 },
@@ -285,18 +292,17 @@ const styles = StyleSheet.create({
   retroGlyphText: { color: colors.primary, fontSize: 20, fontWeight: '900', lineHeight: 22 },
   retroGlyphTextSmall: { fontSize: 14, lineHeight: 16 },
   retroGlyphTextLarge: { fontSize: 27, lineHeight: 30 },
-  retroHeader: { alignItems: 'center', borderBottomColor: colors.primary, borderBottomWidth: 1.5, flexDirection: 'row', justifyContent: 'space-between', minHeight: 100, paddingBottom: 16, gap: 12 },
+  retroHeader: { alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between', minHeight: 100, paddingBottom: 6, gap: 12 },
   retroHeaderLead: { alignItems: 'center', flexDirection: 'row', gap: spacing.md, flexShrink: 1 },
   retroHeaderEyebrow: { color: colors.accent, fontSize: 9, fontWeight: '700', letterSpacing: 1.7, textTransform: 'uppercase' },
   retroHeaderTitle: { color: colors.text, fontFamily: fonts.display, fontSize: 48, letterSpacing: -0.6, lineHeight: 53, marginTop: 3, textTransform: 'uppercase' },
   pixelRule: { alignItems: 'center', flexDirection: 'row', gap: spacing.md, marginVertical: spacing.lg },
-  pixelRuleLine: { backgroundColor: colors.border, flex: 1, height: 1 },
   pixelRuleLabel: { color: colors.textSubtle, fontSize: 12, fontWeight: '500' },
   eyebrow: { color: colors.accent, fontSize: 10, fontWeight: '700', letterSpacing: 1.6, lineHeight: 16, textTransform: 'uppercase' },
   heading: { color: colors.text, fontFamily: fonts.display, fontSize: 52, letterSpacing: -0.8, lineHeight: 56, marginTop: spacing.sm, textTransform: 'uppercase' },
   headingCompact: { fontSize: 40, letterSpacing: -0.5, lineHeight: 44 },
   muted: { color: colors.textMuted, fontSize: 16, lineHeight: 24 },
-  card: { backgroundColor: colors.surface, borderColor: colors.border, borderRadius: radius.md, borderWidth: 1, padding: 20 },
+  card: { backgroundColor: 'transparent', padding: 22 },
   pill: { alignItems: 'center', alignSelf: 'flex-start', backgroundColor: colors.surfaceRaised, borderColor: colors.border, borderRadius: radius.pill, borderWidth: 1, flexDirection: 'row', gap: 7, minHeight: 34, paddingHorizontal: 13, paddingVertical: 7 },
   pillLive: { backgroundColor: colors.accentSoft, borderColor: colors.border },
   pillAccent: { backgroundColor: colors.cobaltSoft, borderColor: colors.border },
@@ -321,9 +327,7 @@ const styles = StyleSheet.create({
   iconGlyph: { color: colors.text, fontSize: 22, fontWeight: '800' },
   iconGlyphDanger: { color: colors.danger },
   pressed: { opacity: 0.7, transform: [{ scale: 0.96 }] },
-  emptyState: { alignItems: 'center', borderColor: colors.borderStrong, borderRadius: 2, borderStyle: 'dashed', borderWidth: 1, gap: 12, marginTop: spacing.xl, paddingHorizontal: spacing.xl, paddingVertical: 32 },
-  emptyIcon: { alignItems: 'center', height: 64, justifyContent: 'center', width: 64, transform: [{ rotate: '-12deg' }] },
-  emptyGlyph: { color: colors.accent, fontFamily: fonts.editorial, fontSize: 56 },
+  emptyState: { alignItems: 'center', gap: 12, marginTop: spacing.xl, paddingHorizontal: spacing.xl, paddingVertical: 32 },
   emptyTitle: { color: colors.text, fontFamily: fonts.italic, fontSize: 32, lineHeight: 35, textAlign: 'center' },
   emptyDescription: { fontSize: 14, lineHeight: 22, maxWidth: 300, textAlign: 'center' },
   signalBars: { alignItems: 'center', flexDirection: 'row', gap: 4, height: 34 },

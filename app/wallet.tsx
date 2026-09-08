@@ -1,3 +1,4 @@
+import { PaperSurface } from '@/components/InkArtwork';
 import { Text } from '@/components/Typography';
 import { useCallback, useState } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, View } from 'react-native';
@@ -93,7 +94,7 @@ export default function WalletScreen() {
             {catalog.map((gift) => {
               const presentation = giftPresentation(gift.slug);
               return (
-                <View key={gift.slug} style={[styles.catalogItem, { borderColor: `${presentation.accent}77` }]}>
+                <View key={gift.slug} style={styles.catalogItem}><PaperSurface variant="ticket" color={colors.surfaceSoft} ink={presentation.accent} />
                   <GiftArtwork animated={gift.slug === 'bumper'} size={60} slug={gift.slug} />
                   <View style={styles.giftCopy}><Text style={[styles.giftLabel, { color: presentation.accent }]}>{presentation.label}</Text><Text style={styles.giftName}>{gift.name}</Text><Text style={styles.giftMeta}>{checkoutEnabled ? 'They receive 50% of net' : presentation.tagline}</Text></View>
                   <Text style={[styles.giftPrice, { color: presentation.accent }]}>{checkoutEnabled ? formatUsd(gift.price_usd_cents) : 'PREVIEW'}</Text>
@@ -161,10 +162,10 @@ const styles = StyleSheet.create({
   sectionTitle: { color: colors.text, fontFamily: fonts.display, fontSize: 30, textTransform: 'uppercase', marginTop: 4 },
   sectionCount: { color: colors.textSubtle, fontSize: 18, fontWeight: '900' },
   catalog: { gap: spacing.sm, marginTop: spacing.md },
-  catalogItem: { alignItems: 'center', backgroundColor: colors.surface, borderRadius: 4, borderWidth: 1, flexDirection: 'row', gap: 16, minHeight: 100, padding: 16 },
+  catalogItem: { alignItems: 'center', flexDirection: 'row', gap: 16, minHeight: 120, padding: 24 },
   giftCopy: { flex: 1 },
   giftLabel: { fontSize: 10, fontWeight: '900', letterSpacing: 1 },
-  giftName: { color: colors.text, fontSize: 16, fontWeight: '900', marginTop: 2 },
+  giftName: { color: colors.text, fontFamily: fonts.editorial, fontSize: 25, marginTop: 4 },
   giftMeta: { color: colors.signal, fontSize: 11, fontWeight: '800', marginTop: 3 },
   giftPrice: { fontSize: 17, fontWeight: '900' },
   receivedRail: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm, marginTop: spacing.md },

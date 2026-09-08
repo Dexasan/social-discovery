@@ -1,3 +1,4 @@
+import { InkDrawing, PaperSurface } from '@/components/InkArtwork';
 import { Text } from '@/components/Typography';
 import { useCallback, useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
@@ -64,7 +65,7 @@ export default function ProfileScreen() {
       />
 
       <View style={styles.profileHeader}>
-        <View pointerEvents="none" style={styles.cover}><View style={styles.coverCircle} /><View style={styles.coverOrbit} /></View>
+        <PaperSurface variant="oval" color={colors.accentSoft} ink={colors.accentSolid} /><View pointerEvents="none" style={styles.portraitFlower}><InkDrawing motif="flower" size={100} color={colors.accent} /></View><View pointerEvents="none" style={styles.portraitStar}><InkDrawing motif="spark" size={65} color={colors.warning} /></View><Text style={styles.portraitCaption}>One of a kind.</Text>
         <View style={styles.avatarFrame}><Avatar label={profile.displayName} path={profile.avatarPath} size={110} /></View>
         <Text style={styles.profileName}>{profile.displayName}</Text>
         <Text style={styles.profileHandle}>@{profile.handle}</Text>
@@ -72,7 +73,7 @@ export default function ProfileScreen() {
         <Pressable accessibilityRole="button" onPress={() => router.push('/profile/edit')} style={styles.editButton}><Text style={styles.editLabel}>Edit profile</Text></Pressable>
       </View>
 
-      <View style={styles.stats}>
+      <View style={styles.stats}><PaperSurface variant="ticket" color={colors.surfaceSoft} />
         <Pressable onPress={() => user && router.push({ pathname: '/people/connections', params: { userId: user.id, mode: 'following', name: profile.displayName } })} style={styles.stat}>
           <Text style={styles.statNumber}>{stats?.following ?? '—'}</Text><Text style={styles.statLabel}>Following</Text>
         </Pressable>
@@ -86,25 +87,25 @@ export default function ProfileScreen() {
 
       <View style={styles.metadataGrid}>
         {metadata.map((item) => (
-          <View key={item.label} style={styles.metadataItem}>
+          <View key={item.label} style={styles.metadataItem}><PaperSurface variant="note" color={colors.surface} />
             <View style={styles.metadataTop}><RetroGlyph glyph={item.glyph} size="sm" tone="neutral" /><Text style={styles.metadataLabel}>{item.label}</Text></View>
             <Text numberOfLines={2} style={styles.metadataValue}>{item.value}</Text>
           </View>
         ))}
       </View>
 
-      <Pressable accessibilityRole="button" onPress={() => router.push('/wallet' as Href)} style={styles.walletStrip}>
+      <Pressable accessibilityRole="button" onPress={() => router.push('/wallet' as Href)} style={styles.walletStrip}><PaperSurface variant="ticket" color={colors.warningSoft} ink={colors.warning} />
         <View style={{ flex: 1 }}>
           <Text style={styles.walletKicker}>{checkoutEnabled ? 'GIFT EARNINGS' : 'GIFT LAB · FREE BETA'}</Text>
           <Text style={styles.walletTitle}>{checkoutEnabled ? wallet ? formatUsd(wallet.available_cents) : 'Your wallet' : 'Preview the collection'}</Text>
           <Text style={styles.walletMeta}>{checkoutEnabled ? wallet?.pending_cents ? `${formatUsd(wallet.pending_cents)} pending · withdraw at $100` : receivedGifts.length ? `${receivedGifts.length} recent gift${receivedGifts.length === 1 ? '' : 's'} received` : 'Half of every gift goes to you' : 'Little ways to make someone’s day. Coming after beta.'}</Text>
         </View>
-        <RetroGlyph glyph="›" tone="warning" />
+        <InkDrawing motif="gift" size={64} color={colors.warning} />
       </Pressable>
 
       <View style={styles.giftsSection}>
         <View style={styles.giftsHeader}>
-          <View style={styles.giftsTitleRow}><RetroGlyph glyph="✦" size="sm" tone="warning" /><View><Text style={styles.giftsTitle}>{checkoutEnabled ? 'Gifts received' : 'Gift archive'}</Text><Text style={styles.giftsMeta}>{checkoutEnabled ? 'Sent your way' : 'Preview mode'}</Text></View></View>
+          <View style={styles.giftsTitleRow}><InkDrawing motif="gift" size={46} color={colors.warning} /><View><Text style={styles.giftsTitle}>{checkoutEnabled ? 'Gifts received' : 'Gift archive'}</Text><Text style={styles.giftsMeta}>{checkoutEnabled ? 'Sent your way' : 'Preview mode'}</Text></View></View>
           <Pressable accessibilityRole="button" onPress={() => router.push('/wallet' as Href)}><Text style={styles.giftsLink}>View all</Text></Pressable>
         </View>
         {receivedGifts.length ? (
@@ -127,17 +128,17 @@ export default function ProfileScreen() {
           </View>
         ) : (
           <Pressable accessibilityRole="button" onPress={() => router.push('/wallet' as Href)} style={styles.noGifts}>
-            <Text style={styles.noGiftsEmoji}>✦</Text><Text style={styles.noGiftsText}>{checkoutEnabled ? 'Your received gifts will appear here.' : 'A little something, just for you. Explore the upcoming collection.'}</Text>
+            <InkDrawing motif="gift" size={58} color={colors.warning} /><Text style={styles.noGiftsText}>{checkoutEnabled ? 'Your received gifts will appear here.' : 'A little something, just for you. Explore the upcoming collection.'}</Text>
           </Pressable>
         )}
       </View>
 
       <View style={styles.utilityRow}>
-        <Pressable onPress={() => router.push('/settings/safety')} style={styles.utilityButton}>
-          <RetroGlyph glyph="✓" size="sm" /><View style={styles.utilityCopy}><Text style={styles.utilityTitle}>Safety</Text><Text style={styles.utilityMeta}>Privacy & blocks</Text></View>
+        <Pressable onPress={() => router.push('/settings/safety')} style={styles.utilityButton}><PaperSurface variant="oval" color={colors.signalSoft} ink={colors.signal} />
+          <InkDrawing motif="shield" size={62} color={colors.signal} /><View style={styles.utilityCopy}><Text style={styles.utilityTitle}>Safety</Text><Text style={styles.utilityMeta}>Privacy & blocks</Text></View>
         </Pressable>
-        <Pressable onPress={() => router.push({ pathname: '/legal/[document]', params: { document: 'community-guidelines' } })} style={styles.utilityButton}>
-          <RetroGlyph glyph="§" size="sm" tone="cobalt" /><View style={styles.utilityCopy}><Text style={styles.utilityTitle}>Guidelines</Text><Text style={styles.utilityMeta}>How YAPPIE works</Text></View>
+        <Pressable onPress={() => router.push({ pathname: '/legal/[document]', params: { document: 'community-guidelines' } })} style={styles.utilityButton}><PaperSurface variant="oval" color={colors.cobaltSoft} ink={colors.cobalt} />
+          <InkDrawing motif="book" size={62} color={colors.cobalt} /><View style={styles.utilityCopy}><Text style={styles.utilityTitle}>Guidelines</Text><Text style={styles.utilityMeta}>How YAPPIE works</Text></View>
         </Pressable>
       </View>
 
@@ -150,48 +151,47 @@ export default function ProfileScreen() {
 }
 
 const styles = StyleSheet.create({
-  cover: { backgroundColor: colors.accentSolid, height: 108, left: 0, position: 'absolute', right: 0, top: 0, overflow: 'hidden' },
-  coverCircle: { borderColor: colors.primary, borderRadius: 100, borderWidth: 28, height: 180, position: 'absolute', right: -32, top: -85, width: 180 },
-  coverOrbit: { borderColor: colors.primary, borderRadius: 100, borderWidth: 3, height: 150, left: -28, position: 'absolute', top: 32, transform: [{ rotate: '-30deg' }], width: 230 },
-  profileHeader: { alignItems: 'center', borderBottomColor: colors.primary, borderBottomWidth: 1.5, marginTop: 20, overflow: 'hidden', padding: 24, position: 'relative' },
-  avatarFrame: { marginTop: 26, position: 'relative' },
+  portraitFlower: { position: 'absolute', left: 12, top: 68, transform: [{rotate:'-22deg'}] },
+  portraitStar: { position: 'absolute', right: 18, top: 97, transform: [{rotate:'15deg'}] },
+  portraitCaption: { fontFamily: fonts.italic, color: colors.accent, fontSize: 26, transform: [{rotate:'-6deg'}] },
+  profileHeader: { alignItems: 'center', marginTop: 24, paddingHorizontal: 38, paddingTop: 24, paddingBottom: 36 },
+  avatarFrame: { marginTop: 18, position: 'relative' },
   profileName: { color: colors.text, fontFamily: fonts.display, fontSize: 46, lineHeight: 50, letterSpacing: -0.5, marginTop: 16, textTransform: 'uppercase' },
   profileHandle: { color: colors.textMuted, fontSize: 14, marginTop: 2 },
   bio: { color: colors.text, fontFamily: fonts.italic, fontSize: 24, lineHeight: 28, marginTop: 12, maxWidth: 310, textAlign: 'center' },
-  editButton: { alignItems: 'center', borderColor: colors.primary, borderRadius: 3, borderWidth: 1, justifyContent: 'center', marginTop: 18, minHeight: 44, paddingHorizontal: 28 },
-  editLabel: { color: colors.text, fontSize: 13, fontWeight: '700' },
-  stats: { alignItems: 'center', borderBottomColor: colors.primary, borderBottomWidth: 1.5, flexDirection: 'row', paddingVertical: 20 },
+  editButton: { alignItems: 'center', backgroundColor: colors.primary, borderRadius: 40, justifyContent: 'center', marginTop: 18, minHeight: 44, paddingHorizontal: 28, transform: [{rotate:'-3deg'}] },
+  editLabel: { color: colors.primaryInk, fontFamily: fonts.display, fontSize: 19, letterSpacing: 0.8, textTransform:'uppercase' },
+  stats: { alignItems: 'center', flexDirection: 'row', paddingVertical: 24, marginTop: 18 },
   stat: { alignItems: 'center', flex: 1, gap: 2 },
   statDivider: { backgroundColor: colors.border, height: 27, width: StyleSheet.hairlineWidth },
   statNumber: { color: colors.text, fontFamily: fonts.display, fontSize: 36 },
   statLabel: { color: colors.textSubtle, fontSize: 12, fontWeight: '500' },
   metadataGrid: { flexDirection: 'row', flexWrap: 'wrap', columnGap: '4%', rowGap: 12, marginTop: 24 },
-  metadataItem: { borderBottomColor: colors.border, borderBottomWidth: 1, minHeight: 96, paddingVertical: 12, width: '48%' },
+  metadataItem: { minHeight: 112, padding: 14, width: '48%' },
   metadataTop: { alignItems: 'center', flexDirection: 'row', gap: spacing.sm },
-  metadataLabel: { color: colors.textSubtle, flex: 1, fontSize: 11, fontWeight: '500' },
+  metadataLabel: { color: colors.textMuted, flex: 1, fontFamily: fonts.italic, fontSize: 20 },
   metadataValue: { color: colors.text, fontSize: 14, fontWeight: '600', lineHeight: 21, marginTop: 10 },
-  walletStrip: { alignItems: 'center', backgroundColor: colors.warningSoft, borderColor: colors.primary, borderRadius: 4, borderWidth: 1, flexDirection: 'row', gap: 12, justifyContent: 'space-between', marginTop: 24, padding: 20 },
+  walletStrip: { alignItems: 'center', flexDirection: 'row', gap: 12, justifyContent: 'space-between', marginTop: 24, padding: 26 },
   walletKicker: { color: colors.cobalt, fontSize: 10, fontWeight: '700', letterSpacing: 1 },
   walletTitle: { color: colors.text, fontFamily: fonts.editorial, fontSize: 31, marginTop: 8 },
   walletMeta: { color: colors.textMuted, fontSize: 12, lineHeight: 18, marginTop: 6 },
-  giftsSection: { marginTop: spacing.lg },
+  giftsSection: { marginTop: 28 },
   giftsHeader: { alignItems: 'flex-end', flexDirection: 'row', justifyContent: 'space-between', marginBottom: spacing.md },
   giftsTitleRow: { alignItems: 'center', flexDirection: 'row', gap: spacing.sm },
-  giftsTitle: { fontFamily: fonts.display, color: colors.text, fontSize: 21, fontWeight: '900', letterSpacing: -0.5 },
+  giftsTitle: { fontFamily: fonts.editorial, color: colors.text, fontSize: 31 },
   giftsMeta: { color: colors.textSubtle, fontSize: 11, fontWeight: '800', marginTop: 2, textTransform: 'uppercase' },
-  giftsLink: { color: colors.warning, fontSize: 13, fontWeight: '900', paddingVertical: spacing.xs },
+  giftsLink: { color: colors.warning, fontFamily: fonts.italic, fontSize: 19, paddingVertical: 12 },
   giftRow: { flexDirection: 'row', gap: spacing.sm },
   giftCard: { alignItems: 'center', backgroundColor: colors.surface, borderColor: colors.border, borderRadius: 8, borderWidth: 1, flex: 1, minWidth: 0, paddingHorizontal: 4, paddingVertical: 16 },
   giftName: { color: colors.text, fontSize: 12, fontWeight: '900', marginTop: spacing.xs, maxWidth: '100%' },
   giftSender: { color: colors.textSubtle, fontSize: 10, marginTop: 2, maxWidth: '100%' },
-  noGifts: { alignItems: 'center', backgroundColor: colors.surface, borderColor: colors.border, borderRadius: radius.md, borderWidth: 1, flexDirection: 'row', gap: spacing.md, padding: spacing.lg },
-  noGiftsEmoji: { color: colors.warning, fontSize: 23 },
-  noGiftsText: { color: colors.textMuted, flex: 1, fontSize: 13 },
+  noGifts: { alignItems: 'center', flexDirection: 'row', gap: 16, paddingVertical: 22 },
+  noGiftsText: { color: colors.textMuted, flex: 1, fontFamily: fonts.italic, fontSize: 21, lineHeight: 26 },
   utilityRow: { flexDirection: 'row', gap: spacing.md, marginTop: spacing.md },
-  utilityButton: { alignItems: 'center', backgroundColor: colors.surface, borderColor: colors.border, borderRadius: 8, borderWidth: 1, flex: 1, flexDirection: 'row', gap: 8, minHeight: 76, padding: 12 },
-  utilityCopy: { flex: 1 },
-  utilityTitle: { color: colors.text, fontSize: 14, fontWeight: '900' },
-  utilityMeta: { color: colors.textSubtle, fontSize: 10, marginTop: 3 },
+  utilityButton: { alignItems: 'center', flex: 1, gap: 8, minHeight: 180, paddingHorizontal: 12, paddingVertical: 24 },
+  utilityCopy: { alignItems: 'center' },
+  utilityTitle: { color: colors.text, fontFamily: fonts.editorial, fontSize: 26 },
+  utilityMeta: { color: colors.textMuted, fontSize: 10, marginTop: 5, textAlign: 'center' },
   accountFooter: { alignItems: 'center', borderTopColor: colors.border, borderTopWidth: StyleSheet.hairlineWidth, flexDirection: 'row', gap: spacing.md, justifyContent: 'space-between', marginTop: spacing.lg, paddingTop: spacing.md },
   email: { color: colors.textSubtle, flex: 1, fontSize: 13 },
   signOutButton: { borderColor: colors.border, borderRadius: radius.pill, borderWidth: 1, paddingHorizontal: spacing.lg, paddingVertical: 10 },

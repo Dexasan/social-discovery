@@ -2,6 +2,7 @@ import { Redirect, Tabs } from 'expo-router';
 import { StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { TabArtwork } from '@/components/TabArtwork';
+import { NavigationArtwork } from '@/components/InkArtwork';
 import { colors, fonts } from '@/theme/tokens';
 import { useSession } from '@/context/SessionContext';
 
@@ -13,6 +14,7 @@ export default function TabsLayout() {
   return <Tabs initialRouteName="quick-chat" screenOptions={({ route }) => ({
     headerShown: false,
     tabBarHideOnKeyboard: true,
+    tabBarBackground: () => <NavigationArtwork />,
     tabBarActiveTintColor: colors.text,
     tabBarInactiveTintColor: colors.textSubtle,
     tabBarIcon: ({ focused }) => <TabArtwork focused={focused} name={route.name} />,
@@ -29,7 +31,7 @@ export default function TabsLayout() {
   </Tabs>;
 }
 const styles = StyleSheet.create({
-  tabBar: { backgroundColor: colors.background, borderTopColor: colors.borderStrong, borderTopWidth: 1, bottom: 0, paddingHorizontal: 8, paddingTop: 8, position: 'absolute', elevation: 0 },
+  tabBar: { backgroundColor: 'transparent', borderTopWidth: 0, bottom: 0, paddingHorizontal: 8, paddingTop: 8, position: 'absolute', elevation: 0, shadowOpacity: 0 },
   tabItem: { paddingTop: 0 },
   icon: { width: 60, height: 50 },
   label: { fontFamily: fonts.display, fontSize: 12, letterSpacing: 1, marginTop: 1, textTransform: 'uppercase' },

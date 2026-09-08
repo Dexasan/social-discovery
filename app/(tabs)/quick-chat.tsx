@@ -1,9 +1,9 @@
+import { InkDrawing, PaperSurface, type InkMotif } from '@/components/InkArtwork';
 import { Text, TextInput } from '@/components/Typography';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { router } from 'expo-router';
 import { ActivityIndicator, AppState, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
-import { ConversationArtwork } from '@/components/ConversationArtwork';
 import { useSession } from '@/context/SessionContext';
 import { BrandLockup } from '@/components/Brand';
 import { Avatar, Screen } from '@/components/ui';
@@ -40,6 +40,17 @@ function readableMatchError(error: unknown) {
   const message = error instanceof Error ? error.message : 'Matching failed. Please try again.';
   if (message.toLowerCase().includes('network')) return 'No connection. Try again.';
   return message;
+}
+
+function interestMotif(label: string): InkMotif {
+  const value = label.toLowerCase();
+  if (/music|sing|podcast/.test(value)) return 'sound';
+  if (/book|read|writ/.test(value)) return 'book';
+  if (/film|cinema|movie|anime/.test(value)) return 'eye';
+  if (/travel|space|adventure/.test(value)) return 'planet';
+  if (/art|fashion|design/.test(value)) return 'flower';
+  if (/talk|meme|chat/.test(value)) return 'lips';
+  return 'spark';
 }
 
 export default function QuickChatScreen() {
@@ -275,28 +286,28 @@ export default function QuickChatScreen() {
       </View>
 
       <View style={styles.hero}>
-        <Text style={styles.heroEyebrow}>GOOD CONVERSATIONS. ZERO SMALL TALK.</Text>
-        <Text style={styles.heroTitle}>STRANGERS.<Text style={styles.heroAccent}>{'\n'}For now.</Text></Text>
-        <View style={styles.heroArtwork}><ConversationArtwork compact /></View>
+        <PaperSurface variant="note" color={colors.accentSoft} ink={colors.accentSolid} />
+        <Text style={styles.heroEyebrow}>A CHANCE ENCOUNTER, BY DESIGN.</Text>
+        <View style={styles.heroRow}><View style={{flex:1}}><Text style={styles.heroTitle}>STRANGERS.</Text><Text style={styles.heroAccent}>For now.</Text></View><View style={{transform:[{rotate:'-12deg'}]}}><InkDrawing motif="lips" size={64} color={colors.accent} /></View></View>
         <Text style={styles.heroCopy}>A shared obsession. An unexpected connection.</Text>
       </View>
 
-      <View style={styles.matchCard}>
+      <View style={styles.matchCard}><PaperSurface variant="ticket" color={colors.surfaceSoft} ink={colors.borderStrong} />
         <View style={styles.matchHeader}>
-          <Text style={styles.cardTitle}>{searching ? 'Finding your people…' : '01 / PICK YOUR OBSESSIONS'}</Text>
+          <Text style={styles.cardTitle}>{searching ? 'Finding your people…' : 'Pick your obsessions.'}</Text>
           <View style={styles.matchingBadge}>
             <View style={[styles.matchingDot, !matchingCount && styles.matchingDotEmpty]} />
             <Text style={styles.matchingText}>{matchingCount === null ? 'Quick match' : matchingCount === 0 ? 'Start the wave' : matchingCount + ' matching'}</Text>
           </View>
         </View>
-        <Text style={styles.cardCopy}>{searching ? 'Looking for someone who shares your interests.' : 'What could you talk about for hours? Pick up to five.'}</Text>
+        <Text style={styles.cardCopy}>{searching ? 'Looking for someone who shares your interests.' : 'The things you could talk about for hours. Pick up to five.'}</Text>
 
         <View style={styles.quickPicks}>
-          {quickPicks.map((label) => {
+          {quickPicks.map((label, index) => {
             const selected = selectedInterests.some((interest) => interestSearchKey(interest) === interestSearchKey(label));
             return (
-              <Pressable key={label} accessibilityRole="button" accessibilityState={{ selected, disabled: searching }} disabled={searching} onPress={() => toggleInterest(label)} style={({ pressed }) => [styles.interestChip, selected && styles.interestChipSelected, pressed && styles.pressed]}>
-                <Text style={[styles.interestChipText, selected && styles.interestChipTextSelected]}>{selected ? '✓  ' : '+  '}{label}</Text>
+              <Pressable key={label} accessibilityRole="button" accessibilityState={{ selected, disabled: searching }} disabled={searching} onPress={() => toggleInterest(label)} style={({ pressed }) => [styles.interestChip, {transform:[{rotate:index % 2 ? '2deg' : '-2deg'}]}, selected && styles.interestChipSelected, pressed && styles.pressed]}>
+                <InkDrawing motif={interestMotif(label)} size={30} color={selected ? colors.primaryInk : colors.accent} /><Text style={[styles.interestChipText, selected && styles.interestChipTextSelected]}>{label}{selected ? ' ✓' : ''}</Text>
               </Pressable>
             );
           })}
@@ -334,9 +345,9 @@ export default function QuickChatScreen() {
 
       {error ? <Text accessibilityRole="alert" style={styles.error}>{error}</Text> : null}
 
-      <View style={styles.callSection}>
+      <View style={styles.callSection}><PaperSurface variant="note" color={colors.cobaltSoft} ink={colors.cobalt} />
         <View style={styles.callHeader}>
-          <View style={{ flex: 1 }}><Text style={styles.sectionTitle}>02 / GO OFF SCRIPT</Text><Text style={styles.sectionMeta}>{isAvailable ? 'You’re available for a hello.' : 'Make yourself available for voice calls.'}</Text></View>
+          <View style={{ flex: 1 }}><View style={{flexDirection:"row",alignItems:"center",gap:8}}><InkDrawing motif="sound" size={34} color={colors.cobalt} /><Text style={styles.sectionTitle}>Go off script.</Text></View><Text style={styles.sectionMeta}>{isAvailable ? 'You’re available for a hello.' : 'Make yourself available for voice calls.'}</Text></View>
           <Pressable accessibilityLabel="Available for voice calls" accessibilityRole="switch" accessibilityState={{ checked: isAvailable, disabled: isAvailabilityBusy }} disabled={isAvailabilityBusy} onPress={() => void setAvailable(!isAvailable)} style={[styles.availabilityToggle, isAvailable && styles.availabilityToggleOn]}><View style={[styles.toggleKnob, isAvailable && styles.toggleKnobOn]} /></Pressable>
         </View>
         {callersLoading ? <ActivityIndicator color={colors.accent} style={styles.loading} /> : null}
@@ -349,33 +360,33 @@ export default function QuickChatScreen() {
             })}
           </ScrollView>
         ) : null}
-        {!callersLoading && !availableCallers.length ? <View style={styles.emptyCalls}><View style={styles.emptyCallsIcon}><Text style={styles.emptyCallsGlyph}>⌁</Text></View><View style={{ flex: 1 }}><Text style={styles.emptyCallsTitle}>A little quiet right now</Text><Text style={styles.emptyCallsCopy}>Open calls will appear here when people are available.</Text></View></View> : null}
+        {!callersLoading && !availableCallers.length ? <View style={styles.emptyCalls}><InkDrawing motif="sound" size={54} color={colors.accent} /><View style={{ flex: 1 }}><Text style={styles.emptyCallsTitle}>A little quiet right now</Text><Text style={styles.emptyCallsCopy}>Open calls will appear here when people are available.</Text></View></View> : null}
       </View>
-      <Pressable accessibilityRole="button" onPress={() => router.push('/(tabs)/clubs')} style={({ pressed }) => [styles.clubsLink, pressed && styles.pressed]}><View style={{ flex: 1 }}><Text style={styles.clubsLinkTitle}>Find your little corner of the world.</Text><Text style={styles.clubsLinkCopy}>EXPLORE CLUBS</Text></View><Text style={styles.clubsArrow}>↗</Text></Pressable>
+      <Pressable accessibilityRole="button" onPress={() => router.push('/(tabs)/clubs')} style={({ pressed }) => [styles.clubsLink, pressed && styles.pressed]}><PaperSurface variant="ticket" color={colors.accentSoft} ink={colors.accentSolid} /><View style={{ flex: 1 }}><Text style={styles.clubsLinkTitle}>Find your little corner of the world.</Text><Text style={styles.clubsLinkCopy}>EXPLORE CLUBS</Text></View><InkDrawing motif="planet" size={66} color={colors.accent} /></Pressable>
     </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  topBar: { alignItems: 'center', borderBottomColor: colors.primary, borderBottomWidth: 1.5, flexDirection: 'row', justifyContent: 'space-between', paddingBottom: 10 },
-  hero: { marginBottom: 14, marginTop: 14 },
-  heroEyebrow: { color: colors.textMuted, fontSize: 9, fontWeight: '700', letterSpacing: 1.4 },
-  heroTitle: { color: colors.text, fontFamily: fonts.display, fontSize: 56, letterSpacing: -1, lineHeight: 55, marginTop: 8 },
-  heroAccent: { color: colors.accent, fontFamily: fonts.italic, fontSize: 58, letterSpacing: -1, lineHeight: 60 },
-  heroArtwork: { marginTop: 10, borderColor: colors.borderStrong, borderTopWidth: 1, borderBottomWidth: 1, overflow: 'hidden' },
-  heroCopy: { color: colors.textMuted, fontSize: 12, lineHeight: 19, marginTop: 8 },
-  matchCard: { borderTopWidth: 1.5, borderTopColor: colors.primary, paddingTop: 18 },
+  heroRow: {flexDirection:'row',alignItems:'center',gap:5,marginTop:10},
+  topBar: { alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between', paddingBottom: 6 },
+  hero: { marginBottom: 18, marginTop: 10, paddingHorizontal: 23, paddingVertical: 24 },
+  heroEyebrow: { color: colors.accent, fontSize: 8, fontWeight: '700', letterSpacing: 1.2 },
+  heroTitle: { color: colors.text, fontFamily: fonts.display, fontSize: 32, letterSpacing: -0.8, lineHeight: 37 },
+  heroAccent: { color: colors.accent, fontFamily: fonts.italic, fontSize: 41, lineHeight: 47, transform:[{rotate:'-4deg'}] },
+  heroCopy: { color: colors.textMuted, fontSize: 11, lineHeight: 17, marginTop: 12 },
+  matchCard: { paddingHorizontal: 24, paddingTop: 25, paddingBottom: 28 },
   matchHeader: { alignItems: 'center', flexDirection: 'row', flexWrap: 'wrap', gap: 8, justifyContent: 'space-between' },
-  cardTitle: { color: colors.text, fontFamily: fonts.display, fontSize: 25, letterSpacing: 0.3 },
+  cardTitle: { color: colors.text, fontFamily: fonts.editorial, fontSize: 30, lineHeight: 34 },
   cardCopy: { color: colors.textMuted, fontSize: 12, lineHeight: 19, marginTop: 6 },
   matchingBadge: { alignItems: 'center', flexDirection: 'row', gap: 5 },
   matchingDot: { backgroundColor: colors.success, borderRadius: 4, height: 6, width: 6 },
   matchingDotEmpty: { backgroundColor: colors.textSubtle },
   matchingText: { color: colors.textSubtle, fontSize: 9, fontWeight: '500' },
-  quickPicks: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginVertical: 16 },
-  interestChip: { alignItems: 'center', borderColor: colors.borderStrong, borderRadius: 4, borderWidth: 1, justifyContent: 'center', minHeight: 44, paddingHorizontal: 14 },
+  quickPicks: { flexDirection: 'row', flexWrap: 'wrap', columnGap: '3%', rowGap: 10, marginVertical: 16 },
+  interestChip: { alignItems: 'center', backgroundColor: colors.surfaceRaised, borderRadius: 12, justifyContent: 'center', minHeight: 70, paddingHorizontal: 3, width:'31.3%', gap: 3 },
   interestChipSelected: { backgroundColor: colors.primary, borderColor: colors.primary },
-  interestChipText: { color: colors.text, fontSize: 12, fontWeight: '500' },
+  interestChipText: { color: colors.text, fontFamily: fonts.medium, fontSize: 12 },
   interestChipTextSelected: { color: colors.primaryInk, fontSize: 12, fontWeight: '700' },
   customInterest: { alignItems: 'center', borderColor: colors.borderStrong, borderBottomWidth: 1, flexDirection: 'row', paddingHorizontal: 2 },
   searchGlyph: { color: colors.textSubtle, fontSize: 25, marginRight: 8 },
@@ -391,18 +402,18 @@ const styles = StyleSheet.create({
   selectionMeta: { alignItems: 'center', flexDirection: 'row', flexWrap: 'wrap', gap: 8, justifyContent: 'space-between', marginBottom: 12, marginTop: 14 },
   selectionCopy: { color: colors.textSubtle, fontSize: 11 },
   privateLabel: { color: colors.textSubtle, fontSize: 11 },
-  matchButton: { alignItems: 'center', backgroundColor: colors.accentSolid, borderRadius: 4, flexDirection: 'row', justifyContent: 'center', minHeight: 58, paddingHorizontal: 20 },
+  matchButton: { alignItems: 'center', backgroundColor: colors.accentSolid, borderRadius: 40, flexDirection: 'row', justifyContent: 'center', minHeight: 54, paddingHorizontal: 12, transform:[{rotate:'-2deg'}] },
   matchButtonDisabled: { backgroundColor: colors.surfaceRaised },
-  matchButtonText: { color: colors.white, fontFamily: fonts.display, fontSize: 25, letterSpacing: 0.8 },
+  matchButtonText: { color: colors.white, fontFamily: fonts.display, fontSize: 22, letterSpacing: 0.5 },
   matchButtonTextDisabled: { color: colors.textSubtle },
-  matchArrow: { color: colors.white, fontSize: 25, position: 'absolute', right: 18 },
+  matchArrow: { color: colors.white, fontSize: 24, marginLeft: 10 },
   cancelButton: { alignItems: 'center', backgroundColor: colors.accentSoft, borderColor: colors.accent, borderRadius: 8, borderWidth: 1, flexDirection: 'row', gap: 10, justifyContent: 'center', minHeight: 56 },
   cancelText: { color: colors.accent, fontSize: 14, fontWeight: '700' },
   disabled: { opacity: 0.4 },
   pressed: { opacity: 0.8, transform: [{ scale: 0.98 }] },
-  callSection: { borderTopColor: colors.primary, borderTopWidth: 1.5, marginTop: 28, paddingTop: 20 },
+  callSection: { marginTop: 22, padding: 24, gap: 8 },
   callHeader: { alignItems: 'center', flexDirection: 'row', gap: 12, justifyContent: 'space-between' },
-  sectionTitle: { color: colors.text, fontFamily: fonts.display, fontSize: 26, letterSpacing: 0.3 },
+  sectionTitle: { color: colors.text, fontFamily: fonts.italic, fontSize: 29, lineHeight:32, flexShrink:1 },
   sectionMeta: { color: colors.textSubtle, fontSize: 12, lineHeight: 18, marginTop: 5 },
   availabilityToggle: { backgroundColor: colors.surfaceRaised, borderColor: colors.borderStrong, borderWidth: 1, borderRadius: 22, height: 36, justifyContent: 'center', paddingHorizontal: 4, width: 58 },
   availabilityToggleOn: { backgroundColor: colors.primary, borderColor: colors.primary },
@@ -416,13 +427,10 @@ const styles = StyleSheet.create({
   callerName: { color: colors.text, fontSize: 13, fontWeight: '700', marginTop: 10, maxWidth: '100%' },
   callAction: { color: colors.accent, fontSize: 11, fontWeight: '600', marginTop: 6 },
   emptyCalls: { alignItems: 'center', flexDirection: 'row', gap: 12, marginTop: 14, paddingVertical: 16 },
-  emptyCallsIcon: { alignItems: 'center', height: 42, justifyContent: 'center', width: 42 },
-  emptyCallsGlyph: { color: colors.accent, fontSize: 42 },
-  emptyCallsTitle: { color: colors.text, fontFamily: fonts.italic, fontSize: 24 },
+  emptyCallsTitle: { color: colors.text, fontFamily: fonts.editorial, fontSize: 22 },
   emptyCallsCopy: { color: colors.textSubtle, fontSize: 12, lineHeight: 18, marginTop: 4 },
-  clubsLink: { alignItems: 'center', backgroundColor: colors.accentSoft, borderColor: colors.accentSolid, borderWidth: 1, borderRadius: 4, flexDirection: 'row', gap: 12, marginTop: 16, padding: 22 },
+  clubsLink: { alignItems: 'center', flexDirection: 'row', gap: 12, marginTop: 16, padding: 26 },
   clubsLinkTitle: { color: colors.white, fontFamily: fonts.italic, fontSize: 29, lineHeight: 32 },
   clubsLinkCopy: { color: colors.white, fontSize: 9, fontWeight: '700', letterSpacing: 1.5, marginTop: 14 },
-  clubsArrow: { color: colors.white, fontSize: 30 },
   error: { color: colors.danger, fontSize: 13, lineHeight: 20, marginTop: 14 },
 });

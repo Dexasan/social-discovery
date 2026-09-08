@@ -1,7 +1,8 @@
+import { InkDrawing, PaperSurface } from '@/components/InkArtwork';
 import { Text, TextInput } from '@/components/Typography';
 import { useCallback, useState } from 'react';
 import { router, useFocusEffect } from 'expo-router';
-import { ActivityIndicator, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import { Avatar, EmptyState, RetroGlyph, RetroHeader, Screen, SignalBars, SkeletonRows } from '@/components/ui';
 import { joinClub, leaveClub, loadClubs, startClubRoom, type ClubSummary } from '@/features/clubs/api';
@@ -77,7 +78,9 @@ export default function ClubsScreen() {
         title="Clubs"
         tone="warning"
       />
-      <Text style={styles.introCopy}>Big interests. Small worlds. Find yours.</Text>
+      <View style={styles.artIntro}><Text style={[styles.introCopy, {flex:1}]}>Big interests.
+Small worlds.
+Find yours.</Text><InkDrawing motif="planet" size={114} color={colors.warning} /></View>
 
       <View style={styles.searchWrap}>
         <Text style={styles.searchGlyph}>⌕</Text>
@@ -100,7 +103,7 @@ export default function ClubsScreen() {
                   accessibilityRole="button"
                   onPress={() => router.push({ pathname: '/clubs/room/[roomId]', params: { roomId: club.live_room_id! } })}
                   style={({ pressed }) => [styles.liveCard, pressed && styles.pressed]}
-                >
+                ><PaperSurface variant="ticket" color={colors.accentSoft} ink={colors.accentSolid} />
                   <View style={styles.liveTop}><View style={styles.liveLabel}><View style={styles.liveDot} /><Text style={styles.liveLabelText}>ON AIR</Text></View><SignalBars /></View>
                   <Text numberOfLines={2} style={styles.roomTitle}>{club.live_room_title}</Text>
                   <Text numberOfLines={1} style={styles.liveClubName}>{club.name}</Text>
@@ -117,9 +120,9 @@ export default function ClubsScreen() {
 
       <View style={styles.clubGrid}>
         {visibleClubs.map((club, index) => (
-          <View key={club.club_id} style={[styles.clubTile, index % 3 === 1 && styles.clubTileCobalt, index % 3 === 2 && styles.clubTileWarm]}>
+          <View key={club.club_id} style={[styles.clubTile, {marginLeft: index % 2 ? 10 : 0, marginRight: index % 2 ? 0 : 10}]}><PaperSurface variant={index % 3 === 1 ? "oval" : "ticket"} color={index % 3 === 1 ? colors.cobaltSoft : index % 3 === 2 ? colors.accentSoft : colors.warningSoft} ink={index % 3 === 1 ? colors.cobalt : colors.warning} /><View style={styles.clubIllustration}><InkDrawing motif={index % 3 === 0 ? "planet" : index % 3 === 1 ? "flower" : "eye"} size={92} color={index % 3 === 1 ? colors.cobalt : colors.warning} /></View>
             <Pressable accessibilityRole="button" onPress={() => router.push({ pathname: '/clubs/[clubId]', params: { clubId: club.club_id } })} style={styles.clubLink}>
-              <View style={styles.clubMark}><Avatar imageUrl={clubAvatarPublicUrl(club.avatar_path)} label={club.name} size={50} /></View>
+              <View style={styles.clubMark}><Avatar imageUrl={clubAvatarPublicUrl(club.avatar_path)} label={club.name} size={38} /></View>
               <Text numberOfLines={2} style={styles.clubName}>{club.name}</Text>
               <Text numberOfLines={1} style={styles.clubTopic}>{club.topic}</Text>
               <Text style={styles.memberCount}>{club.member_count} {club.member_count === 1 ? 'member' : 'members'}</Text>
@@ -150,10 +153,12 @@ export default function ClubsScreen() {
 }
 
 const styles = StyleSheet.create({
+  artIntro: { flexDirection: 'row', alignItems: 'center', marginTop: 8 },
+  clubIllustration: { position: 'absolute', right: 26, top: 52, transform: [{rotate:'12deg'}] },
   searchGlyph: { color: colors.textSubtle, fontSize: 25 },
   filters: { flexDirection: 'row', gap: 8, marginTop: 20 },
-  filter: { borderRadius: 3, paddingHorizontal: 18, minHeight: 44, justifyContent: 'center', borderColor: colors.border, borderWidth: 1 },
-  filterSelected: { backgroundColor: colors.primary, borderColor: colors.primary },
+  filter: { borderRadius: 40, paddingHorizontal: 22, minHeight: 44, justifyContent: 'center' },
+  filterSelected: { backgroundColor: colors.primary, transform: [{rotate:'-3deg'}] },
   filterText: { color: colors.textSubtle, fontSize: 11, fontWeight: '700', letterSpacing: 0.6, textTransform: 'uppercase' },
   filterTextSelected: { color: colors.primaryInk, fontSize: 11, fontWeight: '700', letterSpacing: 0.6, textTransform: 'uppercase' },
   retryButton: { alignSelf: 'center', padding: 16 },
@@ -163,7 +168,6 @@ const styles = StyleSheet.create({
   searchWrap: { alignItems: 'center', borderColor: colors.borderStrong, borderBottomWidth: 1, flexDirection: 'row', gap: 10, marginTop: 16, paddingHorizontal: 2 },
   searchInput: { color: colors.text, flex: 1, fontSize: 14, minHeight: 52 },
   clearSearch: { color: colors.textMuted, fontSize: 23, paddingHorizontal: spacing.xs },
-  loading: { marginVertical: spacing.xl },
   error: { color: colors.danger, fontSize: 14, lineHeight: 21, marginTop: spacing.md, textAlign: 'center' },
   sectionLine: { alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between', marginBottom: spacing.md, marginTop: spacing.xl },
   sectionLead: { alignItems: 'center', flexDirection: 'row', gap: spacing.sm },
@@ -174,7 +178,7 @@ const styles = StyleSheet.create({
   liveCount: { color: colors.accent, fontSize: 13, fontWeight: '900' },
   liveScroller: { marginHorizontal: -22 },
   liveRow: { flexDirection: 'row', gap: 12, paddingHorizontal: 22 },
-  liveCard: { backgroundColor: colors.accentSoft, borderColor: colors.accentSolid, borderWidth: 1, borderRadius: 4, gap: 10, minHeight: 218, padding: 22, width: 276 },
+  liveCard: { gap: 10, minHeight: 238, padding: 27, width: 286 },
   liveTop: { alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between' },
   liveLabel: { alignItems: 'center', flexDirection: 'row', gap: 6 },
   liveLabelText: { color: colors.white, fontSize: 9, fontWeight: '700', letterSpacing: 1.8 },
@@ -185,19 +189,17 @@ const styles = StyleSheet.create({
   listenerCopy: { color: colors.white, fontSize: 11, marginLeft: 7 },
   enterArrow: { color: colors.white, fontSize: 22, marginLeft: 'auto' },
   pressed: { opacity: 0.75, transform: [{ scale: 0.985 }] },
-  clubGrid: { flexDirection: 'row', flexWrap: 'wrap', columnGap: '4%', rowGap: 12 },
-  clubTile: { backgroundColor: colors.warningSoft, borderColor: colors.primary, borderRadius: 4, borderWidth: 1, minHeight: 232, padding: 16, width: '48%' },
-  clubTileCobalt: { backgroundColor: colors.cobaltSoft },
-  clubTileWarm: { backgroundColor: colors.accentSoft },
-  clubLink: { flex: 1 },
-  clubMark: { alignItems: 'center', height: 52, justifyContent: 'center', marginBottom: spacing.md, width: 52 },
-  clubName: { color: colors.text, fontFamily: fonts.display, fontSize: 28, lineHeight: 30, textTransform: 'uppercase' },
+  clubGrid: { gap: 22, paddingTop: 8 },
+  clubTile: { minHeight: 256, paddingHorizontal: 30, paddingVertical: 28 },
+  clubLink: { flex: 1, paddingRight: 76 },
+  clubMark: { height: 42, marginBottom: 12, width: 42 },
+  clubName: { color: colors.text, fontFamily: fonts.display, fontSize: 36, lineHeight: 37, textTransform: 'uppercase' },
   clubTopic: { color: colors.textMuted, fontFamily: fonts.italic, fontSize: 20, marginTop: 5 },
   memberCount: { color: colors.textSubtle, fontSize: 11, marginTop: 10 },
-  tileActions: { alignItems: 'center', flexDirection: 'row', gap: spacing.sm, marginTop: spacing.md },
-  joinButton: { alignItems: 'center', backgroundColor: colors.primary, borderRadius: 4, flex: 1, minHeight: 44, justifyContent: 'center', paddingHorizontal: 8 },
+  tileActions: { alignItems: 'center', flexDirection: 'row', gap: 12, marginTop: 18 },
+  joinButton: { alignItems: 'center', backgroundColor: colors.primary, borderRadius: 40, minWidth: 116, minHeight: 44, justifyContent: 'center', paddingHorizontal: 24, transform: [{rotate:'-3deg'}] },
   joinedButton: { backgroundColor: colors.surfaceRaised },
-  joinLabel: { color: colors.primaryInk, fontSize: 11, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 0.5 },
+  joinLabel: { color: colors.primaryInk, fontFamily: fonts.display, fontSize: 19, textTransform: 'uppercase', letterSpacing: 1 },
   joinedLabel: { color: colors.text },
   micButton: { alignItems: 'center', backgroundColor: colors.cobaltSoft, borderRadius: 12, height: 44, justifyContent: 'center', width: 36 },
   micGlyph: { color: colors.cobalt, fontSize: 16 },

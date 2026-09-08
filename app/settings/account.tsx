@@ -1,3 +1,4 @@
+import { InkDrawing } from '@/components/InkArtwork';
 import { Text, TextInput } from '@/components/Typography';
 import { useState } from 'react';
 import { router } from 'expo-router';
@@ -80,7 +81,7 @@ export default function AccountSettingsScreen() {
       </View>
 
       <View style={styles.hero}>
-        <View style={styles.heroIcon}><Text style={styles.heroGlyph}>@</Text></View>
+        <InkDrawing motif="key" size={96} color={colors.accent} />
         <Text style={styles.heroTitle}>Your account, your call.</Text>
         <Muted style={styles.heroCopy}>Keep your sign-in secure, or leave cleanly whenever you choose.</Muted>
       </View>
@@ -193,8 +194,6 @@ const styles = StyleSheet.create({
   topTitle: { color: colors.textMuted, fontSize: 12, fontWeight: '900', letterSpacing: 0.7, textTransform: 'uppercase' },
   topSpacer: { width: 42 },
   hero: { alignItems: 'flex-start', borderBottomColor: colors.primary, borderBottomWidth: 1.5, gap: 8, marginTop: 24, paddingBottom: 24 },
-  heroIcon: { alignItems: 'center', backgroundColor: colors.primarySoft, borderRadius: radius.pill, height: 62, justifyContent: 'center', marginBottom: spacing.xs, width: 62 },
-  heroGlyph: { color: colors.text, fontSize: 24, fontWeight: '900' },
   heroTitle: { color: colors.text, fontFamily: fonts.display, fontSize: 42, lineHeight: 46, textTransform: 'uppercase' },
   heroCopy: { maxWidth: 340, textAlign: 'left' },
   identityCard: { alignItems: 'center', flexDirection: 'row', gap: spacing.md, justifyContent: 'space-between' },

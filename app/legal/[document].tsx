@@ -1,9 +1,10 @@
+import { InkDrawing } from '@/components/InkArtwork';
 import { Text } from '@/components/Typography';
 import { router, useLocalSearchParams } from 'expo-router';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { Card, Eyebrow, Heading, Muted, Screen } from '@/components/ui';
-import { colors, radius, spacing } from '@/theme/tokens';
+import { colors, fonts, radius, spacing } from '@/theme/tokens';
 
 type LegalDocument = 'terms' | 'privacy' | 'community-guidelines';
 
@@ -71,7 +72,7 @@ export default function LegalScreen() {
       <Pressable accessibilityRole="button" onPress={() => router.back()} style={styles.backButton}>
         <Text style={styles.backGlyph}>‹</Text><Text style={styles.backLabel}>Back</Text>
       </Pressable>
-      <View style={styles.hero}>
+      <View style={styles.hero}><InkDrawing motif="book" size={86} color={colors.cobalt} />
         <Eyebrow>{document.eyebrow}</Eyebrow>
         <Heading compact>{document.title}</Heading>
         <Muted>{document.summary}</Muted>
@@ -128,7 +129,7 @@ const styles = StyleSheet.create({
   sectionNumber: { alignItems: 'center', backgroundColor: colors.primarySoft, borderRadius: radius.pill, height: 30, justifyContent: 'center', width: 30 },
   sectionNumberText: { color: colors.text, fontSize: 13, fontWeight: '900' },
   sectionCopy: { flex: 1, gap: spacing.sm },
-  sectionHeading: { color: colors.text, fontSize: 15, fontWeight: '900' },
+  sectionHeading: { color: colors.text, fontFamily: fonts.editorial, fontSize: 25, lineHeight: 29 },
   sectionBody: { color: colors.textMuted, fontSize: 13, lineHeight: 20 },
   footer: { color: colors.textSubtle, fontSize: 12, lineHeight: 18, marginTop: spacing.xl, textAlign: 'center' },
 });

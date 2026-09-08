@@ -5,6 +5,11 @@ let posts = [
   {post_id:'2',author_id:'mika',author_display_name:'Mika',author_handle:'mikaonfilm',body:'Tell me a tiny thing that made today feel less ordinary. I’ll go first: someone left flowers on the tram.',created_at:now,like_count:17,reply_count:12,liked_by_me:true},
   {post_id:'3',author_id:'sam',author_display_name:'Sam',author_handle:'sundayperson',body:'Looking for people who take their coffee seriously and themselves less seriously.',created_at:now,like_count:9,reply_count:3,liked_by_me:false},
 ];
+posts.push(
+  { ...posts[0], post_id:'4',author_id:'leo',author_display_name:'Leo',author_handle:'almostawake',body:'Anyone else collect hobbies instead of getting good at one?',like_count:6,reply_count:2 },
+  { ...posts[0], post_id:'5',author_id:'nia',author_display_name:'Nia',author_handle:'niaincolour',body:'My camera roll is 80% interesting shadows. No regrets.',like_count:12,reply_count:5 },
+  { ...posts[0], post_id:'6',author_id:'eli',author_display_name:'Eli',author_handle:'elioutside',body:'Found a tiny bookshop with a resident cat. I live there now.',like_count:31,reply_count:9 }
+);
 let clubs = [
   {club_id:'1',name:'After Hours',description:'For thoughts that show up late.',topic:'Late-night talks',member_count:128,is_member:true,live_room_id:'room',live_room_title:'What keeps you up?',live_listener_count:12,live_participant_count:12},
   {club_id:'2',name:'Off the Record',description:'A good song deserves company.',topic:'Music',member_count:86,is_member:false},

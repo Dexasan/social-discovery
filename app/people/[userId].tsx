@@ -1,3 +1,4 @@
+import { InkDrawing, PaperSurface } from '@/components/InkArtwork';
 import { Text } from '@/components/Typography';
 import { useCallback, useState } from 'react';
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
@@ -192,8 +193,7 @@ export default function PublicProfileScreen() {
       </View>
 
       <View style={styles.cover}>
-        <View pointerEvents="none" style={styles.coverOrbOne} />
-        <View pointerEvents="none" style={styles.coverOrbTwo} />
+        <PaperSurface variant="oval" color={colors.cobaltSoft} ink={colors.cobalt} /><View pointerEvents="none" style={{position:"absolute",right:15,top:30}}><InkDrawing motif="flower" size={80} color={colors.cobalt} /></View>
         <View style={styles.avatarWrap}><Avatar label={profileName} path={profile.avatar_path} size={100} /></View>
         <Text style={styles.name}>{profileName}</Text>
         <Text style={styles.handle}>@{profile.handle ?? 'member'}</Text>
@@ -325,9 +325,7 @@ const styles = StyleSheet.create({
   topSpacer: { width: 42 },
   backButton: { alignItems: 'center', backgroundColor: colors.surfaceRaised, borderColor: colors.border, borderRadius: radius.pill, borderWidth: 1, height: 50, justifyContent: 'center', width: 50 },
   backGlyph: { color: colors.text, fontSize: 30, fontWeight: '500', lineHeight: 32 },
-  cover: { alignItems: 'center', backgroundColor: colors.surfaceSoft, borderColor: colors.border, borderRadius: radius.xl, borderWidth: 1, marginTop: spacing.xl, overflow: 'hidden', padding: spacing.xl },
-  coverOrbOne: { backgroundColor: colors.primaryGlow, borderRadius: 100, height: 180, position: 'absolute', right: -55, top: -90, width: 180 },
-  coverOrbTwo: { backgroundColor: colors.accentGlow, borderRadius: 80, bottom: -70, height: 140, left: -45, position: 'absolute', width: 140 },
+  cover: { alignItems: 'center', marginTop: spacing.xl, padding: 32, paddingTop: 40 },
   avatarWrap: { backgroundColor: colors.primarySoft, borderRadius: 64, marginBottom: spacing.md, padding: 5 },
   name: { color: colors.text, fontFamily: fonts.display, fontSize: 44, lineHeight: 48, letterSpacing: -0.5, textAlign: 'center', textTransform: 'uppercase' },
   handle: { color: colors.link, fontSize: 14, fontWeight: '800', marginTop: 3 },
@@ -354,7 +352,6 @@ const styles = StyleSheet.create({
   error: { color: colors.danger, fontSize: 13, marginTop: spacing.md, textAlign: 'center' },
   giftHistory: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
   receivedGift: { alignItems: 'center', backgroundColor: colors.surfaceSoft, borderColor: colors.border, borderRadius: radius.md, borderWidth: 1, flexDirection: 'row', gap: spacing.sm, padding: spacing.md, width: '48%' },
-  receivedEmoji: { fontSize: 28 },
   receivedCopy: { flex: 1 },
   receivedName: { color: colors.text, fontSize: 12, fontWeight: '900' },
   receivedSender: { color: colors.textSubtle, fontSize: 12, marginTop: 2 },

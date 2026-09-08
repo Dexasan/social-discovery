@@ -1,22 +1,16 @@
+import { InkDrawing } from '@/components/InkArtwork';
 import { Text, TextInput } from '@/components/Typography';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { router, useFocusEffect } from 'expo-router';
 import { ActivityIndicator, Animated, AppState, PanResponder, Pressable, RefreshControl, Share, StyleSheet, View } from 'react-native';
 
-import { Avatar, EmptyState, RetroHeader, Screen, SkeletonRows } from '@/components/ui';
+import { Avatar, EmptyState, Screen, SkeletonRows } from '@/components/ui';
 import { useSession } from '@/context/SessionContext';
 import { createPost, loadFeed, loadFollowingFeed, setPostLiked, subscribeToNewPosts, type FeedPost } from '@/features/feed/api';
 import { colors, fonts, radius, spacing } from '@/theme/tokens';
 
 type FeedMode = 'global' | 'following';
 
-function CommentIcon() {
-  return (
-    <View style={styles.commentIcon}>
-      <View style={styles.commentTail} />
-    </View>
-  );
-}
 
 function relativeTime(value: string) {
   const seconds = Math.max(1, Math.round((Date.now() - new Date(value).getTime()) / 1000));
@@ -209,13 +203,8 @@ export default function FeedScreen() {
   });
 
   return (
-    <Screen refreshControl={<RefreshControl colors={[colors.accent]} onRefresh={() => void refresh(true)} progressBackgroundColor={colors.surfaceRaised} refreshing={refreshing} tintColor={colors.accent} />}>
-      <RetroHeader
-        eyebrow="A LITTLE OF EVERYONE’S WORLD"
-        action={<Pressable accessibilityRole="button" accessibilityLabel="Your profile" onPress={() => router.push('/(tabs)/profile')}><Avatar label={profile?.displayName || 'You'} path={profile?.avatarPath} size={42} /></Pressable>}
-        title="Discover"
-        tone="cobalt"
-      />
+    <Screen contentStyle={{paddingTop:0}} refreshControl={<RefreshControl colors={[colors.accent]} onRefresh={() => void refresh(true)} progressBackgroundColor={colors.surfaceRaised} refreshing={refreshing} tintColor={colors.accent} />}>
+<View style={styles.compactHeader}><View style={{flexDirection:"row",alignItems:"center",gap:10}}><InkDrawing motif="eye" size={36} /><Text style={styles.compactTitle}>DISCOVER</Text></View><Pressable accessibilityRole="button" accessibilityLabel="Your profile" onPress={() => router.push('/(tabs)/profile')}><Avatar label={profile?.displayName || 'You'} path={profile?.avatarPath} size={34} /></Pressable></View>
       <View style={styles.topBar}>
         <View style={styles.feedModeRow}>
           {(['global', 'following'] as const).map((mode) => (
@@ -240,7 +229,7 @@ export default function FeedScreen() {
         style={[styles.feedPane, { transform: [{ translateX: feedSlideX }] }]}
       >
       <View style={[styles.composer, composerOpen && styles.composerOpen]}>
-        <Avatar label={profile?.displayName || 'You'} path={profile?.avatarPath} size={40} />
+        <Avatar label={profile?.displayName || 'You'} path={profile?.avatarPath} size={32} />
         <View style={styles.composerMain}>
           <TextInput
             accessibilityLabel="New post"
@@ -279,7 +268,7 @@ export default function FeedScreen() {
           return (
             <View key={post.post_id} style={styles.post}>
               <Pressable accessibilityRole="button" accessibilityLabel={`View ${authorName}’s profile`} onPress={() => router.push({ pathname: '/people/[userId]', params: { userId: post.author_id } })}>
-                <Avatar label={authorName} path={post.author_avatar_path} size={44} />
+                <Avatar label={authorName} path={post.author_avatar_path} size={36} />
               </Pressable>
               <View style={styles.postMain}>
                 <Pressable accessibilityLabel={`Open post and ${post.reply_count} replies`} accessibilityRole="button" onPress={() => openPost(post, authorName)} style={styles.postTapArea}>
@@ -292,12 +281,12 @@ export default function FeedScreen() {
                 </Pressable>
                 <View style={styles.actions}>
                   <Pressable accessibilityRole="button" accessibilityState={{ selected: post.liked_by_me }} accessibilityLabel={post.liked_by_me ? 'Unlike post' : 'Like post'} onPress={() => void toggleLike(post)} style={({ pressed }) => [styles.actionButton, pressed && styles.actionPressed]}>
-                    <Text style={[styles.actionIcon, post.liked_by_me && styles.actionLiked]}>{post.liked_by_me ? '♥' : '♡'}</Text><Text style={[styles.actionText, post.liked_by_me && styles.actionLiked]}>{post.like_count}</Text>
+                    <InkDrawing motif="heart" size={25} color={post.liked_by_me ? colors.accent : colors.textMuted} /><Text style={[styles.actionText, post.liked_by_me && styles.actionLiked]}>{post.like_count}</Text>
                   </Pressable>
                   <Pressable accessibilityRole="button" accessibilityLabel="View replies" onPress={() => openPost(post, authorName)} style={styles.actionButton}>
-                    <CommentIcon /><Text style={styles.actionText}>{post.reply_count}</Text>
+                    <InkDrawing motif="letter" size={26} color={colors.textMuted} /><Text style={styles.actionText}>{post.reply_count}</Text>
                   </Pressable>
-                  <Pressable accessibilityRole="button" accessibilityLabel="Share post" onPress={() => void sharePost(post, authorName)} style={styles.shareButton}><Text style={styles.shareGlyph}>↗</Text></Pressable>
+                  <Pressable accessibilityRole="button" accessibilityLabel="Share post" onPress={() => void sharePost(post, authorName)} style={styles.shareButton}><InkDrawing motif="arrow" size={26} color={colors.textMuted} /></Pressable>
                 </View>
               </View>
             </View>
@@ -316,48 +305,45 @@ export default function FeedScreen() {
 }
 
 const styles = StyleSheet.create({
-  handle: { color: colors.textSubtle, fontSize: 12, marginTop: 3 },
+  compactHeader: { flexDirection:'row',justifyContent:'space-between',alignItems:'center',minHeight:58 },
+  compactTitle: {fontFamily:fonts.display,fontSize:32,color:colors.text,letterSpacing:0.3},
+  handle: { color: colors.textSubtle, fontSize: 11, marginTop: 1 },
   actionPressed: { transform: [{ scale: 0.9 }] },
-  shareGlyph: { color: colors.textSubtle, fontSize: 23 },
   newPostsButton: { alignSelf: 'center', backgroundColor: colors.cobaltSoft, borderRadius: 8, marginTop: 10, paddingHorizontal: 18, paddingVertical: 14 },
   newPostsLabel: { color: colors.cobalt, fontSize: 12, fontWeight: '700' },
   feedPane: { width: '100%' },
-  topBar: { borderBottomColor: colors.borderStrong, borderBottomWidth: 1, marginBottom: 8, marginTop: 12 },
+  topBar: { marginBottom: 0, marginTop: 0 },
   feedModeRow: { flexDirection: 'row', gap: 6 },
-  feedModeButton: { flex: 1, borderBottomWidth: 3, borderBottomColor: 'transparent', paddingVertical: 14, paddingHorizontal: 8 },
+  feedModeButton: { flex: 1, paddingVertical: 9, paddingHorizontal: 8, borderBottomWidth:2, borderBottomColor:'transparent' },
   feedModeSelected: { borderBottomColor: colors.accent },
   feedModeLabel: { color: colors.textSubtle, fontSize: 12, fontWeight: '700', letterSpacing: 1, textTransform: 'uppercase', textAlign: 'center' },
   feedModeLabelSelected: { color: colors.accent },
-  composer: { alignItems: 'flex-start', borderBottomColor: colors.borderStrong, borderBottomWidth: 1, flexDirection: 'row', gap: 12, paddingVertical: 18 },
+  composer: { alignItems: 'center', flexDirection: 'row', gap: 10, paddingVertical: 10 },
   composerOpen: { paddingBottom: spacing.lg },
   composerMain: { flex: 1, gap: spacing.md },
-  composeInput: { color: colors.text, fontFamily: fonts.italic, fontSize: 25, lineHeight: 30, minHeight: 40, paddingHorizontal: 0, paddingTop: 5, textAlignVertical: 'top' },
+  composeInput: { color: colors.text, fontFamily: fonts.italic, fontSize: 23, lineHeight: 28, minHeight: 34, paddingHorizontal: 0, paddingTop: 2, textAlignVertical:'top' },
   composeInputOpen: { minHeight: 74 },
   publishRow: { alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between' },
   counter: { color: colors.textSubtle, fontSize: 12 },
   publishButton: { backgroundColor: colors.primary, borderRadius: 4, paddingHorizontal: 24, paddingVertical: 12 },
   publishLabel: { color: colors.primaryInk, fontSize: 12, fontWeight: '700', letterSpacing: 1, textTransform: 'uppercase' },
   disabled: { opacity: 0.4 },
-  loading: { marginVertical: spacing.xl },
   error: { color: colors.danger, fontSize: 14, lineHeight: 21, marginTop: spacing.md, textAlign: 'center' },
   retryButton: { alignItems: 'center', alignSelf: 'center', backgroundColor: colors.primary, borderRadius: radius.md, marginTop: spacing.lg, paddingHorizontal: spacing.xl, paddingVertical: spacing.md },
   retryLabel: { color: colors.primaryInk, fontSize: 15, fontWeight: '900' },
-  timeline: { gap: 0, marginTop: 6 },
-  post: { alignItems: 'flex-start', borderBottomColor: colors.border, borderBottomWidth: 1, flexDirection: 'row', gap: 12, paddingVertical: 24 },
+  timeline: { gap: 0, marginTop: 0 },
+  post: { alignItems: 'flex-start', flexDirection: 'row', gap: 10, paddingVertical: 12, borderTopColor: colors.border, borderTopWidth: StyleSheet.hairlineWidth },
   postMain: { flex: 1 },
   postTapArea: { borderRadius: 6, minHeight: 42 },
   authorLine: { alignItems: 'center', flexDirection: 'row', gap: 10, justifyContent: 'space-between' },
-  name: { color: colors.text, flex: 1, fontSize: 15, fontWeight: '700' },
-  meta: { color: colors.textSubtle, fontSize: 12 },
-  postBody: { color: colors.text, fontSize: 16, lineHeight: 26, marginTop: 14 },
-  actions: { alignItems: 'center', flexDirection: 'row', gap: 20, marginTop: 8 },
-  actionButton: { alignItems: 'center', flexDirection: 'row', gap: 7, minHeight: 44, minWidth: 44 },
-  actionIcon: { color: colors.textSubtle, fontSize: 24 },
-  commentIcon: { borderColor: colors.textSubtle, borderRadius: 6, borderWidth: 1.6, height: 16, width: 19 },
-  commentTail: { backgroundColor: colors.surface, borderBottomColor: colors.textSubtle, borderBottomWidth: 1.6, bottom: -3, height: 6, left: 3, position: 'absolute', transform: [{ rotate: '38deg' }], width: 6 },
+  name: { color: colors.text, flex: 1, fontFamily: fonts.bold, fontSize: 14 },
+  meta: { color: colors.textSubtle, fontSize: 11 },
+  postBody: { color: colors.text, fontFamily: fonts.body, fontSize: 15, lineHeight: 21, marginTop: 6 },
+  actions: { alignItems: 'center', flexDirection: 'row', gap: 22, marginTop: 1 },
+  actionButton: { alignItems: 'center', flexDirection: 'row', gap: 5, minHeight: 38, minWidth: 44 },
   actionText: { color: colors.textSubtle, fontSize: 12, fontWeight: '600' },
   actionLiked: { color: colors.danger },
-  shareButton: { alignItems: 'center', justifyContent: 'center', marginLeft: 'auto', minHeight: 44, minWidth: 44 },
+  shareButton: { alignItems: 'center', justifyContent: 'center', marginLeft: 'auto', minHeight: 38, minWidth: 44 },
   loadMoreButton: { alignItems: 'center', alignSelf: 'center', borderColor: colors.borderStrong, borderRadius: radius.pill, borderWidth: 1, marginTop: spacing.lg, minWidth: 150, paddingHorizontal: spacing.xl, paddingVertical: spacing.md },
   loadMoreLabel: { color: colors.text, fontSize: 14, fontWeight: '900' },
   feedEnd: { color: colors.textSubtle, fontSize: 13, marginTop: spacing.lg, textAlign: 'center' },

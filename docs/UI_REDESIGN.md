@@ -9,6 +9,16 @@ The app uses charcoal surfaces, warm chalk typography, vermilion accents, and or
 - The five tabs use original SVG ink drawings: lips, an eye, intertwined loops, a letter, and a cameo. The selected tab has an irregular paper stamp, a slight tilt, and a vermilion underline. Text labels and native tab accessibility remain intact.
 - Shared typography, headers, buttons, fields, avatars, and empty states extend through authentication, onboarding, profiles, connections, clubs, live rooms, messages, calls, settings, legal pages, and gifts.
 
+## Illustrated surfaces and feed density
+
+`InkArtwork.tsx` supplies original SVG drawings, a stippled background with oversized marginal sketches, irregular paper surfaces, and the layered curved navigation edge. Artwork ignores touch input. Safety, guidelines, account settings, and gift symbols use this drawing system instead of miscellaneous text glyphs or emoji tiles.
+
+Yap uses an illustrated introduction, selectable interest stamps, a matching ticket, and a separate voice-call note. Club discovery uses illustrated tickets and curved playbills. Inbox uses envelope silhouettes. Profiles use portrait frames, keepsake details, and illustrated utility links. Gift catalogue items also use original ink drawings.
+
+Discover intentionally stays dense: a compact header and composer, 15px reading text, closely spaced rows, and small drawn action icons. It has no large editorial introduction or enclosing post cards. At 390 × 844, three complete representative posts fit before scrolling, with the next post entering the viewport. Long posts retain their complete content and naturally occupy more space.
+
+The follow-up review checks the 320px Yap layout, interest selection and matching cancellation, compact Discover, club tickets, Inbox correspondence, and profile utility artwork with local sample data. Native device rendering remains a separate check from Android bundle export.
+
 ## Local review
 
 Run `pnpm ui:review`, then open `http://localhost:4173`. The review bundles the actual screen components with local sample data. It replaces service modules at build time; no Supabase session, real messages, calls, memberships, or payments are used. The production app has no preview route or authentication bypass.

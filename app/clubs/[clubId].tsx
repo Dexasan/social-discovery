@@ -1,3 +1,4 @@
+import { InkDrawing, PaperSurface } from '@/components/InkArtwork';
 import { Text, TextInput } from '@/components/Typography';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { router, useLocalSearchParams } from 'expo-router';
@@ -207,6 +208,7 @@ export default function ClubDetailScreen() {
         <Pill label={club.topic} tone="accent" />
       </View>
 
+      <View style={{marginTop:20,padding:28}}><PaperSurface variant="ticket" color={colors.warningSoft} ink={colors.warning} /><View pointerEvents="none" style={{position:"absolute",right:18,top:24}}><InkDrawing motif="planet" size={92} color={colors.warning} /></View>
       <Pressable accessibilityLabel={canEditImage ? 'Change Club picture' : `${club.name} picture`} disabled={!canEditImage || imageBusy} onPress={() => void changeClubImage()} style={styles.heroImageAction}>
         <Avatar imageUrl={clubAvatarPublicUrl(club.avatar_path)} label={club.name} size={76} />
         {canEditImage ? <View style={styles.imageEditBadge}>{imageBusy ? <ActivityIndicator color={colors.primary} size="small" /> : <Text style={styles.imageEditGlyph}>+</Text>}</View> : null}
@@ -224,6 +226,7 @@ export default function ClubDetailScreen() {
         ) : <Text style={styles.ownerName}>Community</Text>}
       </View>
 
+      </View>
       <View style={styles.primaryActions}>
         <View style={styles.actionFlex}>
           <PrimaryButton

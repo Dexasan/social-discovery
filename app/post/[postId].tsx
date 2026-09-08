@@ -1,3 +1,4 @@
+import { InkDrawing, PaperSurface } from '@/components/InkArtwork';
 import { Text, TextInput } from '@/components/Typography';
 import { useEffect, useState } from 'react';
 import { router, useLocalSearchParams } from 'expo-router';
@@ -75,7 +76,7 @@ export default function PostDetailScreen() {
         <RetroGlyph glyph="‹" size="sm" tone="neutral" /><Text style={styles.backLabel}>BACK TO DISCOVER</Text><View style={styles.backPixels}><View style={styles.backPixel} /><View style={styles.backPixel} /></View>
       </Pressable>
 
-      <View style={styles.postCard}>
+      <View style={styles.postCard}><PaperSurface variant="note" color={colors.cobaltSoft} ink={colors.borderStrong} /><InkDrawing motif="eye" size={60} color={colors.cobalt} />
         <Text style={styles.originalLabel}>ORIGINAL YAP / 01</Text>
         <Pressable
           accessibilityLabel={`Open ${author}'s profile`}
@@ -122,7 +123,7 @@ export default function PostDetailScreen() {
         {replies.map((item, index) => {
           const name = item.author_display_name || (item.author_handle ? `@${item.author_handle}` : 'Community member');
           return (
-            <View key={item.reply_id} style={styles.replyCard}>
+            <View key={item.reply_id} style={styles.replyCard}><PaperSurface variant="note" />
               <Text style={styles.replySerial}>R/{String(index + 1).padStart(2, '0')}</Text>
               <Pressable
                 accessibilityLabel={`Open ${name}'s profile`}
@@ -152,7 +153,7 @@ const styles = StyleSheet.create({
   backLabel: { color: colors.textSubtle, fontSize: 10, fontWeight: '900', letterSpacing: 1.1 },
   backPixels: { flexDirection: 'row', gap: 3, marginLeft: 'auto' },
   backPixel: { backgroundColor: colors.accent, height: 4, width: 4 },
-  postCard: { backgroundColor: 'transparent', borderColor: colors.primary, borderRadius: 0, borderWidth: 0, borderTopWidth: 1.5, borderBottomWidth: 1.5, gap: 18, marginTop: 20, paddingVertical: 24, paddingHorizontal: 0, position: 'relative' },
+  postCard: { gap: 18, marginTop: 20, padding: 28, position: 'relative' },
   originalLabel: { color: colors.accent, fontSize: 10, fontWeight: '900', letterSpacing: 1.1, position: 'absolute', right: 8, top: 7 },
   authorRow: { alignItems: 'center', flexDirection: 'row', gap: spacing.md },
   author: { color: colors.text, fontSize: 14, fontWeight: '800' },
@@ -169,7 +170,7 @@ const styles = StyleSheet.create({
   emptyTitle: { color: colors.text, fontSize: 11, fontWeight: '900', letterSpacing: 1 },
   emptyText: { color: colors.textSubtle, fontSize: 13, marginTop: 3 },
   replies: { gap: spacing.sm },
-  replyCard: { alignItems: 'flex-start', borderBottomColor: colors.border, borderBottomWidth: 1, flexDirection: 'row', gap: 12, paddingVertical: 20, position: 'relative' },
+  replyCard: { alignItems: 'flex-start', flexDirection: 'row', gap: 12, padding: 20, position: 'relative', marginTop: 12 },
   replySerial: { color: colors.borderStrong, fontSize: 10, fontWeight: '900', letterSpacing: 0.8, position: 'absolute', right: 6, top: 5 },
   replyCopy: { flex: 1, gap: spacing.sm },
   replyBody: { color: colors.text, fontSize: 15, lineHeight: 21 },
