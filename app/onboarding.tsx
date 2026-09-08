@@ -1,6 +1,7 @@
+import { Text, TextInput } from '@/components/Typography';
 import { useMemo, useState } from 'react';
 import { Redirect, router } from 'expo-router';
-import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 
 import { BrandLockup } from '@/components/Brand';
 import { Card, Eyebrow, Heading, Muted, PrimaryButton, Screen } from '@/components/ui';
@@ -238,13 +239,13 @@ const styles = StyleSheet.create({
   progressTrack: { backgroundColor: colors.surfaceRaised, borderRadius: radius.pill, height: 10, overflow: 'hidden', width: 142 },
   progressFill: { backgroundColor: colors.signal, borderRadius: radius.pill, height: '100%', width: '82%' },
   step: { color: colors.textMuted, fontSize: 13, fontWeight: '900', letterSpacing: 0.7, textTransform: 'uppercase' },
-  intro: { backgroundColor: colors.signalSoft, borderColor: '#3B5421', borderRadius: 30, borderWidth: 1, gap: spacing.md, marginBottom: spacing.xl, marginTop: spacing.xxl, padding: spacing.xl, transform: [{ rotate: '-0.5deg' }] },
-  form: { backgroundColor: colors.surface, borderRadius: 30, gap: spacing.md, marginBottom: spacing.lg },
+  intro: { borderTopColor: colors.primary, borderTopWidth: 1.5, borderBottomColor: colors.primary, borderBottomWidth: 1.5, gap: 12, marginBottom: 24, marginTop: 24, paddingVertical: 24 },
+  form: { backgroundColor: 'transparent', borderWidth: 0, padding: 0, gap: 12, marginBottom: 24 },
   label: { color: colors.textMuted, fontSize: 14, fontWeight: '900', marginTop: spacing.xs },
   labelRow: { alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between' },
   helper: { color: colors.textSubtle, fontSize: 13, fontWeight: '700' },
-  input: { backgroundColor: colors.surfaceRaised, borderColor: colors.borderStrong, borderRadius: 18, borderWidth: 1, color: colors.text, fontSize: 17, minHeight: 60, paddingHorizontal: spacing.lg },
-  handleRow: { alignItems: 'center', backgroundColor: colors.surfaceRaised, borderColor: colors.borderStrong, borderRadius: 18, borderWidth: 1, flexDirection: 'row', minHeight: 60, paddingHorizontal: spacing.lg },
+  input: { backgroundColor: colors.surface, borderColor: colors.borderStrong, borderRadius: 4, borderWidth: 1, color: colors.text, fontSize: 16, minHeight: 54, paddingHorizontal: 16 },
+  handleRow: { alignItems: 'center', backgroundColor: colors.surface, borderColor: colors.borderStrong, borderRadius: 4, borderWidth: 1, flexDirection: 'row', minHeight: 54, paddingHorizontal: 16 },
   at: { color: colors.cobalt, fontSize: 19, fontWeight: '900' },
   handleInput: { color: colors.text, flex: 1, fontSize: 17, paddingLeft: spacing.xs },
   handleStatus: { color: colors.textSubtle, fontSize: 12, marginTop: -spacing.sm },
@@ -258,7 +259,7 @@ const styles = StyleSheet.create({
   choiceSelected: { backgroundColor: colors.primary, borderColor: colors.primary },
   choiceDisabled: { opacity: 0.4 },
   choiceText: { color: colors.textMuted, fontSize: 14, fontWeight: '800' },
-  choiceTextSelected: { color: colors.white },
+  choiceTextSelected: { color: colors.primaryInk },
   ageRow: { alignItems: 'flex-start', flexDirection: 'row', gap: spacing.md, marginTop: spacing.sm },
   checkbox: { alignItems: 'center', borderColor: colors.borderStrong, borderRadius: 8, borderWidth: 1, height: 28, justifyContent: 'center', width: 28 },
   checkboxChecked: { backgroundColor: colors.primary, borderColor: colors.primary },

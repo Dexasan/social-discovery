@@ -1,6 +1,7 @@
+import { Text, TextInput } from '@/components/Typography';
 import { useMemo, useState } from 'react';
 import { router } from 'expo-router';
-import { ActivityIndicator, Pressable, StyleSheet, Switch, Text, TextInput, View } from 'react-native';
+import { ActivityIndicator, Pressable, StyleSheet, Switch, View } from 'react-native';
 import type { ImagePickerAsset } from 'expo-image-picker';
 
 import { Avatar, Card, Eyebrow, Heading, Muted, PrimaryButton, Screen } from '@/components/ui';
@@ -150,7 +151,7 @@ export default function CreateClubScreen() {
           icon={submitting ? <ActivityIndicator color={colors.primaryInk} size="small" /> : undefined}
         />
       </View>
-      <Text style={styles.note}>You can own up to five clubs during the MVP.</Text>
+      <Text style={styles.note}>You can own up to five clubs during early access.</Text>
     </Screen>
   );
 }

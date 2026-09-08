@@ -1,6 +1,7 @@
+import { Text } from '@/components/Typography';
 import { useEffect, useRef, useState } from 'react';
 import { router, useLocalSearchParams } from 'expo-router';
-import { ActivityIndicator, Alert, AppState, Pressable, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Alert, AppState, Pressable, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Avatar, Pill, SignalBars } from '@/components/ui';
@@ -17,7 +18,7 @@ import {
   type DirectCall,
 } from '@/features/calls/api';
 import { blockProfile, reportProfile } from '@/features/quick-chat/api';
-import { colors, radius, shadows, spacing } from '@/theme/tokens';
+import { colors, fonts, radius, shadows, spacing } from '@/theme/tokens';
 
 const terminalStatuses: CallStatus[] = ['declined', 'cancelled', 'missed', 'ended'];
 
@@ -203,8 +204,8 @@ export default function DirectCallScreen() {
 
 const styles = StyleSheet.create({
   screen: { backgroundColor: colors.background, flex: 1, overflow: 'hidden', padding: spacing.xl },
-  glowOne: { backgroundColor: colors.signalSoft, borderRadius: 160, height: 320, position: 'absolute', right: -170, top: 70, width: 320 },
-  glowTwo: { backgroundColor: colors.accentSoft, borderRadius: 120, bottom: -80, height: 240, left: -120, position: 'absolute', width: 240 },
+  glowOne: { borderColor: colors.accent, borderWidth: 3, borderRadius: 160, height: 320, position: 'absolute', right: -230, top: 70, width: 320, transform: [{ rotate: '-20deg' }] },
+  glowTwo: { borderColor: colors.primary, borderWidth: 2, borderRadius: 120, bottom: -80, height: 240, left: -180, position: 'absolute', width: 240 },
   loading: { flex: 1 },
   topRow: { alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between' },
   safetyRow: { flexDirection: 'row', gap: spacing.sm },
@@ -213,21 +214,21 @@ const styles = StyleSheet.create({
   callStage: { alignItems: 'center', flex: 1, gap: spacing.md, justifyContent: 'center' },
   avatarHalo: { ...shadows.floating, backgroundColor: colors.surfaceRaised, borderColor: colors.borderStrong, borderRadius: 84, borderWidth: 1, marginBottom: spacing.lg, padding: 10 },
   avatarHaloLive: { backgroundColor: colors.signal, borderColor: colors.signal },
-  partnerName: { color: colors.text, fontSize: 38, fontWeight: '900', letterSpacing: -1.6, textAlign: 'center' },
+  partnerName: { fontFamily: fonts.display, color: colors.text, fontSize: 52, lineHeight: 56, letterSpacing: -0.5, textAlign: 'center', textTransform: 'uppercase' },
   partnerMeta: { color: colors.textMuted, fontSize: 16, textAlign: 'center' },
-  status: { color: colors.text, fontSize: 18, fontWeight: '800', marginTop: spacing.lg, textAlign: 'center' },
+  status: { color: colors.text, fontFamily: fonts.italic, fontSize: 30, marginTop: spacing.lg, textAlign: 'center' },
   durationRow: { alignItems: 'center', backgroundColor: colors.surface, borderColor: colors.border, borderRadius: radius.pill, borderWidth: 1, flexDirection: 'row', gap: spacing.md, paddingHorizontal: spacing.lg, paddingVertical: 8 },
   duration: { color: colors.signal, fontSize: 16, fontVariant: ['tabular-nums'], fontWeight: '900' },
   error: { color: colors.danger, fontSize: 14, lineHeight: 20, maxWidth: 300, textAlign: 'center' },
   controls: { alignItems: 'center', flexDirection: 'row', gap: spacing.lg, justifyContent: 'center', minHeight: 100 },
-  controlButton: { alignItems: 'center', backgroundColor: colors.surfaceRaised, borderColor: colors.borderStrong, borderRadius: 29, borderWidth: 1, height: 86, justifyContent: 'center', width: 86 },
+  controlButton: { alignItems: 'center', backgroundColor: colors.surfaceRaised, borderColor: colors.borderStrong, borderRadius: 8, borderWidth: 1, height: 86, justifyContent: 'center', width: 86 },
   controlGlyph: { color: colors.text, fontSize: 28, fontWeight: '900', lineHeight: 28 },
   controlLabel: { color: colors.text, fontSize: 13, fontWeight: '900' },
-  endButton: { alignItems: 'center', backgroundColor: colors.danger, borderRadius: 29, height: 86, justifyContent: 'center', width: 106 },
-  endGlyph: { color: colors.primary, fontSize: 29, fontWeight: '900', lineHeight: 30, transform: [{ rotate: '-45deg' }] },
-  endLabel: { color: colors.primary, fontSize: 13, fontWeight: '900' },
-  backButton: { alignItems: 'center', backgroundColor: colors.signal, borderRadius: 20, minHeight: 62, justifyContent: 'center', paddingHorizontal: spacing.xxl },
-  backLabel: { color: colors.primary, fontSize: 17, fontWeight: '900' },
+  endButton: { alignItems: 'center', backgroundColor: colors.danger, borderRadius: 8, height: 86, justifyContent: 'center', width: 106 },
+  endGlyph: { color: colors.primaryInk, fontSize: 29, fontWeight: '900', lineHeight: 30, transform: [{ rotate: '-45deg' }] },
+  endLabel: { color: colors.primaryInk, fontSize: 13, fontWeight: '700' },
+  backButton: { alignItems: 'center', backgroundColor: colors.signal, borderRadius: 8, minHeight: 62, justifyContent: 'center', paddingHorizontal: spacing.xxl },
+  backLabel: { color: colors.primaryInk, fontSize: 17, fontWeight: '700' },
   disabled: { opacity: 0.5 },
   privacy: { color: colors.textSubtle, fontSize: 12, fontWeight: '700', paddingBottom: spacing.sm, textAlign: 'center' },
 });

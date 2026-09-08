@@ -1,12 +1,13 @@
+import { Text, TextInput } from '@/components/Typography';
 import { Redirect, router } from 'expo-router';
 import { useState } from 'react';
-import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 
 import { BrandLockup } from '@/components/Brand';
 import { ConversationArtwork } from '@/components/ConversationArtwork';
 import { Card, Pill, PrimaryButton, Screen } from '@/components/ui';
 import { useSession } from '@/context/SessionContext';
-import { colors, radius, spacing } from '@/theme/tokens';
+import { colors, fonts, radius, spacing } from '@/theme/tokens';
 
 type AuthMode = 'sign-in' | 'sign-up';
 
@@ -89,7 +90,7 @@ export default function AuthScreen() {
       <View style={styles.intro}>
         <ConversationArtwork compact />
         <Text style={styles.introEyebrow}>{mode === 'sign-up' ? 'GOOD COMPANY STARTS HERE' : 'WELCOME BACK'}</Text>
-        <Text style={styles.introTitle}>{mode === 'sign-up' ? 'A little hello.\nA whole new world.' : 'Your people\nare right here.'}</Text>
+        <Text style={styles.introTitle}>{mode === 'sign-up' ? 'GOOD COMPANY.\nGREAT STORIES.' : 'BACK FOR\nANOTHER HELLO.'}</Text>
         <Text style={styles.introCopy}>Meet over shared interests. Stay for the conversation.</Text>
       </View>
 
@@ -162,23 +163,23 @@ export default function AuthScreen() {
 
 const styles = StyleSheet.create({
   topRow: { alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between' },
-  intro: { alignItems: 'center', gap: 12, marginTop: 22, paddingHorizontal: 12 },
+  intro: { gap: 10, marginTop: 22 },
   introTop: { alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between' },
-  introEyebrow: { color: colors.cobalt, fontSize: 10, fontWeight: '700', letterSpacing: 1.4, textAlign: 'center' },
-  introTitle: { color: colors.text, fontSize: 36, fontWeight: '800', letterSpacing: -1.5, lineHeight: 41, textAlign: 'center' },
-  introCopy: { color: colors.textMuted, fontSize: 14, lineHeight: 22, textAlign: 'center', maxWidth: 260 },
-  promiseRow: { alignItems: 'stretch', flexDirection: 'row', gap: 10, marginVertical: 22 },
-  promise: { alignItems: 'center', borderRadius: 18, flex: 1, gap: 5, justifyContent: 'center', minHeight: 76, paddingHorizontal: 5 },
-  promiseSignal: { backgroundColor: colors.surface },
-  promiseCobalt: { backgroundColor: colors.cobaltSoft },
-  promiseOrange: { backgroundColor: colors.accentSoft },
-  promiseValue: { color: colors.accent, fontSize: 18, fontWeight: '800' },
-  promiseValueLight: { color: colors.cobalt },
+  introEyebrow: { color: colors.accent, fontSize: 9, fontWeight: '700', letterSpacing: 1.5 },
+  introTitle: { color: colors.text, fontFamily: fonts.display, fontSize: 53, letterSpacing: -0.5, lineHeight: 54 },
+  introCopy: { color: colors.textMuted, fontFamily: fonts.italic, fontSize: 25, lineHeight: 29 },
+  promiseRow: { alignItems: 'stretch', borderTopColor: colors.primary, borderTopWidth: 1, borderBottomColor: colors.primary, borderBottomWidth: 1, flexDirection: 'row', marginVertical: 22 },
+  promise: { alignItems: 'center', flex: 1, gap: 5, justifyContent: 'center', minHeight: 68, paddingHorizontal: 5 },
+  promiseSignal: { backgroundColor: 'transparent' },
+  promiseCobalt: { backgroundColor: 'transparent', borderLeftColor: colors.border, borderLeftWidth: 1, borderRightColor: colors.border, borderRightWidth: 1 },
+  promiseOrange: { backgroundColor: 'transparent' },
+  promiseValue: { color: colors.text, fontFamily: fonts.display, fontSize: 24, textTransform: 'uppercase' },
+  promiseValueLight: { color: colors.text },
   promiseLabel: { color: colors.textMuted, fontSize: 11, fontWeight: '500', textAlign: 'center' },
   promiseLabelLight: { color: colors.textMuted },
-  form: { backgroundColor: colors.surface, borderRadius: 24, gap: 12, padding: 20 },
+  form: { backgroundColor: 'transparent', borderWidth: 0, gap: 12, padding: 0 },
   label: { color: colors.textMuted, fontSize: 12, fontWeight: '600', marginTop: 4 },
-  input: { backgroundColor: colors.backgroundRaised, borderColor: colors.borderStrong, borderRadius: 14, borderWidth: 1, color: colors.text, fontSize: 16, minHeight: 54, paddingHorizontal: 16 },
+  input: { backgroundColor: colors.surface, borderColor: colors.borderStrong, borderRadius: 4, borderWidth: 1, color: colors.text, fontSize: 15, minHeight: 54, paddingHorizontal: 16 },
   error: { color: colors.danger, fontSize: 14, lineHeight: 21 },
   notice: { backgroundColor: colors.successSoft, borderRadius: radius.sm, color: colors.success, fontSize: 14, lineHeight: 21, padding: spacing.md },
   forgotButton: { alignSelf: 'flex-end', marginTop: -spacing.xs, paddingVertical: spacing.xs },

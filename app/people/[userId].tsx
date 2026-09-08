@@ -1,6 +1,7 @@
+import { Text } from '@/components/Typography';
 import { useCallback, useState } from 'react';
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
-import { ActivityIndicator, Alert, Pressable, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Alert, Pressable, StyleSheet, View } from 'react-native';
 
 import { GiftPicker } from '@/components/GiftPicker';
 import { GiftArtwork } from '@/components/GiftArtwork';
@@ -22,7 +23,7 @@ import {
   type PublicProfilePost,
   type SocialStats,
 } from '@/features/social/api';
-import { colors, radius, spacing } from '@/theme/tokens';
+import { colors, fonts, radius, spacing } from '@/theme/tokens';
 
 function first(value: string | string[] | undefined) {
   return Array.isArray(value) ? value[0] : value;
@@ -328,19 +329,19 @@ const styles = StyleSheet.create({
   coverOrbOne: { backgroundColor: colors.primaryGlow, borderRadius: 100, height: 180, position: 'absolute', right: -55, top: -90, width: 180 },
   coverOrbTwo: { backgroundColor: colors.accentGlow, borderRadius: 80, bottom: -70, height: 140, left: -45, position: 'absolute', width: 140 },
   avatarWrap: { backgroundColor: colors.primarySoft, borderRadius: 64, marginBottom: spacing.md, padding: 5 },
-  name: { color: colors.text, fontSize: 29, fontWeight: '900', letterSpacing: -1, textAlign: 'center' },
+  name: { color: colors.text, fontFamily: fonts.display, fontSize: 44, lineHeight: 48, letterSpacing: -0.5, textAlign: 'center', textTransform: 'uppercase' },
   handle: { color: colors.link, fontSize: 14, fontWeight: '800', marginTop: 3 },
   metadata: { alignItems: 'center', flexDirection: 'row', gap: spacing.sm, marginTop: spacing.md },
   locationDot: { color: colors.accent, fontSize: 9 },
-  bio: { color: colors.text, fontSize: 16, lineHeight: 24, marginTop: spacing.xl, textAlign: 'center' },
+  bio: { color: colors.text, fontFamily: fonts.italic, fontSize: 27, lineHeight: 31, marginTop: spacing.xl, textAlign: 'center' },
   stats: { backgroundColor: colors.surface, borderColor: colors.border, borderRadius: radius.lg, borderWidth: 1, flexDirection: 'row', justifyContent: 'space-around', marginVertical: spacing.xl, paddingVertical: spacing.lg },
   stat: { alignItems: 'center', flex: 1, gap: 2 },
-  statNumber: { color: colors.text, fontSize: 20, fontWeight: '900', textAlign: 'center' },
+  statNumber: { fontFamily: fonts.display, color: colors.text, fontSize: 20, fontWeight: '900', textAlign: 'center' },
   statLabel: { color: colors.textSubtle, fontSize: 12, fontWeight: '700' },
   actions: { flexDirection: 'row', gap: spacing.md },
   primaryAction: { alignItems: 'center', backgroundColor: colors.primary, borderRadius: radius.md, flex: 1, justifyContent: 'center', minHeight: 52, paddingHorizontal: spacing.lg },
   primaryActionLabel: { color: colors.primaryInk, fontSize: 14, fontWeight: '900' },
-  followingAction: { backgroundColor: colors.successSoft, borderColor: '#285C49', borderWidth: 1 },
+  followingAction: { backgroundColor: colors.successSoft, borderColor: colors.border, borderWidth: 1 },
   followingLabel: { color: colors.success },
   actionDisabled: { opacity: 0.55 },
   secondaryAction: { alignItems: 'center', backgroundColor: colors.surfaceRaised, borderColor: colors.borderStrong, borderRadius: radius.md, borderWidth: 1, flex: 1, justifyContent: 'center', minHeight: 52, paddingHorizontal: spacing.lg },

@@ -1,6 +1,7 @@
+import { Text } from '@/components/Typography';
 import { useCallback, useEffect, useState } from 'react';
 import { router, useLocalSearchParams } from 'expo-router';
-import { ActivityIndicator, Alert, AppState, Pressable, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Alert, AppState, Pressable, StyleSheet, View } from 'react-native';
 
 import { GiftPicker } from '@/components/GiftPicker';
 import { Avatar, Card, Heading, Muted, Pill, Screen } from '@/components/ui';
@@ -152,7 +153,7 @@ export default function ClubRoomScreen() {
   const audioTitle = room?.status !== 'live'
     ? 'This room has ended'
     : !audio.isConfigured
-    ? 'Live audio needs Cloudflare credentials'
+    ? 'Voice is taking a breather'
     : audio.status === 'connecting'
       ? 'Connecting live audio…'
       : audio.status === 'connected'
@@ -162,7 +163,7 @@ export default function ClubRoomScreen() {
   const audioDescription = room?.status !== 'live'
     ? 'The conversation is closed. Head back to the club to see what is happening next.'
     : !audio.isConfigured
-    ? 'Room presence and moderation work now. Add the Cloudflare Realtime credentials to activate voice.'
+    ? 'Audio is temporarily unavailable. You can stay in the room or come back a little later.'
     : audio.status === 'connected'
       ? ownParticipant?.role === 'listener'
         ? 'You are listening to the room.'
@@ -326,7 +327,7 @@ export default function ClubRoomScreen() {
               >
                 <Avatar label={name} path={participant.avatar_path} size={42} />
                 <View style={styles.audienceCopy}>
-                  <Text style={styles.personName}>{name}</Text>
+                  <Text style={[styles.personName, { textAlign: 'left' }]}>{name}</Text>
                   {participant.hand_raised_at ? <Text style={styles.hand}>Hand raised</Text> : <Muted>Listening</Muted>}
                 </View>
               </Pressable>
@@ -382,8 +383,8 @@ const styles = StyleSheet.create({
   audioWave: { color: colors.text, fontSize: 24, fontWeight: '900', transform: [{ rotate: '90deg' }] },
   audioCopy: { flex: 1, gap: 2 },
   audioTitle: { color: colors.text, fontSize: 14, fontWeight: '900' },
-  micButton: { alignItems: 'center', backgroundColor: colors.cobaltSoft, borderColor: '#34458F', borderRadius: radius.md, borderWidth: 1, marginTop: spacing.sm, padding: spacing.md },
-  micButtonLive: { backgroundColor: colors.accentSoft, borderColor: '#603128' },
+  micButton: { alignItems: 'center', backgroundColor: colors.cobaltSoft, borderColor: colors.border, borderRadius: radius.md, borderWidth: 1, marginTop: spacing.sm, padding: spacing.md },
+  micButtonLive: { backgroundColor: colors.accentSoft, borderColor: colors.border },
   micButtonLabel: { color: colors.text, fontSize: 13, fontWeight: '800' },
   micButtonLabelLive: { color: colors.accent },
   section: { color: colors.text, fontSize: 17, fontWeight: '900', letterSpacing: -0.35, marginBottom: spacing.md, marginTop: spacing.xl },
@@ -393,7 +394,7 @@ const styles = StyleSheet.create({
   stageProfile: { alignItems: 'center', gap: spacing.sm },
   hostAvatar: { backgroundColor: colors.primarySoft },
   personName: { color: colors.text, fontSize: 13, fontWeight: '900', textAlign: 'center' },
-  giftButton: { backgroundColor: colors.warningSoft, borderColor: '#6D5520', borderRadius: radius.pill, borderWidth: 1, paddingHorizontal: spacing.md, paddingVertical: 7 },
+  giftButton: { backgroundColor: colors.warningSoft, borderColor: colors.borderStrong, borderRadius: radius.pill, borderWidth: 1, paddingHorizontal: spacing.md, paddingVertical: 7 },
   giftLabel: { color: colors.warning, fontSize: 13, fontWeight: '900' },
   moderateAction: { color: colors.warning, fontSize: 12, fontWeight: '700', marginTop: spacing.xs },
   audienceList: { gap: spacing.sm },
@@ -406,7 +407,7 @@ const styles = StyleSheet.create({
   removeButton: { paddingHorizontal: spacing.sm, paddingVertical: 8 },
   removeLabel: { color: colors.danger, fontSize: 12, fontWeight: '700' },
   handButton: { alignItems: 'center', backgroundColor: colors.primary, borderRadius: radius.lg, elevation: 5, marginTop: spacing.xl, padding: spacing.lg },
-  handButtonRaised: { backgroundColor: colors.signalSoft, borderColor: '#3B5421', borderWidth: 1 },
+  handButtonRaised: { backgroundColor: colors.signalSoft, borderColor: colors.border, borderWidth: 1 },
   handButtonLabel: { color: colors.primaryInk, fontSize: 15, fontWeight: '800' },
   handButtonLabelRaised: { color: colors.text },
 });

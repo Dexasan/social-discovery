@@ -1,11 +1,12 @@
+import { Text, TextInput } from '@/components/Typography';
 import { useCallback, useState } from 'react';
 import { router, useFocusEffect } from 'expo-router';
-import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { ActivityIndicator, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import { Avatar, EmptyState, RetroGlyph, RetroHeader, Screen, SignalBars, SkeletonRows } from '@/components/ui';
 import { joinClub, leaveClub, loadClubs, startClubRoom, type ClubSummary } from '@/features/clubs/api';
 import { clubAvatarPublicUrl } from '@/features/clubs/avatar';
-import { colors, radius, spacing } from '@/theme/tokens';
+import { colors, fonts, spacing } from '@/theme/tokens';
 
 export default function ClubsScreen() {
   const [clubs, setClubs] = useState<ClubSummary[]>([]);
@@ -86,7 +87,7 @@ export default function ClubsScreen() {
       <View style={styles.filters}>{[false, true].map((onlyMine) => <Pressable key={String(onlyMine)} accessibilityRole="tab" accessibilityState={{ selected: membersOnly === onlyMine }} onPress={() => setMembersOnly(onlyMine)} style={[styles.filter, membersOnly === onlyMine && styles.filterSelected]}><Text style={[styles.filterText, membersOnly === onlyMine && styles.filterTextSelected]}>{onlyMine ? 'My clubs' : 'Explore'}</Text></Pressable>)}</View>
 
       {loading ? <SkeletonRows /> : null}
-      {error ? <><Text accessibilityRole="alert" style={styles.error}>{error}</Text><Pressable accessibilityRole="button" onPress={() => { setLoading(true); void refresh(); }} style={styles.retryButton}><Text style={styles.filterTextSelected}>Try again</Text></Pressable></> : null}
+      {error ? <><Text accessibilityRole="alert" style={styles.error}>{error}</Text><Pressable accessibilityRole="button" onPress={() => { setLoading(true); void refresh(); }} style={styles.retryButton}><Text style={styles.filterText}>Try again</Text></Pressable></> : null}
 
       {liveClubs.length > 0 ? (
         <>
@@ -150,63 +151,63 @@ export default function ClubsScreen() {
 
 const styles = StyleSheet.create({
   searchGlyph: { color: colors.textSubtle, fontSize: 25 },
-  filters: { flexDirection: 'row', gap: 8, marginTop: 16 },
-  filter: { borderRadius: 24, paddingHorizontal: 18, minHeight: 44, justifyContent: 'center', backgroundColor: colors.surface },
-  filterSelected: { backgroundColor: colors.cobaltSoft },
-  filterText: { color: colors.textSubtle, fontSize: 13, fontWeight: '600' },
-  filterTextSelected: { color: colors.cobalt, fontSize: 13, fontWeight: '700' },
+  filters: { flexDirection: 'row', gap: 8, marginTop: 20 },
+  filter: { borderRadius: 3, paddingHorizontal: 18, minHeight: 44, justifyContent: 'center', borderColor: colors.border, borderWidth: 1 },
+  filterSelected: { backgroundColor: colors.primary, borderColor: colors.primary },
+  filterText: { color: colors.textSubtle, fontSize: 11, fontWeight: '700', letterSpacing: 0.6, textTransform: 'uppercase' },
+  filterTextSelected: { color: colors.primaryInk, fontSize: 11, fontWeight: '700', letterSpacing: 0.6, textTransform: 'uppercase' },
   retryButton: { alignSelf: 'center', padding: 16 },
-  introCopy: { color: colors.textMuted, fontSize: 14, lineHeight: 22, marginTop: 8 },
+  introCopy: { color: colors.textMuted, fontFamily: fonts.italic, fontSize: 26, lineHeight: 31, marginTop: 15 },
   clearButton: { alignItems: 'center', justifyContent: 'center', minHeight: 44, width: 32 },
   createButton: { borderRadius: 10 },
-  searchWrap: { alignItems: 'center', backgroundColor: colors.surface, borderColor: colors.border, borderRadius: 16, borderWidth: 1, flexDirection: 'row', gap: 10, marginTop: 20, paddingHorizontal: 14 },
+  searchWrap: { alignItems: 'center', borderColor: colors.borderStrong, borderBottomWidth: 1, flexDirection: 'row', gap: 10, marginTop: 16, paddingHorizontal: 2 },
   searchInput: { color: colors.text, flex: 1, fontSize: 14, minHeight: 52 },
   clearSearch: { color: colors.textMuted, fontSize: 23, paddingHorizontal: spacing.xs },
   loading: { marginVertical: spacing.xl },
   error: { color: colors.danger, fontSize: 14, lineHeight: 21, marginTop: spacing.md, textAlign: 'center' },
   sectionLine: { alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between', marginBottom: spacing.md, marginTop: spacing.xl },
   sectionLead: { alignItems: 'center', flexDirection: 'row', gap: spacing.sm },
-  sectionTitle: { color: colors.text, fontSize: 21, fontWeight: '800', letterSpacing: -0.5 },
+  sectionTitle: { fontFamily: fonts.display, color: colors.text, fontSize: 21, fontWeight: '800', letterSpacing: -0.5 },
   sectionCount: { color: colors.textSubtle, fontSize: 12, fontWeight: '500' },
   liveStatus: { alignItems: 'center', flexDirection: 'row', gap: 6 },
   liveDot: { backgroundColor: colors.accent, borderRadius: 4, height: 8, width: 8 },
   liveCount: { color: colors.accent, fontSize: 13, fontWeight: '900' },
   liveScroller: { marginHorizontal: -22 },
   liveRow: { flexDirection: 'row', gap: 12, paddingHorizontal: 22 },
-  liveCard: { backgroundColor: colors.cobaltSoft, borderColor: '#443B61', borderRadius: 26, borderWidth: 1, gap: 10, minHeight: 220, padding: 22, width: 276 },
+  liveCard: { backgroundColor: colors.accentSoft, borderColor: colors.accentSolid, borderWidth: 1, borderRadius: 4, gap: 10, minHeight: 218, padding: 22, width: 276 },
   liveTop: { alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between' },
   liveLabel: { alignItems: 'center', flexDirection: 'row', gap: 6 },
-  liveLabelText: { color: colors.accent, fontSize: 10, fontWeight: '800', letterSpacing: 1.2 },
-  roomTitle: { color: colors.text, fontSize: 25, fontWeight: '800', letterSpacing: -0.8, lineHeight: 31, marginTop: 8 },
-  liveClubName: { color: colors.cobalt, fontSize: 13, fontWeight: '600' },
+  liveLabelText: { color: colors.white, fontSize: 9, fontWeight: '700', letterSpacing: 1.8 },
+  roomTitle: { color: colors.white, fontFamily: fonts.editorial, fontSize: 35, lineHeight: 37, marginTop: 8 },
+  liveClubName: { color: colors.white, fontSize: 12 },
   listenerRow: { alignItems: 'center', flexDirection: 'row', marginTop: 'auto' },
-  listenerIcon: { color: colors.cobalt, fontSize: 15 },
-  listenerCopy: { color: '#C9C7C0', fontSize: 13, fontWeight: '700', marginLeft: 7 },
+  listenerIcon: { color: colors.white, fontSize: 15 },
+  listenerCopy: { color: colors.white, fontSize: 11, marginLeft: 7 },
   enterArrow: { color: colors.white, fontSize: 22, marginLeft: 'auto' },
   pressed: { opacity: 0.75, transform: [{ scale: 0.985 }] },
   clubGrid: { flexDirection: 'row', flexWrap: 'wrap', columnGap: '4%', rowGap: 12 },
-  clubTile: { backgroundColor: colors.surface, borderColor: colors.border, borderRadius: 24, borderWidth: 1, minHeight: 230, padding: 16, width: '48%' },
-  clubTileCobalt: { backgroundColor: colors.surface, borderColor: colors.border },
-  clubTileWarm: { backgroundColor: colors.surface, borderColor: colors.border },
+  clubTile: { backgroundColor: colors.warningSoft, borderColor: colors.primary, borderRadius: 4, borderWidth: 1, minHeight: 232, padding: 16, width: '48%' },
+  clubTileCobalt: { backgroundColor: colors.cobaltSoft },
+  clubTileWarm: { backgroundColor: colors.accentSoft },
   clubLink: { flex: 1 },
   clubMark: { alignItems: 'center', height: 52, justifyContent: 'center', marginBottom: spacing.md, width: 52 },
-  clubName: { color: colors.text, fontSize: 18, fontWeight: '800', letterSpacing: -0.4, lineHeight: 23 },
-  clubTopic: { color: colors.cobalt, fontSize: 12, fontWeight: '500', marginTop: 5 },
+  clubName: { color: colors.text, fontFamily: fonts.display, fontSize: 28, lineHeight: 30, textTransform: 'uppercase' },
+  clubTopic: { color: colors.textMuted, fontFamily: fonts.italic, fontSize: 20, marginTop: 5 },
   memberCount: { color: colors.textSubtle, fontSize: 11, marginTop: 10 },
   tileActions: { alignItems: 'center', flexDirection: 'row', gap: spacing.sm, marginTop: spacing.md },
-  joinButton: { alignItems: 'center', backgroundColor: colors.accent, borderRadius: 12, flex: 1, minHeight: 44, justifyContent: 'center', paddingHorizontal: 8 },
+  joinButton: { alignItems: 'center', backgroundColor: colors.primary, borderRadius: 4, flex: 1, minHeight: 44, justifyContent: 'center', paddingHorizontal: 8 },
   joinedButton: { backgroundColor: colors.surfaceRaised },
-  joinLabel: { color: colors.primary, fontSize: 13, fontWeight: '800' },
+  joinLabel: { color: colors.primaryInk, fontSize: 11, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 0.5 },
   joinedLabel: { color: colors.text },
   micButton: { alignItems: 'center', backgroundColor: colors.cobaltSoft, borderRadius: 12, height: 44, justifyContent: 'center', width: 36 },
   micGlyph: { color: colors.cobalt, fontSize: 16 },
-  hostPanel: { backgroundColor: colors.surface, borderColor: colors.border, borderRadius: 24, borderWidth: 1, gap: 16, marginTop: 16, padding: 20 },
+  hostPanel: { backgroundColor: colors.surface, borderColor: colors.border, borderRadius: 8, borderWidth: 1, gap: 16, marginTop: 16, padding: 20 },
   hostPanelTop: { alignItems: 'flex-start', flexDirection: 'row', justifyContent: 'space-between' },
   hostTitle: { color: colors.text, fontSize: 18, fontWeight: '900' },
   hostHint: { color: colors.textMuted, fontSize: 13, marginTop: 3 },
   hostClose: { color: colors.textMuted, fontSize: 25, lineHeight: 25 },
   roomInput: { backgroundColor: colors.surfaceSoft, borderColor: colors.borderStrong, borderRadius: 9, borderWidth: 1, color: colors.text, fontSize: 16, minHeight: 54, paddingHorizontal: spacing.lg },
-  startButton: { alignItems: 'center', backgroundColor: colors.cobalt, borderRadius: 14, minHeight: 52, justifyContent: 'center' },
-  startLabel: { color: colors.primary, fontSize: 14, fontWeight: '800' },
+  startButton: { alignItems: 'center', backgroundColor: colors.primary, borderRadius: 4, minHeight: 52, justifyContent: 'center' },
+  startLabel: { color: colors.primaryInk, fontSize: 13, fontWeight: '700' },
   disabled: { opacity: 0.45 },
 });

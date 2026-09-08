@@ -1,6 +1,7 @@
+import { Text, TextInput } from '@/components/Typography';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { router } from 'expo-router';
-import { ActivityIndicator, AppState, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { ActivityIndicator, AppState, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import { ConversationArtwork } from '@/components/ConversationArtwork';
 import { useSession } from '@/context/SessionContext';
@@ -16,7 +17,7 @@ import {
   type TrendingInterest,
 } from '@/features/quick-chat/api';
 import { matchInterestCatalog } from '@/features/quick-chat/interests';
-import { colors, radius, spacing } from '@/theme/tokens';
+import { colors, fonts } from '@/theme/tokens';
 
 type MatchState = 'idle' | 'searching';
 
@@ -274,21 +275,21 @@ export default function QuickChatScreen() {
       </View>
 
       <View style={styles.hero}>
-        <Text style={styles.heroEyebrow}>LESS SCROLLING. MORE CLICKING.</Text>
-        <Text style={styles.heroTitle}>Your people.{'\n'}One <Text style={styles.heroAccent}>hello</Text>{'\n'}away.</Text>
-        <View style={styles.heroArtwork}><ConversationArtwork /></View>
-        <Text style={styles.heroCopy}>Strangers for a moment. Maybe friends for life.</Text>
+        <Text style={styles.heroEyebrow}>GOOD CONVERSATIONS. ZERO SMALL TALK.</Text>
+        <Text style={styles.heroTitle}>STRANGERS.<Text style={styles.heroAccent}>{'\n'}For now.</Text></Text>
+        <View style={styles.heroArtwork}><ConversationArtwork compact /></View>
+        <Text style={styles.heroCopy}>A shared obsession. An unexpected connection.</Text>
       </View>
 
       <View style={styles.matchCard}>
         <View style={styles.matchHeader}>
-          <Text style={styles.cardTitle}>{searching ? 'Finding your people…' : 'What’s your vibe?'}</Text>
+          <Text style={styles.cardTitle}>{searching ? 'Finding your people…' : '01 / PICK YOUR OBSESSIONS'}</Text>
           <View style={styles.matchingBadge}>
             <View style={[styles.matchingDot, !matchingCount && styles.matchingDotEmpty]} />
             <Text style={styles.matchingText}>{matchingCount === null ? 'Quick match' : matchingCount === 0 ? 'Start the wave' : matchingCount + ' matching'}</Text>
           </View>
         </View>
-        <Text style={styles.cardCopy}>{searching ? 'Looking for someone who shares your interests.' : 'Pick a few interests. We’ll find your kind of person.'}</Text>
+        <Text style={styles.cardCopy}>{searching ? 'Looking for someone who shares your interests.' : 'What could you talk about for hours? Pick up to five.'}</Text>
 
         <View style={styles.quickPicks}>
           {quickPicks.map((label) => {
@@ -303,7 +304,7 @@ export default function QuickChatScreen() {
 
         <View style={styles.customInterest}>
           <Text style={styles.searchGlyph}>⌕</Text>
-          <TextInput accessibilityLabel="Search matching interests" autoCapitalize="none" autoCorrect={false} editable={!searching} maxLength={40} onChangeText={setInterestInput} onSubmitEditing={useTypedInterest} placeholder="Find an interest, or add your own" placeholderTextColor={colors.textSubtle} returnKeyType="search" style={styles.interestInput} value={interestInput} />
+          <TextInput accessibilityLabel="Search matching interests" autoCapitalize="none" autoCorrect={false} editable={!searching} maxLength={40} onChangeText={setInterestInput} onSubmitEditing={useTypedInterest} placeholder="Something else? Add it here…" placeholderTextColor={colors.textSubtle} returnKeyType="search" style={styles.interestInput} value={interestInput} />
           {interestInput.trim() ? <Pressable accessibilityLabel="Add interest" accessibilityRole="button" disabled={!canAddTypedInterest} onPress={useTypedInterest} style={[styles.addInterestButton, !canAddTypedInterest && styles.disabled]}><Text style={styles.addInterestText}>+</Text></Pressable> : null}
         </View>
         {interestInput.trim() ? (
@@ -327,7 +328,7 @@ export default function QuickChatScreen() {
         {searching ? (
           <Pressable accessibilityRole="button" accessibilityLabel="Cancel matching" onPress={() => void cancelSearch()} style={styles.cancelButton}><ActivityIndicator color={colors.accent} size="small" /><Text style={styles.cancelText}>Searching · Tap to cancel</Text></Pressable>
         ) : (
-          <Pressable accessibilityRole="button" accessibilityLabel="Find an interest match" accessibilityState={{ disabled: !selectedInterests.length }} disabled={!selectedInterests.length} onPress={beginSearch} style={({ pressed }) => [styles.matchButton, !selectedInterests.length && styles.matchButtonDisabled, pressed && styles.pressed]}><Text style={[styles.matchButtonText, !selectedInterests.length && styles.matchButtonTextDisabled]}>Let’s talk</Text><Text style={[styles.matchArrow, !selectedInterests.length && styles.matchButtonTextDisabled]}>↗</Text></Pressable>
+          <Pressable accessibilityRole="button" accessibilityLabel="Find an interest match" accessibilityState={{ disabled: !selectedInterests.length }} disabled={!selectedInterests.length} onPress={beginSearch} style={({ pressed }) => [styles.matchButton, !selectedInterests.length && styles.matchButtonDisabled, pressed && styles.pressed]}><Text style={[styles.matchButtonText, !selectedInterests.length && styles.matchButtonTextDisabled]}>FIND MY PEOPLE</Text><Text style={[styles.matchArrow, !selectedInterests.length && styles.matchButtonTextDisabled]}>↗</Text></Pressable>
         )}
       </View>
 
@@ -335,7 +336,7 @@ export default function QuickChatScreen() {
 
       <View style={styles.callSection}>
         <View style={styles.callHeader}>
-          <View style={{ flex: 1 }}><Text style={styles.sectionTitle}>More of a call person?</Text><Text style={styles.sectionMeta}>{isAvailable ? 'You’re available for a hello.' : 'Make yourself available for voice calls.'}</Text></View>
+          <View style={{ flex: 1 }}><Text style={styles.sectionTitle}>02 / GO OFF SCRIPT</Text><Text style={styles.sectionMeta}>{isAvailable ? 'You’re available for a hello.' : 'Make yourself available for voice calls.'}</Text></View>
           <Pressable accessibilityLabel="Available for voice calls" accessibilityRole="switch" accessibilityState={{ checked: isAvailable, disabled: isAvailabilityBusy }} disabled={isAvailabilityBusy} onPress={() => void setAvailable(!isAvailable)} style={[styles.availabilityToggle, isAvailable && styles.availabilityToggleOn]}><View style={[styles.toggleKnob, isAvailable && styles.toggleKnobOn]} /></Pressable>
         </View>
         {callersLoading ? <ActivityIndicator color={colors.accent} style={styles.loading} /> : null}
@@ -350,33 +351,33 @@ export default function QuickChatScreen() {
         ) : null}
         {!callersLoading && !availableCallers.length ? <View style={styles.emptyCalls}><View style={styles.emptyCallsIcon}><Text style={styles.emptyCallsGlyph}>⌁</Text></View><View style={{ flex: 1 }}><Text style={styles.emptyCallsTitle}>A little quiet right now</Text><Text style={styles.emptyCallsCopy}>Open calls will appear here when people are available.</Text></View></View> : null}
       </View>
-      <Pressable accessibilityRole="button" onPress={() => router.push('/(tabs)/clubs')} style={({ pressed }) => [styles.clubsLink, pressed && styles.pressed]}><View style={{ flex: 1 }}><Text style={styles.clubsLinkTitle}>Good company, shared interests.</Text><Text style={styles.clubsLinkCopy}>Find a community that feels like you.</Text></View><Text style={styles.clubsArrow}>↗</Text></Pressable>
+      <Pressable accessibilityRole="button" onPress={() => router.push('/(tabs)/clubs')} style={({ pressed }) => [styles.clubsLink, pressed && styles.pressed]}><View style={{ flex: 1 }}><Text style={styles.clubsLinkTitle}>Find your little corner of the world.</Text><Text style={styles.clubsLinkCopy}>EXPLORE CLUBS</Text></View><Text style={styles.clubsArrow}>↗</Text></Pressable>
     </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  topBar: { alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between' },
-  hero: { marginBottom: 24, marginTop: 26, position: 'relative' },
-  heroEyebrow: { color: colors.textSubtle, fontSize: 10, fontWeight: '700', letterSpacing: 1.1 },
-  heroTitle: { color: colors.text, fontSize: 38, fontWeight: '800', letterSpacing: -1.6, lineHeight: 42, marginTop: 12 },
-  heroAccent: { color: colors.accent },
-  heroArtwork: { position: 'absolute', right: -58, top: 20, transform: [{ scale: 0.66 }] },
-  heroCopy: { color: colors.textMuted, fontSize: 13, lineHeight: 20, marginTop: 14 },
-  matchCard: { backgroundColor: colors.surface, borderColor: colors.border, borderRadius: 26, borderWidth: 1, padding: 18 },
+  topBar: { alignItems: 'center', borderBottomColor: colors.primary, borderBottomWidth: 1.5, flexDirection: 'row', justifyContent: 'space-between', paddingBottom: 10 },
+  hero: { marginBottom: 14, marginTop: 14 },
+  heroEyebrow: { color: colors.textMuted, fontSize: 9, fontWeight: '700', letterSpacing: 1.4 },
+  heroTitle: { color: colors.text, fontFamily: fonts.display, fontSize: 56, letterSpacing: -1, lineHeight: 55, marginTop: 8 },
+  heroAccent: { color: colors.accent, fontFamily: fonts.italic, fontSize: 58, letterSpacing: -1, lineHeight: 60 },
+  heroArtwork: { marginTop: 10, borderColor: colors.borderStrong, borderTopWidth: 1, borderBottomWidth: 1, overflow: 'hidden' },
+  heroCopy: { color: colors.textMuted, fontSize: 12, lineHeight: 19, marginTop: 8 },
+  matchCard: { borderTopWidth: 1.5, borderTopColor: colors.primary, paddingTop: 18 },
   matchHeader: { alignItems: 'center', flexDirection: 'row', flexWrap: 'wrap', gap: 8, justifyContent: 'space-between' },
-  cardTitle: { color: colors.text, fontSize: 22, fontWeight: '800', letterSpacing: -0.6 },
-  cardCopy: { color: colors.textMuted, fontSize: 13, lineHeight: 20, marginTop: 7 },
+  cardTitle: { color: colors.text, fontFamily: fonts.display, fontSize: 25, letterSpacing: 0.3 },
+  cardCopy: { color: colors.textMuted, fontSize: 12, lineHeight: 19, marginTop: 6 },
   matchingBadge: { alignItems: 'center', flexDirection: 'row', gap: 5 },
   matchingDot: { backgroundColor: colors.success, borderRadius: 4, height: 6, width: 6 },
   matchingDotEmpty: { backgroundColor: colors.textSubtle },
-  matchingText: { color: colors.textMuted, fontSize: 10, fontWeight: '600' },
-  quickPicks: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginVertical: 18 },
-  interestChip: { alignItems: 'center', backgroundColor: colors.surfaceSoft, borderColor: colors.borderStrong, borderRadius: radius.pill, borderWidth: 1, justifyContent: 'center', minHeight: 44, paddingHorizontal: 13 },
-  interestChipSelected: { backgroundColor: colors.cobaltSoft, borderColor: colors.cobalt },
-  interestChipText: { color: colors.textMuted, fontSize: 13, fontWeight: '600' },
-  interestChipTextSelected: { color: '#D4CAFF', fontSize: 13, fontWeight: '700' },
-  customInterest: { alignItems: 'center', backgroundColor: colors.backgroundRaised, borderColor: colors.border, borderRadius: 14, borderWidth: 1, flexDirection: 'row', paddingHorizontal: 12 },
+  matchingText: { color: colors.textSubtle, fontSize: 9, fontWeight: '500' },
+  quickPicks: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginVertical: 16 },
+  interestChip: { alignItems: 'center', borderColor: colors.borderStrong, borderRadius: 4, borderWidth: 1, justifyContent: 'center', minHeight: 44, paddingHorizontal: 14 },
+  interestChipSelected: { backgroundColor: colors.primary, borderColor: colors.primary },
+  interestChipText: { color: colors.text, fontSize: 12, fontWeight: '500' },
+  interestChipTextSelected: { color: colors.primaryInk, fontSize: 12, fontWeight: '700' },
+  customInterest: { alignItems: 'center', borderColor: colors.borderStrong, borderBottomWidth: 1, flexDirection: 'row', paddingHorizontal: 2 },
   searchGlyph: { color: colors.textSubtle, fontSize: 25, marginRight: 8 },
   interestInput: { color: colors.text, flex: 1, fontSize: 13, minHeight: 48, paddingVertical: 10 },
   addInterestButton: { alignItems: 'center', height: 44, justifyContent: 'center', width: 32 },
@@ -386,42 +387,42 @@ const styles = StyleSheet.create({
   suggestionText: { color: colors.text, flex: 1, fontSize: 14 },
   suggestionAction: { color: colors.cobalt, fontSize: 12, fontWeight: '700' },
   selectedChips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 12 },
-  selectedChip: { backgroundColor: colors.cobaltSoft, borderColor: colors.cobalt, borderRadius: radius.pill, borderWidth: 1, justifyContent: 'center', minHeight: 44, paddingHorizontal: 12 },
+  selectedChip: { backgroundColor: colors.primary, borderColor: colors.primary, borderRadius: 4, borderWidth: 1, justifyContent: 'center', minHeight: 44, paddingHorizontal: 12 },
   selectionMeta: { alignItems: 'center', flexDirection: 'row', flexWrap: 'wrap', gap: 8, justifyContent: 'space-between', marginBottom: 12, marginTop: 14 },
   selectionCopy: { color: colors.textSubtle, fontSize: 11 },
   privateLabel: { color: colors.textSubtle, fontSize: 11 },
-  matchButton: { alignItems: 'center', backgroundColor: colors.accent, borderRadius: 16, flexDirection: 'row', justifyContent: 'center', minHeight: 56, paddingHorizontal: 20 },
+  matchButton: { alignItems: 'center', backgroundColor: colors.accentSolid, borderRadius: 4, flexDirection: 'row', justifyContent: 'center', minHeight: 58, paddingHorizontal: 20 },
   matchButtonDisabled: { backgroundColor: colors.surfaceRaised },
-  matchButtonText: { color: colors.primary, fontSize: 17, fontWeight: '800', letterSpacing: -0.3 },
+  matchButtonText: { color: colors.white, fontFamily: fonts.display, fontSize: 25, letterSpacing: 0.8 },
   matchButtonTextDisabled: { color: colors.textSubtle },
-  matchArrow: { color: colors.primary, fontSize: 24, position: 'absolute', right: 18 },
-  cancelButton: { alignItems: 'center', backgroundColor: colors.accentSoft, borderColor: colors.accent, borderRadius: 16, borderWidth: 1, flexDirection: 'row', gap: 10, justifyContent: 'center', minHeight: 56 },
+  matchArrow: { color: colors.white, fontSize: 25, position: 'absolute', right: 18 },
+  cancelButton: { alignItems: 'center', backgroundColor: colors.accentSoft, borderColor: colors.accent, borderRadius: 8, borderWidth: 1, flexDirection: 'row', gap: 10, justifyContent: 'center', minHeight: 56 },
   cancelText: { color: colors.accent, fontSize: 14, fontWeight: '700' },
   disabled: { opacity: 0.4 },
   pressed: { opacity: 0.8, transform: [{ scale: 0.98 }] },
-  callSection: { marginTop: 28 },
+  callSection: { borderTopColor: colors.primary, borderTopWidth: 1.5, marginTop: 28, paddingTop: 20 },
   callHeader: { alignItems: 'center', flexDirection: 'row', gap: 12, justifyContent: 'space-between' },
-  sectionTitle: { color: colors.text, fontSize: 19, fontWeight: '800', letterSpacing: -0.4 },
+  sectionTitle: { color: colors.text, fontFamily: fonts.display, fontSize: 26, letterSpacing: 0.3 },
   sectionMeta: { color: colors.textSubtle, fontSize: 12, lineHeight: 18, marginTop: 5 },
-  availabilityToggle: { backgroundColor: colors.surfaceRaised, borderRadius: 22, height: 44, justifyContent: 'center', paddingHorizontal: 5, width: 62 },
-  availabilityToggleOn: { backgroundColor: colors.signal },
-  toggleKnob: { backgroundColor: colors.textSubtle, borderRadius: 16, height: 32, width: 32 },
-  toggleKnobOn: { backgroundColor: colors.primary, transform: [{ translateX: 20 }] },
+  availabilityToggle: { backgroundColor: colors.surfaceRaised, borderColor: colors.borderStrong, borderWidth: 1, borderRadius: 22, height: 36, justifyContent: 'center', paddingHorizontal: 4, width: 58 },
+  availabilityToggleOn: { backgroundColor: colors.primary, borderColor: colors.primary },
+  toggleKnob: { backgroundColor: colors.textSubtle, borderRadius: 14, height: 26, width: 26 },
+  toggleKnobOn: { backgroundColor: colors.black, transform: [{ translateX: 22 }] },
   loading: { height: 96 },
   callersScroller: { marginTop: 16, marginHorizontal: -22 },
   callerCards: { gap: 10, paddingHorizontal: 22 },
-  callerCard: { alignItems: 'center', backgroundColor: colors.surface, borderColor: colors.border, borderRadius: 22, borderWidth: 1, padding: 14, width: 110 },
+  callerCard: { alignItems: 'center', backgroundColor: colors.surface, borderColor: colors.border, borderRadius: 8, borderWidth: 1, padding: 14, width: 110 },
   callerDot: { backgroundColor: colors.success, borderColor: colors.surface, borderRadius: 7, borderWidth: 3, bottom: 0, height: 14, position: 'absolute', right: 0, width: 14 },
   callerName: { color: colors.text, fontSize: 13, fontWeight: '700', marginTop: 10, maxWidth: '100%' },
   callAction: { color: colors.accent, fontSize: 11, fontWeight: '600', marginTop: 6 },
-  emptyCalls: { alignItems: 'center', backgroundColor: colors.surface, borderRadius: 20, flexDirection: 'row', gap: 12, marginTop: 16, padding: 16 },
-  emptyCallsIcon: { alignItems: 'center', backgroundColor: colors.signalSoft, borderRadius: 16, height: 48, justifyContent: 'center', width: 48 },
-  emptyCallsGlyph: { color: colors.signal, fontSize: 30 },
-  emptyCallsTitle: { color: colors.text, fontSize: 14, fontWeight: '700' },
+  emptyCalls: { alignItems: 'center', flexDirection: 'row', gap: 12, marginTop: 14, paddingVertical: 16 },
+  emptyCallsIcon: { alignItems: 'center', height: 42, justifyContent: 'center', width: 42 },
+  emptyCallsGlyph: { color: colors.accent, fontSize: 42 },
+  emptyCallsTitle: { color: colors.text, fontFamily: fonts.italic, fontSize: 24 },
   emptyCallsCopy: { color: colors.textSubtle, fontSize: 12, lineHeight: 18, marginTop: 4 },
-  clubsLink: { alignItems: 'center', borderColor: colors.border, borderRadius: 20, borderWidth: 1, flexDirection: 'row', gap: 12, marginTop: 16, padding: 18 },
-  clubsLinkTitle: { color: colors.cobalt, fontSize: 14, fontWeight: '700' },
-  clubsLinkCopy: { color: colors.textSubtle, fontSize: 12, lineHeight: 18, marginTop: 4 },
-  clubsArrow: { color: colors.cobalt, fontSize: 24 },
+  clubsLink: { alignItems: 'center', backgroundColor: colors.accentSoft, borderColor: colors.accentSolid, borderWidth: 1, borderRadius: 4, flexDirection: 'row', gap: 12, marginTop: 16, padding: 22 },
+  clubsLinkTitle: { color: colors.white, fontFamily: fonts.italic, fontSize: 29, lineHeight: 32 },
+  clubsLinkCopy: { color: colors.white, fontSize: 9, fontWeight: '700', letterSpacing: 1.5, marginTop: 14 },
+  clubsArrow: { color: colors.white, fontSize: 30 },
   error: { color: colors.danger, fontSize: 13, lineHeight: 20, marginTop: 14 },
 });

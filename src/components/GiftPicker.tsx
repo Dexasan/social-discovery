@@ -1,10 +1,11 @@
+import { Text } from '@/components/Typography';
 import { useCallback, useEffect, useState } from 'react';
-import { ActivityIndicator, Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Modal, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import { GiftArtwork } from '@/components/GiftArtwork';
 import { beginGiftCheckout, formatUsd, giftCheckoutEnabled, loadGiftCatalog, type GiftCatalogItem, type GiftContextKind } from '@/features/gifts/api';
 import { giftPresentation } from '@/features/gifts/presentation';
-import { colors, radius, spacing } from '@/theme/tokens';
+import { colors, fonts, radius, spacing } from '@/theme/tokens';
 
 export function GiftPicker({
   contextId,
@@ -149,42 +150,42 @@ export function GiftPicker({
 const styles = StyleSheet.create({
   modalRoot: { flex: 1, justifyContent: 'flex-end' },
   modalBackdrop: { backgroundColor: 'rgba(3, 4, 8, 0.8)', bottom: 0, left: 0, position: 'absolute', right: 0, top: 0 },
-  giftSheet: { backgroundColor: colors.surface, borderColor: colors.warning, borderTopLeftRadius: 22, borderTopRightRadius: 22, borderTopWidth: 2, gap: spacing.md, maxHeight: '92%', paddingBottom: 30, paddingHorizontal: spacing.lg, paddingTop: spacing.md },
+  giftSheet: { backgroundColor: colors.background, borderColor: colors.primary, borderTopLeftRadius: 12, borderTopRightRadius: 12, borderTopWidth: 1.5, gap: 12, maxHeight: '92%', paddingBottom: 30, paddingHorizontal: 20, paddingTop: 16 },
   sheetHandle: { alignSelf: 'center', backgroundColor: colors.borderStrong, borderRadius: radius.pill, height: 4, width: 44 },
   sheetHeader: { alignItems: 'flex-start', flexDirection: 'row', gap: spacing.md },
   titleBlock: { flex: 1 },
-  eyebrow: { color: colors.warning, fontSize: 9, fontWeight: '900', letterSpacing: 1.4 },
-  title: { color: colors.text, fontSize: 25, fontWeight: '900', letterSpacing: -0.8, lineHeight: 29, marginTop: 3 },
+  eyebrow: { color: colors.warning, fontSize: 10, fontWeight: '900', letterSpacing: 1.4 },
+  title: { color: colors.text, fontFamily: fonts.editorial, fontSize: 33, lineHeight: 37, marginTop: 6 },
   subtitle: { color: colors.textMuted, fontSize: 13, marginTop: 4 },
-  closeButton: { alignItems: 'center', backgroundColor: colors.surfaceRaised, borderColor: colors.border, borderRadius: 20, borderWidth: 1, height: 38, justifyContent: 'center', width: 38 },
+  closeButton: { alignItems: 'center', backgroundColor: colors.surfaceRaised, borderColor: colors.border, borderRadius: 8, borderWidth: 1, height: 38, justifyContent: 'center', width: 38 },
   closeGlyph: { color: colors.text, fontSize: 27, lineHeight: 28 },
   loading: { marginVertical: spacing.xxl },
   giftScroller: { marginHorizontal: -spacing.lg },
   giftRail: { gap: spacing.sm, paddingHorizontal: spacing.lg, paddingVertical: 7 },
-  giftChoice: { alignItems: 'center', backgroundColor: colors.backgroundRaised, borderRadius: 14, borderWidth: 1, gap: 5, padding: spacing.sm, shadowOffset: { height: 4, width: 4 }, shadowOpacity: 0.3, shadowRadius: 0, width: 116 },
+  giftChoice: { alignItems: 'center', backgroundColor: colors.surface, borderRadius: 3, borderWidth: 1, gap: 8, padding: 12, width: 126 },
   giftName: { color: colors.text, fontSize: 12, fontWeight: '900', maxWidth: 100 },
   price: { fontSize: 14, fontWeight: '900' },
-  seasonTag: { color: colors.textSubtle, fontSize: 7, fontWeight: '900', letterSpacing: 1 },
-  preview: { alignItems: 'center', backgroundColor: colors.backgroundRaised, borderRadius: 15, borderWidth: 2, flexDirection: 'row', gap: spacing.md, padding: spacing.md },
+  seasonTag: { color: colors.textSubtle, fontSize: 10, fontWeight: '900', letterSpacing: 1 },
+  preview: { alignItems: 'center', backgroundColor: colors.surface, borderRadius: 3, borderWidth: 1, flexDirection: 'row', gap: 12, padding: 16 },
   previewCopy: { flex: 1 },
-  giftLabel: { fontSize: 8, fontWeight: '900', letterSpacing: 1.2 },
-  previewTitle: { color: colors.text, fontSize: 21, fontWeight: '900', letterSpacing: -0.5, marginTop: 2 },
+  giftLabel: { fontSize: 10, fontWeight: '900', letterSpacing: 1.2 },
+  previewTitle: { fontFamily: fonts.display, color: colors.text, fontSize: 21, fontWeight: '900', letterSpacing: -0.5, marginTop: 2 },
   tagline: { color: colors.textMuted, fontSize: 11, lineHeight: 15, marginTop: 2 },
   splitRow: { alignItems: 'center', flexDirection: 'row', gap: spacing.sm, marginTop: spacing.md },
   splitCell: { backgroundColor: colors.surfaceRaised, borderColor: colors.border, borderRadius: 8, borderWidth: 1, minWidth: 75, paddingHorizontal: 8, paddingVertical: 6 },
   splitValue: { color: colors.text, fontSize: 15, fontWeight: '900' },
   earning: { color: colors.signal },
-  splitLabel: { color: colors.textSubtle, fontSize: 7, fontWeight: '900', letterSpacing: 0.8, marginTop: 1 },
+  splitLabel: { color: colors.textSubtle, fontSize: 10, fontWeight: '900', letterSpacing: 0.8, marginTop: 1 },
   arrow: { color: colors.warning, fontSize: 17, fontWeight: '900' },
   bonus: { color: colors.signal, fontSize: 10, fontWeight: '800', lineHeight: 14, marginTop: spacing.sm },
   betaNote: { backgroundColor: colors.surfaceRaised, borderColor: colors.border, borderRadius: 8, borderStyle: 'dashed', borderWidth: 1, marginTop: spacing.md, padding: spacing.sm },
-  betaNoteTitle: { color: colors.warning, fontSize: 8, fontWeight: '900', letterSpacing: 0.8 },
+  betaNoteTitle: { color: colors.warning, fontSize: 10, fontWeight: '900', letterSpacing: 0.8 },
   betaNoteCopy: { color: colors.textMuted, fontSize: 10, lineHeight: 14, marginTop: 3 },
   errorBox: { backgroundColor: colors.dangerSoft, borderColor: colors.danger, borderRadius: 8, borderWidth: 1, padding: spacing.sm },
   error: { color: colors.text, fontSize: 11, lineHeight: 16, textAlign: 'center' },
   sendButton: { alignItems: 'center', backgroundColor: colors.signal, borderColor: colors.black, borderRadius: 11, borderWidth: 2, justifyContent: 'center', minHeight: 54, shadowColor: colors.warning, shadowOffset: { height: 4, width: 4 }, shadowOpacity: 1, shadowRadius: 0 },
   sendButtonDisabled: { backgroundColor: colors.surfaceRaised, shadowOpacity: 0 },
-  sendLabel: { color: colors.black, fontSize: 12, fontWeight: '900', letterSpacing: 0.5 },
+  sendLabel: { color: colors.primaryInk, fontSize: 12, fontWeight: '700', letterSpacing: 0.5 },
   sendLabelDisabled: { color: colors.textMuted },
   footnote: { color: colors.textSubtle, fontSize: 10, lineHeight: 15, textAlign: 'center' },
 });

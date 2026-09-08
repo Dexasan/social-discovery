@@ -1,7 +1,8 @@
+import { Text } from '@/components/Typography';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { router } from 'expo-router';
 import { PropsWithChildren, createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
-import { ActivityIndicator, AppState, Modal, Pressable, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, AppState, Modal, Pressable, StyleSheet, View } from 'react-native';
 
 import { Avatar } from '@/components/ui';
 import { useSession } from '@/context/SessionContext';
@@ -15,7 +16,7 @@ import {
   type CallPartner,
   type DirectCall,
 } from '@/features/calls/api';
-import { colors, radius, shadows, spacing } from '@/theme/tokens';
+import { colors, fonts, radius, shadows, spacing } from '@/theme/tokens';
 
 const availabilityPreferenceKey = 'yappie:available-for-calls';
 
@@ -247,15 +248,15 @@ const styles = StyleSheet.create({
   liveBadge: { alignItems: 'center', backgroundColor: colors.signalSoft, borderRadius: radius.pill, flexDirection: 'row', gap: 8, marginBottom: spacing.sm, paddingHorizontal: 13, paddingVertical: 8 },
   liveDot: { backgroundColor: colors.success, borderRadius: 5, height: 9, width: 9 },
   liveText: { color: colors.success, fontSize: 13, fontWeight: '900', letterSpacing: 0.6, textTransform: 'uppercase' },
-  callerName: { color: colors.text, fontSize: 30, fontWeight: '900', letterSpacing: -1, marginTop: spacing.xs },
+  callerName: { fontFamily: fonts.display, color: colors.text, fontSize: 30, fontWeight: '900', letterSpacing: -1, marginTop: spacing.xs },
   callerMeta: { color: colors.textMuted, fontSize: 15, textAlign: 'center' },
   privateNote: { color: colors.textSubtle, fontSize: 13, marginBottom: spacing.md, textAlign: 'center' },
   answerRow: { flexDirection: 'row', gap: spacing.lg, width: '100%' },
-  answerButton: { alignItems: 'center', borderRadius: 22, flex: 1, gap: 4, justifyContent: 'center', minHeight: 76 },
-  declineButton: { backgroundColor: colors.dangerSoft, borderColor: '#603128', borderWidth: 1 },
+  answerButton: { alignItems: 'center', borderRadius: 8, flex: 1, gap: 4, justifyContent: 'center', minHeight: 76 },
+  declineButton: { backgroundColor: colors.dangerSoft, borderColor: colors.border, borderWidth: 1 },
   acceptButton: { backgroundColor: colors.signal },
   answerGlyph: { color: colors.danger, fontSize: 28, fontWeight: '900', lineHeight: 30 },
-  acceptGlyph: { color: colors.primary, transform: [{ rotate: '-45deg' }] },
+  acceptGlyph: { color: colors.primaryInk, transform: [{ rotate: '-45deg' }] },
   answerLabel: { color: colors.danger, fontSize: 14, fontWeight: '900' },
-  acceptLabel: { color: colors.primary },
+  acceptLabel: { color: colors.primaryInk },
 });

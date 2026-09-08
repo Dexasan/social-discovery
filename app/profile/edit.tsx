@@ -1,12 +1,13 @@
+import { Text, TextInput } from '@/components/Typography';
 import { useMemo, useState } from 'react';
 import { router } from 'expo-router';
-import { ActivityIndicator, Alert, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { ActivityIndicator, Alert, Pressable, StyleSheet, View } from 'react-native';
 
 import { Avatar, Card, Eyebrow, Heading, Muted, PrimaryButton, Screen } from '@/components/ui';
 import { useSession } from '@/context/SessionContext';
 import { isHandleAvailable, updateOwnProfile } from '@/features/social/api';
 import { chooseAndUploadAvatar, removeAvatar } from '@/features/profile/avatar';
-import { colors, radius, spacing } from '@/theme/tokens';
+import { colors, fonts, radius, spacing } from '@/theme/tokens';
 
 const languageOptions = ['English', 'Spanish', 'German', 'Italian', 'French', 'Portuguese', 'Hindi', 'Arabic', 'Nepali', 'Japanese'];
 
@@ -257,9 +258,9 @@ const styles = StyleSheet.create({
   avatarPreview: { alignItems: 'center', backgroundColor: colors.surfaceSoft, borderColor: colors.border, borderRadius: radius.lg, borderWidth: 1, flexDirection: 'row', gap: spacing.lg, marginBottom: spacing.lg, padding: spacing.lg },
   avatarAction: { position: 'relative' },
   avatarEditBadge: { alignItems: 'center', backgroundColor: colors.signal, borderColor: colors.surfaceSoft, borderRadius: 17, borderWidth: 3, bottom: -2, height: 34, justifyContent: 'center', position: 'absolute', right: -2, width: 34 },
-  avatarEditGlyph: { color: colors.primary, fontSize: 23, fontWeight: '900', lineHeight: 25 },
+  avatarEditGlyph: { color: colors.black, fontSize: 23, fontWeight: '900', lineHeight: 25 },
   avatarCopy: { flex: 1, gap: 2 },
-  previewName: { color: colors.text, fontSize: 20, fontWeight: '900', letterSpacing: -0.45 },
+  previewName: { fontFamily: fonts.display, color: colors.text, fontSize: 20, fontWeight: '900', letterSpacing: -0.45 },
   previewHandle: { color: colors.link, fontSize: 13, fontWeight: '800', marginBottom: spacing.xs },
   photoAction: { color: colors.signal, fontSize: 14, fontWeight: '900', marginTop: 3 },
   removePhoto: { color: colors.danger, fontSize: 13, fontWeight: '800', marginTop: 3 },
@@ -278,7 +279,7 @@ const styles = StyleSheet.create({
   handleAvailable: { color: colors.success, fontWeight: '800' },
   languages: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
   choice: { backgroundColor: colors.surfaceRaised, borderColor: colors.border, borderRadius: radius.pill, borderWidth: 1, paddingHorizontal: spacing.md, paddingVertical: 9 },
-  choiceSelected: { backgroundColor: colors.cobaltSoft, borderColor: '#34458F' },
+  choiceSelected: { backgroundColor: colors.cobaltSoft, borderColor: colors.border },
   choiceDisabled: { opacity: 0.4 },
   choiceText: { color: colors.textMuted, fontSize: 13, fontWeight: '700' },
   choiceTextSelected: { color: colors.link },

@@ -1,6 +1,7 @@
+import { Text, TextInput } from '@/components/Typography';
 import { useEffect, useState } from 'react';
 import { router } from 'expo-router';
-import { ActivityIndicator, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { ActivityIndicator, Pressable, StyleSheet, View } from 'react-native';
 
 import { Avatar, EmptyState, Eyebrow, Heading, Muted, Pill, Screen } from '@/components/ui';
 import { searchMessageProfiles, type MessageProfile } from '@/features/messages/api';

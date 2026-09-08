@@ -1,6 +1,7 @@
+import { Text, TextInput } from '@/components/Typography';
 import { useEffect, useRef, useState } from 'react';
 import { router, useLocalSearchParams } from 'expo-router';
-import { Alert, FlatList, KeyboardAvoidingView, Platform, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Alert, FlatList, KeyboardAvoidingView, Platform, Pressable, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { GiftPicker } from '@/components/GiftPicker';
@@ -18,7 +19,7 @@ import {
   loadPublicProfile,
   type Message,
 } from '@/features/quick-chat/api';
-import { colors, radius, spacing } from '@/theme/tokens';
+import { colors, spacing } from '@/theme/tokens';
 
 function first(value: string | string[] | undefined) {
   return Array.isArray(value) ? value[0] : value;
@@ -208,17 +209,17 @@ const styles = StyleSheet.create({
   block: { color: colors.danger, fontSize: 14, fontWeight: '800' },
   messages: { flexGrow: 1, gap: spacing.sm, justifyContent: 'flex-end', padding: spacing.lg },
   empty: { color: colors.textMuted, fontSize: 13, marginBottom: spacing.xl, textAlign: 'center' },
-  bubble: { borderRadius: 22, maxWidth: '82%', paddingHorizontal: 18, paddingVertical: 13 },
-  ownBubble: { alignSelf: 'flex-end', backgroundColor: colors.cobalt, borderBottomRightRadius: 6 },
-  theirBubble: { alignSelf: 'flex-start', backgroundColor: colors.surfaceSoft, borderBottomLeftRadius: 6 },
+  bubble: { borderRadius: 14, maxWidth: '82%', paddingHorizontal: 18, paddingVertical: 13 },
+  ownBubble: { alignSelf: 'flex-end', backgroundColor: colors.primary, borderBottomRightRadius: 2 },
+  theirBubble: { alignSelf: 'flex-start', backgroundColor: colors.surface, borderColor: colors.border, borderWidth: 1, borderBottomLeftRadius: 2 },
   messageText: { color: colors.text, fontSize: 16, lineHeight: 24 },
-  ownMessageText: { color: colors.primary },
+  ownMessageText: { color: colors.primaryInk },
   error: { color: colors.danger, fontSize: 12, paddingHorizontal: spacing.lg, paddingVertical: spacing.sm, textAlign: 'center' },
   composer: { alignItems: 'flex-end', backgroundColor: colors.background, borderTopColor: colors.border, borderTopWidth: StyleSheet.hairlineWidth, flexDirection: 'row', gap: 8, padding: 12 },
-  giftButton: { alignItems: 'center', backgroundColor: colors.surface, borderRadius: 16, height: 48, justifyContent: 'center', width: 44 },
-  giftLabBadge: { backgroundColor: colors.warning, borderColor: colors.black, borderRadius: 5, borderWidth: 1, color: colors.black, fontSize: 6, fontWeight: '900', letterSpacing: 0.5, paddingHorizontal: 4, paddingVertical: 2, position: 'absolute', right: -3, top: -5 },
-  input: { backgroundColor: colors.surface, borderColor: colors.border, borderRadius: 22, borderWidth: 1, color: colors.text, flex: 1, fontSize: 15, maxHeight: 132, minHeight: 48, paddingHorizontal: 16, paddingVertical: 12 },
-  sendButton: { alignItems: 'center', backgroundColor: colors.accent, borderRadius: 18, height: 48, justifyContent: 'center', width: 48 },
+  giftButton: { alignItems: 'center', backgroundColor: colors.surface, borderRadius: 8, height: 48, justifyContent: 'center', width: 44 },
+  giftLabBadge: { backgroundColor: colors.warningSoft, borderColor: colors.borderStrong, borderRadius: 5, borderWidth: 1, color: colors.warning, fontSize: 6, fontWeight: '900', letterSpacing: 0.5, paddingHorizontal: 4, paddingVertical: 2, position: 'absolute', right: -3, top: -5 },
+  input: { backgroundColor: colors.surface, borderColor: colors.border, borderRadius: 8, borderWidth: 1, color: colors.text, flex: 1, fontSize: 15, maxHeight: 132, minHeight: 48, paddingHorizontal: 16, paddingVertical: 12 },
+  sendButton: { alignItems: 'center', backgroundColor: colors.accent, borderRadius: 8, height: 48, justifyContent: 'center', width: 48 },
   sendDisabled: { opacity: 0.4 },
-  sendLabel: { color: colors.primary, fontSize: 24, fontWeight: '800' },
+  sendLabel: { color: colors.primaryInk, fontSize: 24, fontWeight: '800' },
 });

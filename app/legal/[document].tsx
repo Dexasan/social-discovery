@@ -1,5 +1,6 @@
+import { Text } from '@/components/Typography';
 import { router, useLocalSearchParams } from 'expo-router';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 
 import { Card, Eyebrow, Heading, Muted, Screen } from '@/components/ui';
 import { colors, radius, spacing } from '@/theme/tokens';

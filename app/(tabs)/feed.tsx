@@ -1,11 +1,12 @@
+import { Text, TextInput } from '@/components/Typography';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { router, useFocusEffect } from 'expo-router';
-import { ActivityIndicator, Animated, AppState, PanResponder, Pressable, RefreshControl, Share, StyleSheet, Text, TextInput, View } from 'react-native';
+import { ActivityIndicator, Animated, AppState, PanResponder, Pressable, RefreshControl, Share, StyleSheet, View } from 'react-native';
 
 import { Avatar, EmptyState, RetroHeader, Screen, SkeletonRows } from '@/components/ui';
 import { useSession } from '@/context/SessionContext';
 import { createPost, loadFeed, loadFollowingFeed, setPostLiked, subscribeToNewPosts, type FeedPost } from '@/features/feed/api';
-import { colors, radius, spacing } from '@/theme/tokens';
+import { colors, fonts, radius, spacing } from '@/theme/tokens';
 
 type FeedMode = 'global' | 'following';
 
@@ -318,37 +319,37 @@ const styles = StyleSheet.create({
   handle: { color: colors.textSubtle, fontSize: 12, marginTop: 3 },
   actionPressed: { transform: [{ scale: 0.9 }] },
   shareGlyph: { color: colors.textSubtle, fontSize: 23 },
-  newPostsButton: { alignSelf: 'center', backgroundColor: colors.cobaltSoft, borderRadius: 22, marginTop: 10, paddingHorizontal: 18, paddingVertical: 14 },
+  newPostsButton: { alignSelf: 'center', backgroundColor: colors.cobaltSoft, borderRadius: 8, marginTop: 10, paddingHorizontal: 18, paddingVertical: 14 },
   newPostsLabel: { color: colors.cobalt, fontSize: 12, fontWeight: '700' },
   feedPane: { width: '100%' },
-  topBar: { backgroundColor: colors.surface, borderRadius: 16, marginBottom: 8, marginTop: 22, paddingHorizontal: 5, paddingVertical: 5 },
+  topBar: { borderBottomColor: colors.borderStrong, borderBottomWidth: 1, marginBottom: 8, marginTop: 12 },
   feedModeRow: { flexDirection: 'row', gap: 6 },
-  feedModeButton: { borderRadius: 12, flex: 1, paddingVertical: 12, paddingHorizontal: 8 },
-  feedModeSelected: { backgroundColor: colors.surfaceRaised },
-  feedModeLabel: { color: colors.textSubtle, fontSize: 14, fontWeight: '600', textAlign: 'center' },
-  feedModeLabelSelected: { color: colors.text },
-  composer: { alignItems: 'flex-start', backgroundColor: colors.surface, borderColor: colors.border, borderRadius: 20, borderWidth: 1, flexDirection: 'row', gap: 12, marginTop: 10, padding: 14 },
+  feedModeButton: { flex: 1, borderBottomWidth: 3, borderBottomColor: 'transparent', paddingVertical: 14, paddingHorizontal: 8 },
+  feedModeSelected: { borderBottomColor: colors.accent },
+  feedModeLabel: { color: colors.textSubtle, fontSize: 12, fontWeight: '700', letterSpacing: 1, textTransform: 'uppercase', textAlign: 'center' },
+  feedModeLabelSelected: { color: colors.accent },
+  composer: { alignItems: 'flex-start', borderBottomColor: colors.borderStrong, borderBottomWidth: 1, flexDirection: 'row', gap: 12, paddingVertical: 18 },
   composerOpen: { paddingBottom: spacing.lg },
   composerMain: { flex: 1, gap: spacing.md },
-  composeInput: { color: colors.text, fontSize: 16, lineHeight: 22, minHeight: 40, paddingHorizontal: 0, paddingTop: 8, textAlignVertical: 'top' },
+  composeInput: { color: colors.text, fontFamily: fonts.italic, fontSize: 25, lineHeight: 30, minHeight: 40, paddingHorizontal: 0, paddingTop: 5, textAlignVertical: 'top' },
   composeInputOpen: { minHeight: 74 },
   publishRow: { alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between' },
   counter: { color: colors.textSubtle, fontSize: 12 },
-  publishButton: { backgroundColor: colors.accent, borderRadius: radius.pill, paddingHorizontal: 22, paddingVertical: 12 },
-  publishLabel: { color: colors.primary, fontSize: 14, fontWeight: '900' },
+  publishButton: { backgroundColor: colors.primary, borderRadius: 4, paddingHorizontal: 24, paddingVertical: 12 },
+  publishLabel: { color: colors.primaryInk, fontSize: 12, fontWeight: '700', letterSpacing: 1, textTransform: 'uppercase' },
   disabled: { opacity: 0.4 },
   loading: { marginVertical: spacing.xl },
   error: { color: colors.danger, fontSize: 14, lineHeight: 21, marginTop: spacing.md, textAlign: 'center' },
   retryButton: { alignItems: 'center', alignSelf: 'center', backgroundColor: colors.primary, borderRadius: radius.md, marginTop: spacing.lg, paddingHorizontal: spacing.xl, paddingVertical: spacing.md },
-  retryLabel: { color: colors.white, fontSize: 15, fontWeight: '900' },
-  timeline: { gap: 12, marginTop: 18 },
-  post: { alignItems: 'flex-start', backgroundColor: colors.surface, borderColor: colors.border, borderRadius: 22, borderWidth: 1, flexDirection: 'row', gap: 12, padding: 16 },
+  retryLabel: { color: colors.primaryInk, fontSize: 15, fontWeight: '900' },
+  timeline: { gap: 0, marginTop: 6 },
+  post: { alignItems: 'flex-start', borderBottomColor: colors.border, borderBottomWidth: 1, flexDirection: 'row', gap: 12, paddingVertical: 24 },
   postMain: { flex: 1 },
   postTapArea: { borderRadius: 6, minHeight: 42 },
   authorLine: { alignItems: 'center', flexDirection: 'row', gap: 10, justifyContent: 'space-between' },
   name: { color: colors.text, flex: 1, fontSize: 15, fontWeight: '700' },
   meta: { color: colors.textSubtle, fontSize: 12 },
-  postBody: { color: colors.text, fontSize: 16, lineHeight: 25, marginTop: 12 },
+  postBody: { color: colors.text, fontSize: 16, lineHeight: 26, marginTop: 14 },
   actions: { alignItems: 'center', flexDirection: 'row', gap: 20, marginTop: 8 },
   actionButton: { alignItems: 'center', flexDirection: 'row', gap: 7, minHeight: 44, minWidth: 44 },
   actionIcon: { color: colors.textSubtle, fontSize: 24 },

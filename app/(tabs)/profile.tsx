@@ -1,5 +1,6 @@
+import { Text } from '@/components/Typography';
 import { useCallback, useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 import { router, useFocusEffect } from 'expo-router';
 import type { Href } from 'expo-router';
 
@@ -9,7 +10,7 @@ import { useSession } from '@/context/SessionContext';
 import { formatUsd, giftCheckoutEnabled, loadEarningsWallet, loadProfileGifts, type EarningsWallet, type ProfileGift } from '@/features/gifts/api';
 import { loadOwnSocialStats, type SocialStats } from '@/features/social/api';
 import { isSupabaseConfigured } from '@/lib/supabase';
-import { colors, radius, spacing } from '@/theme/tokens';
+import { colors, fonts, radius, spacing } from '@/theme/tokens';
 
 function formatDate(value: string | null | undefined, includeDay = true) {
   if (!value) return 'Not set';
@@ -149,50 +150,50 @@ export default function ProfileScreen() {
 }
 
 const styles = StyleSheet.create({
-  cover: { backgroundColor: colors.cobaltSoft, height: 105, left: 0, position: 'absolute', right: 0, top: 0, overflow: 'hidden' },
-  coverCircle: { borderColor: '#514471', borderRadius: 100, borderWidth: 20, height: 180, position: 'absolute', right: -32, top: -85, width: 180 },
-  coverOrbit: { borderColor: '#514471', borderRadius: 100, borderWidth: 1, height: 150, left: -28, position: 'absolute', top: 32, transform: [{ rotate: '-30deg' }], width: 230 },
-  profileHeader: { alignItems: 'center', backgroundColor: colors.surface, borderColor: colors.border, borderRadius: 28, borderWidth: 1, marginTop: 22, overflow: 'hidden', padding: 24, position: 'relative' },
+  cover: { backgroundColor: colors.accentSolid, height: 108, left: 0, position: 'absolute', right: 0, top: 0, overflow: 'hidden' },
+  coverCircle: { borderColor: colors.primary, borderRadius: 100, borderWidth: 28, height: 180, position: 'absolute', right: -32, top: -85, width: 180 },
+  coverOrbit: { borderColor: colors.primary, borderRadius: 100, borderWidth: 3, height: 150, left: -28, position: 'absolute', top: 32, transform: [{ rotate: '-30deg' }], width: 230 },
+  profileHeader: { alignItems: 'center', borderBottomColor: colors.primary, borderBottomWidth: 1.5, marginTop: 20, overflow: 'hidden', padding: 24, position: 'relative' },
   avatarFrame: { marginTop: 26, position: 'relative' },
-  profileName: { color: colors.text, fontSize: 30, fontWeight: '800', letterSpacing: -1, marginTop: 16 },
+  profileName: { color: colors.text, fontFamily: fonts.display, fontSize: 46, lineHeight: 50, letterSpacing: -0.5, marginTop: 16, textTransform: 'uppercase' },
   profileHandle: { color: colors.textMuted, fontSize: 14, marginTop: 2 },
-  bio: { color: colors.text, fontSize: 14, lineHeight: 20, marginTop: spacing.sm, maxWidth: 310, textAlign: 'center' },
-  editButton: { alignItems: 'center', backgroundColor: colors.surfaceRaised, borderColor: colors.borderStrong, borderRadius: 14, borderWidth: 1, justifyContent: 'center', marginTop: 18, minHeight: 44, paddingHorizontal: 28 },
+  bio: { color: colors.text, fontFamily: fonts.italic, fontSize: 24, lineHeight: 28, marginTop: 12, maxWidth: 310, textAlign: 'center' },
+  editButton: { alignItems: 'center', borderColor: colors.primary, borderRadius: 3, borderWidth: 1, justifyContent: 'center', marginTop: 18, minHeight: 44, paddingHorizontal: 28 },
   editLabel: { color: colors.text, fontSize: 13, fontWeight: '700' },
-  stats: { alignItems: 'center', backgroundColor: colors.surface, borderColor: colors.border, borderRadius: 22, borderWidth: 1, flexDirection: 'row', marginTop: 12, paddingVertical: 20 },
+  stats: { alignItems: 'center', borderBottomColor: colors.primary, borderBottomWidth: 1.5, flexDirection: 'row', paddingVertical: 20 },
   stat: { alignItems: 'center', flex: 1, gap: 2 },
   statDivider: { backgroundColor: colors.border, height: 27, width: StyleSheet.hairlineWidth },
-  statNumber: { color: colors.text, fontSize: 24, fontWeight: '800', letterSpacing: -0.5 },
+  statNumber: { color: colors.text, fontFamily: fonts.display, fontSize: 36 },
   statLabel: { color: colors.textSubtle, fontSize: 12, fontWeight: '500' },
   metadataGrid: { flexDirection: 'row', flexWrap: 'wrap', columnGap: '4%', rowGap: 12, marginTop: 24 },
-  metadataItem: { backgroundColor: colors.surface, borderColor: colors.border, borderRadius: 20, borderWidth: 1, minHeight: 96, padding: 14, width: '48%' },
+  metadataItem: { borderBottomColor: colors.border, borderBottomWidth: 1, minHeight: 96, paddingVertical: 12, width: '48%' },
   metadataTop: { alignItems: 'center', flexDirection: 'row', gap: spacing.sm },
   metadataLabel: { color: colors.textSubtle, flex: 1, fontSize: 11, fontWeight: '500' },
   metadataValue: { color: colors.text, fontSize: 14, fontWeight: '600', lineHeight: 21, marginTop: 10 },
-  walletStrip: { alignItems: 'center', backgroundColor: colors.cobaltSoft, borderColor: '#443B61', borderRadius: 24, borderWidth: 1, flexDirection: 'row', gap: 12, justifyContent: 'space-between', marginTop: 24, padding: 20 },
+  walletStrip: { alignItems: 'center', backgroundColor: colors.warningSoft, borderColor: colors.primary, borderRadius: 4, borderWidth: 1, flexDirection: 'row', gap: 12, justifyContent: 'space-between', marginTop: 24, padding: 20 },
   walletKicker: { color: colors.cobalt, fontSize: 10, fontWeight: '700', letterSpacing: 1 },
-  walletTitle: { color: colors.text, fontSize: 22, fontWeight: '800', letterSpacing: -0.5, marginTop: 8 },
+  walletTitle: { color: colors.text, fontFamily: fonts.editorial, fontSize: 31, marginTop: 8 },
   walletMeta: { color: colors.textMuted, fontSize: 12, lineHeight: 18, marginTop: 6 },
   giftsSection: { marginTop: spacing.lg },
   giftsHeader: { alignItems: 'flex-end', flexDirection: 'row', justifyContent: 'space-between', marginBottom: spacing.md },
   giftsTitleRow: { alignItems: 'center', flexDirection: 'row', gap: spacing.sm },
-  giftsTitle: { color: colors.text, fontSize: 21, fontWeight: '900', letterSpacing: -0.5 },
+  giftsTitle: { fontFamily: fonts.display, color: colors.text, fontSize: 21, fontWeight: '900', letterSpacing: -0.5 },
   giftsMeta: { color: colors.textSubtle, fontSize: 11, fontWeight: '800', marginTop: 2, textTransform: 'uppercase' },
   giftsLink: { color: colors.warning, fontSize: 13, fontWeight: '900', paddingVertical: spacing.xs },
   giftRow: { flexDirection: 'row', gap: spacing.sm },
-  giftCard: { alignItems: 'center', backgroundColor: colors.surface, borderColor: colors.border, borderRadius: 20, borderWidth: 1, flex: 1, minWidth: 0, paddingHorizontal: 4, paddingVertical: 16 },
+  giftCard: { alignItems: 'center', backgroundColor: colors.surface, borderColor: colors.border, borderRadius: 8, borderWidth: 1, flex: 1, minWidth: 0, paddingHorizontal: 4, paddingVertical: 16 },
   giftName: { color: colors.text, fontSize: 12, fontWeight: '900', marginTop: spacing.xs, maxWidth: '100%' },
   giftSender: { color: colors.textSubtle, fontSize: 10, marginTop: 2, maxWidth: '100%' },
   noGifts: { alignItems: 'center', backgroundColor: colors.surface, borderColor: colors.border, borderRadius: radius.md, borderWidth: 1, flexDirection: 'row', gap: spacing.md, padding: spacing.lg },
   noGiftsEmoji: { color: colors.warning, fontSize: 23 },
   noGiftsText: { color: colors.textMuted, flex: 1, fontSize: 13 },
   utilityRow: { flexDirection: 'row', gap: spacing.md, marginTop: spacing.md },
-  utilityButton: { alignItems: 'center', backgroundColor: colors.surface, borderColor: colors.border, borderRadius: 18, borderWidth: 1, flex: 1, flexDirection: 'row', gap: 8, minHeight: 76, padding: 12 },
+  utilityButton: { alignItems: 'center', backgroundColor: colors.surface, borderColor: colors.border, borderRadius: 8, borderWidth: 1, flex: 1, flexDirection: 'row', gap: 8, minHeight: 76, padding: 12 },
   utilityCopy: { flex: 1 },
   utilityTitle: { color: colors.text, fontSize: 14, fontWeight: '900' },
   utilityMeta: { color: colors.textSubtle, fontSize: 10, marginTop: 3 },
   accountFooter: { alignItems: 'center', borderTopColor: colors.border, borderTopWidth: StyleSheet.hairlineWidth, flexDirection: 'row', gap: spacing.md, justifyContent: 'space-between', marginTop: spacing.lg, paddingTop: spacing.md },
   email: { color: colors.textSubtle, flex: 1, fontSize: 13 },
-  signOutButton: { borderColor: '#603128', borderRadius: radius.pill, borderWidth: 1, paddingHorizontal: spacing.lg, paddingVertical: 10 },
+  signOutButton: { borderColor: colors.border, borderRadius: radius.pill, borderWidth: 1, paddingHorizontal: spacing.lg, paddingVertical: 10 },
   signOutText: { color: colors.danger, fontSize: 13, fontWeight: '900' },
 });

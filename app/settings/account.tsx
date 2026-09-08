@@ -1,10 +1,11 @@
+import { Text, TextInput } from '@/components/Typography';
 import { useState } from 'react';
 import { router } from 'expo-router';
-import { Alert, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Alert, Pressable, StyleSheet, View } from 'react-native';
 
 import { Card, Muted, Pill, PrimaryButton, Screen, SectionHeader } from '@/components/ui';
 import { useSession } from '@/context/SessionContext';
-import { colors, radius, spacing } from '@/theme/tokens';
+import { colors, fonts, radius, spacing } from '@/theme/tokens';
 
 function readableError(error: unknown, fallback: string) {
   if (!(error instanceof Error)) return fallback;
@@ -191,28 +192,28 @@ const styles = StyleSheet.create({
   backGlyph: { color: colors.text, fontSize: 30, fontWeight: '500', lineHeight: 32 },
   topTitle: { color: colors.textMuted, fontSize: 12, fontWeight: '900', letterSpacing: 0.7, textTransform: 'uppercase' },
   topSpacer: { width: 42 },
-  hero: { alignItems: 'center', backgroundColor: colors.surfaceSoft, borderColor: colors.border, borderRadius: radius.xl, borderWidth: 1, gap: spacing.sm, marginTop: spacing.xl, padding: spacing.xl },
+  hero: { alignItems: 'flex-start', borderBottomColor: colors.primary, borderBottomWidth: 1.5, gap: 8, marginTop: 24, paddingBottom: 24 },
   heroIcon: { alignItems: 'center', backgroundColor: colors.primarySoft, borderRadius: radius.pill, height: 62, justifyContent: 'center', marginBottom: spacing.xs, width: 62 },
   heroGlyph: { color: colors.text, fontSize: 24, fontWeight: '900' },
-  heroTitle: { color: colors.text, fontSize: 24, fontWeight: '900', letterSpacing: -0.65 },
-  heroCopy: { maxWidth: 300, textAlign: 'center' },
+  heroTitle: { color: colors.text, fontFamily: fonts.display, fontSize: 42, lineHeight: 46, textTransform: 'uppercase' },
+  heroCopy: { maxWidth: 340, textAlign: 'left' },
   identityCard: { alignItems: 'center', flexDirection: 'row', gap: spacing.md, justifyContent: 'space-between' },
   identityCopy: { flex: 1, gap: 4 },
   label: { color: colors.textSubtle, fontSize: 12, fontWeight: '900', letterSpacing: 0.8 },
   email: { color: colors.text, fontSize: 14, fontWeight: '800' },
-  formCard: { backgroundColor: colors.surfaceSoft, gap: spacing.md },
+  formCard: { backgroundColor: 'transparent', borderWidth: 0, padding: 0, gap: 12 },
   fieldLabel: { color: colors.textMuted, fontSize: 14, fontWeight: '900', marginTop: spacing.xs },
-  input: { backgroundColor: colors.surfaceRaised, borderColor: colors.borderStrong, borderRadius: radius.md, borderWidth: 1, color: colors.text, fontSize: 15, minHeight: 52, paddingHorizontal: spacing.lg },
+  input: { backgroundColor: colors.surface, borderColor: colors.borderStrong, borderRadius: 4, borderWidth: 1, color: colors.text, fontSize: 15, minHeight: 54, paddingHorizontal: 16 },
   error: { color: colors.danger, fontSize: 12.5, lineHeight: 18 },
   notice: { backgroundColor: colors.successSoft, borderRadius: radius.sm, color: colors.success, fontSize: 12.5, lineHeight: 18, padding: spacing.md },
-  dangerCard: { backgroundColor: colors.dangerSoft, borderColor: '#603128', gap: spacing.md },
+  dangerCard: { backgroundColor: colors.dangerSoft, borderColor: colors.border, gap: spacing.md },
   dangerHeadingRow: { alignItems: 'flex-start', flexDirection: 'row', gap: spacing.md },
-  dangerIcon: { alignItems: 'center', backgroundColor: '#5B2C24', borderRadius: radius.md, height: 44, justifyContent: 'center', width: 44 },
+  dangerIcon: { alignItems: 'center', backgroundColor: colors.dangerSoft, borderRadius: radius.md, height: 44, justifyContent: 'center', width: 44 },
   dangerGlyph: { color: colors.danger, fontSize: 20, fontWeight: '900' },
   dangerCopy: { flex: 1, gap: 4 },
   dangerTitle: { color: colors.text, fontSize: 15, fontWeight: '900' },
   deleteButton: { alignItems: 'center', backgroundColor: colors.danger, borderRadius: radius.pill, justifyContent: 'center', minHeight: 50, paddingHorizontal: spacing.lg },
-  deleteLabel: { color: colors.white, fontSize: 13, fontWeight: '900' },
+  deleteLabel: { color: colors.primaryInk, fontSize: 13, fontWeight: '900' },
   disabled: { opacity: 0.38 },
   pressed: { opacity: 0.76, transform: [{ scale: 0.99 }] },
 });

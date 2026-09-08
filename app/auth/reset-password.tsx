@@ -1,6 +1,7 @@
+import { Text, TextInput } from '@/components/Typography';
 import { useState } from 'react';
 import { Redirect, router } from 'expo-router';
-import { StyleSheet, Text, TextInput, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
 import { BrandLockup } from '@/components/Brand';
 import { Card, Eyebrow, Heading, Muted, PrimaryButton, Screen } from '@/components/ui';

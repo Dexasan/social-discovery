@@ -1,5 +1,6 @@
+import { Text } from '@/components/Typography';
 import { useEffect, useRef } from 'react';
-import { Animated, Easing, StyleSheet, Text, View } from 'react-native';
+import { Animated, Easing, StyleSheet, View } from 'react-native';
 
 import { giftPresentation } from '@/features/gifts/presentation';
 

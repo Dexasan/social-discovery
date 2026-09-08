@@ -1,6 +1,7 @@
+import { Text, TextInput } from '@/components/Typography';
 import { useCallback, useEffect, useState } from 'react';
 import { router, useFocusEffect } from 'expo-router';
-import { AppState, Pressable, RefreshControl, StyleSheet, Text, TextInput, View } from 'react-native';
+import { AppState, Pressable, RefreshControl, StyleSheet, View } from 'react-native';
 
 import { Avatar, Card, EmptyState, PrimaryButton, RetroGlyph, RetroHeader, Screen, SkeletonRows } from '@/components/ui';
 import { useSession } from '@/context/SessionContext';
@@ -73,7 +74,7 @@ export default function MessagesScreen() {
       <View style={styles.searchWrap}><Text style={styles.searchGlyph}>⌕</Text><TextInput accessibilityLabel="Search conversations" autoCapitalize="none" onChangeText={setQuery} placeholder="Find a person or a conversation" placeholderTextColor={colors.textSubtle} style={styles.searchInput} value={query} />{query ? <Pressable accessibilityRole="button" accessibilityLabel="Clear conversation search" onPress={() => setQuery('')} style={styles.clearSearch}><Text style={styles.searchGlyph}>×</Text></Pressable> : null}</View>
       <View style={styles.filters}>{[false, true].map((onlyUnread) => <Pressable key={String(onlyUnread)} accessibilityRole="tab" accessibilityState={{ selected: unreadOnly === onlyUnread }} onPress={() => setUnreadOnly(onlyUnread)} style={[styles.filter, unreadOnly === onlyUnread && styles.filterSelected]}><Text style={[styles.filterText, unreadOnly === onlyUnread && styles.filterTextSelected]}>{onlyUnread ? 'Unread' + (totalUnread ? '  ' + totalUnread : '') : 'All messages'}</Text></Pressable>)}</View>
       {loading ? <SkeletonRows count={4} /> : null}
-      {error ? <><Text accessibilityRole="alert" style={styles.error}>{error}</Text><Pressable accessibilityRole="button" onPress={() => void refresh(true)} style={styles.retryButton}><Text style={styles.filterTextSelected}>Try again</Text></Pressable></> : null}
+      {error ? <><Text accessibilityRole="alert" style={styles.error}>{error}</Text><Pressable accessibilityRole="button" onPress={() => void refresh(true)} style={styles.retryButton}><Text style={styles.filterText}>Try again</Text></Pressable></> : null}
       {!loading && !error && conversations.length === 0 ? (
         <EmptyState action={<PrimaryButton label="Meet someone new" onPress={() => router.push('/(tabs)/quick-chat')} />} description="The best conversations don’t have to end. Meet someone, connect, and pick up right here." glyph="⌁" title="Your next favorite conversation" />
       ) : null}
@@ -112,28 +113,28 @@ export default function MessagesScreen() {
 
 const styles = StyleSheet.create({
   searchGlyph: { color: colors.textSubtle, fontSize: 25 },
-  filters: { flexDirection: 'row', gap: 8, marginTop: 16 },
-  filter: { borderRadius: 24, paddingHorizontal: 18, minHeight: 44, justifyContent: 'center', backgroundColor: colors.surface },
-  filterSelected: { backgroundColor: colors.cobaltSoft },
-  filterText: { color: colors.textSubtle, fontSize: 13, fontWeight: '600' },
-  filterTextSelected: { color: colors.cobalt, fontSize: 13, fontWeight: '700' },
+  filters: { flexDirection: 'row', gap: 8, marginTop: 20 },
+  filter: { borderRadius: 3, paddingHorizontal: 18, minHeight: 44, justifyContent: 'center', borderColor: colors.border, borderWidth: 1 },
+  filterSelected: { backgroundColor: colors.primary, borderColor: colors.primary },
+  filterText: { color: colors.textSubtle, fontSize: 11, fontWeight: '700', letterSpacing: 0.6, textTransform: 'uppercase' },
+  filterTextSelected: { color: colors.primaryInk, fontSize: 11, fontWeight: '700', letterSpacing: 0.6, textTransform: 'uppercase' },
   retryButton: { alignSelf: 'center', padding: 16 },
-  searchWrap: { alignItems: 'center', backgroundColor: colors.surface, borderColor: colors.border, borderRadius: 16, borderWidth: 1, flexDirection: 'row', gap: 10, marginTop: 22, paddingHorizontal: 14 },
+  searchWrap: { alignItems: 'center', borderColor: colors.borderStrong, borderBottomWidth: 1, flexDirection: 'row', gap: 10, marginTop: 16, paddingHorizontal: 2 },
   searchInput: { color: colors.text, flex: 1, fontSize: 13, minHeight: 52 },
   clearSearch: { alignItems: 'center', justifyContent: 'center', minHeight: 44, width: 32 },
   loading: { marginVertical: spacing.xl },
   error: { color: colors.danger, fontSize: 14, lineHeight: 21, marginTop: spacing.lg, textAlign: 'center' },
   list: { gap: 4, marginTop: 20 },
-  chat: { alignItems: 'center', backgroundColor: colors.background, borderColor: 'transparent', borderRadius: 20, borderWidth: 1, elevation: 0, flexDirection: 'row', gap: 14, minHeight: 90, paddingHorizontal: 10, paddingVertical: 16, shadowOpacity: 0 },
-  unreadChat: { backgroundColor: colors.surface, borderColor: colors.border },
+  chat: { alignItems: 'center', backgroundColor: colors.background, borderColor: 'transparent', borderBottomColor: colors.border, borderRadius: 0, borderBottomWidth: 1, flexDirection: 'row', gap: 14, minHeight: 94, paddingHorizontal: 0, paddingVertical: 18 },
+  unreadChat: { backgroundColor: colors.surfaceSoft, borderBottomColor: colors.border, paddingHorizontal: 10 },
   copy: { flex: 1, gap: 6 },
-  name: { color: colors.text, fontSize: 16, fontWeight: '700', letterSpacing: -0.3 },
+  name: { color: colors.text, fontSize: 17, fontWeight: '700', letterSpacing: -0.4 },
   preview: { color: colors.textSubtle, fontSize: 13, lineHeight: 20 },
   unreadPreview: { color: colors.textMuted, fontWeight: '600' },
   presence: { backgroundColor: colors.success, borderColor: colors.surfaceSoft, borderRadius: 5, borderWidth: 2, bottom: 0, height: 11, position: 'absolute', right: 0, width: 11 },
   trailing: { alignItems: 'flex-end', gap: 5 },
   time: { color: colors.textSubtle, fontSize: 11, fontWeight: '500' },
-  unreadBadge: { alignItems: 'center', backgroundColor: colors.accent, borderRadius: 12, height: 23, justifyContent: 'center', minWidth: 23, paddingHorizontal: 6 },
-  unreadBadgeText: { color: colors.primary, fontSize: 11, fontWeight: '800' },
+  unreadBadge: { alignItems: 'center', backgroundColor: colors.accentSolid, borderRadius: 12, height: 22, justifyContent: 'center', minWidth: 22, paddingHorizontal: 6 },
+  unreadBadgeText: { color: colors.white, fontSize: 10, fontWeight: '700' },
   pressed: { opacity: 0.72, transform: [{ scale: 0.99 }] },
 });

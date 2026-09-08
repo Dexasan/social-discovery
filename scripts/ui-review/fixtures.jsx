@@ -1,0 +1,52 @@
+const now = new Date().toISOString();
+const state = new URLSearchParams(location.search).get('state');
+let posts = [
+  {post_id:'1',author_id:'jules',author_display_name:'Jules',author_handle:'jules.wav',body:'Unpopular opinion: the walk home after a concert is part of the concert.',created_at:now,like_count:24,reply_count:8,liked_by_me:false},
+  {post_id:'2',author_id:'mika',author_display_name:'Mika',author_handle:'mikaonfilm',body:'Tell me a tiny thing that made today feel less ordinary. I’ll go first: someone left flowers on the tram.',created_at:now,like_count:17,reply_count:12,liked_by_me:true},
+  {post_id:'3',author_id:'sam',author_display_name:'Sam',author_handle:'sundayperson',body:'Looking for people who take their coffee seriously and themselves less seriously.',created_at:now,like_count:9,reply_count:3,liked_by_me:false},
+];
+let clubs = [
+  {club_id:'1',name:'After Hours',description:'For thoughts that show up late.',topic:'Late-night talks',member_count:128,is_member:true,live_room_id:'room',live_room_title:'What keeps you up?',live_listener_count:12,live_participant_count:12},
+  {club_id:'2',name:'Off the Record',description:'A good song deserves company.',topic:'Music',member_count:86,is_member:false},
+  {club_id:'3',name:'Plot Twist',description:'One more chapter.',topic:'Books & films',member_count:64,is_member:false},
+  {club_id:'4',name:'Side Quests',description:'For the endlessly curious.',topic:'Everyday adventures',member_count:42,is_member:true},
+];
+let conversations = [
+  {conversation_id:'1',partner_id:'jules',partner_display_name:'Jules',partner_handle:'jules.wav',partner_is_online:true,last_message_body:'Okay, but send me that playlist.',last_message_at:now,unread_count:2},
+  {conversation_id:'2',partner_id:'mika',partner_display_name:'Mika',partner_handle:'mikaonfilm',partner_is_online:false,last_message_body:'Same time, same rabbit hole tomorrow?',last_message_at:now,unread_count:0},
+  {conversation_id:'3',partner_id:'sam',partner_display_name:'Sam',partner_handle:'sundayperson',partner_is_online:true,last_message_body:'I knew you’d get it.',last_message_at:now,unread_count:0},
+];
+let messages = [
+  {id:'1',sender_id:'review-other',body:'Important question: what’s your walking-home song?',created_at:now},
+  {id:'2',sender_id:'review-me',body:'Depends. Main character walk or missed-the-last-train walk?',created_at:now},
+  {id:'3',sender_id:'review-other',body:'Both. Definitely both.',created_at:now},
+];
+export function fixture(name,...args) {
+  if (name === 'useDirectCallAudio' || name === 'useClubRoomAudio') return { isConfigured:true, status:'connected', isMuted:false, isConnected:true, isConnecting:false, error:null, toggleMute:async()=>{}, connect:async()=>{}, disconnect:async()=>{} };
+  if (name.startsWith('subscribe')) return () => {};
+  if (name.toLowerCase().includes('avatarpublicurl')) return null;
+  if (name === 'giftCheckoutEnabled') return false;
+  if (name === 'formatUsd') return '$' + (args[0]/100).toFixed(2);
+  if (state === 'loading' && name.startsWith('load')) return new Promise(()=>{});
+  if (state === 'error' && name === 'loadFeed') return Promise.reject(new Error('Could not load the feed. Check your connection.'));
+  const values = {
+    loadFeed:posts,loadFollowingFeed:posts.slice(0,1),loadClubs:clubs,listDirectConversations:conversations,
+    loadTrendingMatchInterests:['Music','Cinema','Art','Deep talks','Travel','Books'].map(label=>({label})),
+    loadQuickChatMatchingCount:12,listAvailableCallers:[],joinQuickChat:{match_status:'queued'},
+    loadOwnSocialStats:{following:38,followers:124,posts:16},loadProfileGifts:[],loadEarningsWallet:null,
+    loadGiftCatalog:['rose','coffee','heart','crown'].map((slug,i)=>({slug,name:['First bloom','Coffee on me','Big feelings','Your majesty'][i],price_usd_cents:[199,299,499,999][i],is_active:true,season:null})),
+    loadConversationMessages:messages, loadPublicProfile:{id:'review-other',display_name:'Jules',handle:'jules.wav',languages:['English'],country_code:'DE',avatar_path:null},
+    loadSafetySettings:{messagePermission:'everyone',blockedProfiles:[]},isHandleAvailable:true,
+    loadDirectCall:{id:'review-call',status:'accepted',accepted_at:now,caller_id:'review-me',callee_id:'review-other'},heartbeatDirectCall:true,
+    loadCallPartner:{id:'review-other',display_name:'Jules',handle:'jules.wav',country_code:'DE',languages:['English']},
+    loadClubDetail:{...clubs[0],allow_member_rooms:true,member_role:'member',owner_display_name:'Jules',owner_handle:'jules.wav',owner_id:'review-other'},
+    loadClubPosts:posts,loadClubMembers:[{user_id:'review-other',display_name:'Jules',handle:'jules.wav',role:'owner',country_code:'DE'}],
+    loadClubRoom:{id:'room',club_id:'1',title:'What keeps you up?',status:'live',host_id:'review-other',clubs:{name:'After Hours',topic:'Late-night talks'}},
+    loadRoomParticipants:[{user_id:'review-other',display_name:'Jules',role:'host',is_host:true},{user_id:'review-me',display_name:'Alex Morgan',role:'listener',is_host:false}],loadOwnClubRole:'member',
+    loadSocialStats:{following:18,followers:96,posts:8},loadProfilePosts:posts,isFollowingProfile:false,loadPostReplies:[{reply_id:'r1',author_id:'review-me',author_display_name:'Alex',body:'Especially when you’re still singing the encore.',created_at:now}],
+  };
+  if (name === 'createPost') posts = [{...posts[0],post_id:String(Date.now()),author_display_name:'Alex Morgan',author_handle:'alexafterhours',body:args[1],like_count:0,reply_count:0},...posts];
+  if (name === 'joinClub' || name === 'leaveClub') clubs = clubs.map(c=>c.club_id===args[0]?{...c,is_member:name==='joinClub'}:c);
+  if (state === 'empty' && ['loadFeed','loadClubs','listDirectConversations'].includes(name)) return Promise.resolve([]);
+  return Promise.resolve(values[name] ?? []);
+}
