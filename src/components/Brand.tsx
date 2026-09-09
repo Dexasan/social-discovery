@@ -3,7 +3,7 @@ import { Image, StyleSheet, View } from 'react-native';
 
 import { colors, fonts, spacing } from '@/theme/tokens';
 
-const yappieLogo = require('../../assets/brand/yappie-logo-transparent.png');
+const yappieLogo = require('../../assets/brand/yappie-mark.png');
 
 export function BrandMark({ size = 48 }: { size?: number }) {
   return <Image accessibilityLabel="Yappie" resizeMode="contain" source={yappieLogo} style={{ height: size, width: size }} />;
@@ -12,6 +12,7 @@ export function BrandMark({ size = 48 }: { size?: number }) {
 export function BrandLockup({ compact = false, inverted = false }: { compact?: boolean; inverted?: boolean }) {
   return (
     <View style={[styles.lockup, compact && styles.lockupCompact]}>
+      <BrandMark size={compact ? 42 : 64} />
       <View style={styles.wordmarkCopy}>
         <Text style={[styles.wordmark, compact && styles.wordmarkCompact, inverted && styles.inverted]}>YAPPIE<Text style={styles.wordmarkDot}>.</Text></Text>
         {!compact ? <Text style={[styles.tagline, inverted && styles.invertedMuted]}>A little hello. A whole new world.</Text> : null}

@@ -5,7 +5,7 @@
     "version": "0.1.4",
     "orientation": "portrait",
     "userInterfaceStyle": "dark",
-    "icon": "./assets/brand/yappie-logo-transparent.png",
+    "icon": "./assets/brand/yappie-icon.png",
     "scheme": "socialdiscovery",
     "runtimeVersion": {
       "policy": "appVersion"
@@ -34,7 +34,7 @@
         "expo-splash-screen",
         {
           "backgroundColor": "#111110",
-          "image": "./assets/brand/yappie-logo-transparent.png",
+          "image": "./assets/brand/yappie-mark.png",
           "imageWidth": 220,
           "resizeMode": "contain"
         }
@@ -56,7 +56,8 @@
       "softwareKeyboardLayoutMode": "resize",
       "adaptiveIcon": {
         "backgroundColor": "#111110",
-        "foregroundImage": "./assets/brand/yappie-logo-transparent.png"
+        "foregroundImage": "./assets/brand/yappie-adaptive-foreground.png",
+        "monochromeImage": "./assets/brand/yappie-monochrome.png"
       },
       "permissions": [
         "android.permission.RECORD_AUDIO",

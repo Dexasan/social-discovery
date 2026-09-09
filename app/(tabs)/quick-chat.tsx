@@ -5,7 +5,7 @@ import { router } from 'expo-router';
 import { ActivityIndicator, AppState, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import { useSession } from '@/context/SessionContext';
-import { BrandLockup } from '@/components/Brand';
+import { BrandLockup, BrandMark } from '@/components/Brand';
 import { Avatar, Screen } from '@/components/ui';
 import { useCalls } from '@/context/CallContext';
 import { listAvailableCallers, requestDirectCall, type AvailableCaller } from '@/features/calls/api';
@@ -288,7 +288,7 @@ export default function QuickChatScreen() {
       <View style={styles.hero}>
         <PaperSurface variant="note" color={colors.accentSoft} ink={colors.accentSolid} />
         <Text style={styles.heroEyebrow}>A CHANCE ENCOUNTER, BY DESIGN.</Text>
-        <View style={styles.heroRow}><View style={{flex:1}}><Text style={styles.heroTitle}>STRANGERS.</Text><Text style={styles.heroAccent}>For now.</Text></View><View style={{transform:[{rotate:'-12deg'}]}}><InkDrawing motif="lips" size={64} color={colors.accent} /></View></View>
+        <View style={styles.heroRow}><View style={{flex:1}}><Text style={styles.heroTitle}>STRANGERS.</Text><Text style={styles.heroAccent}>For now.</Text></View><View style={styles.heroMark}><BrandMark size={92} /></View></View>
         <Text style={styles.heroCopy}>A shared obsession. An unexpected connection.</Text>
       </View>
 
@@ -369,6 +369,7 @@ export default function QuickChatScreen() {
 
 const styles = StyleSheet.create({
   heroRow: {flexDirection:'row',alignItems:'center',gap:5,marginTop:10},
+  heroMark: { marginVertical: -4, transform: [{ rotate: '-9deg' }] },
   topBar: { alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between', paddingBottom: 6 },
   hero: { marginBottom: 10, marginTop: 6, paddingHorizontal: 23, paddingVertical: 16 },
   heroEyebrow: { color: colors.accent, fontSize: 8, fontWeight: '700', letterSpacing: 1.2 },

@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" fill="none">
+  <!-- Original YAPPIE “little loudmouth”: a laughing, winking speech bubble. -->
+  <path d="M113 101C167 66 301 54 370 113C440 173 439 278 383 336C347 374 277 393 216 380L139 432L146 354C64 316 44 220 77 157C86 137 98 116 113 101Z" fill="#FF775D"/>
+  <path d="M98 152C71 222 93 291 139 317M187 93C255 74 321 88 349 108" stroke="#F1EBDD" stroke-width="5" stroke-linecap="round"/>
+  <path d="M172 167C169 149 180 136 191 141C203 147 201 172 192 182C184 193 171 185 172 167Z" fill="#111110"/>
+  <path d="M270 161C285 143 305 143 319 156" stroke="#111110" stroke-width="14" stroke-linecap="round"/>
+  <path d="M140 222C203 244 287 230 355 195C350 271 314 329 250 338C194 346 153 297 140 222Z" fill="#111110"/>
+  <path d="M153 235C216 253 282 237 341 214L331 245C274 270 208 279 168 265Z" fill="#F1EBDD"/>
+  <path d="M211 309C230 286 250 285 264 297C279 279 301 283 311 289C298 310 278 323 253 326C236 328 223 321 211 309Z" fill="#FF775D"/>
+  <path d="M256 303L264 315" stroke="#111110" stroke-width="5" stroke-linecap="round"/>
+  <path d="M412 48L420 74L449 79L423 92L420 122L404 98L376 100L395 79Z" fill="#F1EBDD"/>
+  <path d="M71 350L62 367M92 369L88 390" stroke="#F1EBDD" stroke-width="8" stroke-linecap="round"/>
+</svg>

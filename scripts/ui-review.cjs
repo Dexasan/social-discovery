@@ -30,6 +30,8 @@ const plugin = {
   setup(build) {
     build.onResolve({ filter: /^react-native$/ }, () => ({ path: require.resolve('react-native-web') }));
     build.onResolve({ filter: /^expo-router$/ }, () => ({ path: path.join(root, 'scripts/ui-review/router.jsx') }));
+    build.onResolve({ filter: /^expo-constants$/ }, () => ({ path: 'constants', namespace: 'review-config' }));
+    build.onLoad({ filter: /.*/, namespace: 'review-config' }, () => ({ contents: `export default { expoConfig: ${JSON.stringify(JSON.parse(fs.readFileSync(path.join(root, 'app.json'), 'utf8')).expo)} };`, loader: 'js' }));
     build.onResolve({ filter: /^@\/context\/(SessionContext|CallContext)$/ }, () => ({ path: path.join(root, 'scripts/ui-review/context.jsx') }));
     build.onResolve({ filter: /^@\/lib\/supabase$/ }, () => ({ path: 'supabase', namespace: 'mock' }));
     build.onLoad({ filter: /.*/, namespace: 'mock' }, () => ({ contents: 'export const isSupabaseConfigured = true; export const supabase = null;', loader: 'js' }));
@@ -41,8 +43,9 @@ const plugin = {
     });
     build.onLoad({ filter: /\.png$/ }, args => {
       const name = path.basename(args.path);
+      const png = fs.readFileSync(args.path);
       fs.copyFileSync(args.path, path.join(out, 'assets', name));
-      return { contents: `module.exports = { uri: '/assets/${name}', width: 1536, height: 1024 };`, loader: 'js' };
+      return { contents: `module.exports = { uri: '/assets/${name}', width: ${png.readUInt32BE(16)}, height: ${png.readUInt32BE(20)} };`, loader: 'js' };
     });
   },
 };
