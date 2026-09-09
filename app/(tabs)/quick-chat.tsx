@@ -348,7 +348,7 @@ export default function QuickChatScreen() {
       <View style={styles.callSection}><PaperSurface variant="note" color={colors.cobaltSoft} ink={colors.cobalt} />
         <View style={styles.callHeader}>
           <View style={{ flex: 1 }}><View style={{flexDirection:"row",alignItems:"center",gap:8}}><InkDrawing motif="sound" size={34} color={colors.cobalt} /><Text style={styles.sectionTitle}>Go off script.</Text></View><Text style={styles.sectionMeta}>{isAvailable ? 'You’re available for a hello.' : 'Make yourself available for voice calls.'}</Text></View>
-          <Pressable accessibilityLabel="Available for voice calls" accessibilityRole="switch" accessibilityState={{ checked: isAvailable, disabled: isAvailabilityBusy }} disabled={isAvailabilityBusy} onPress={() => void setAvailable(!isAvailable)} style={[styles.availabilityToggle, isAvailable && styles.availabilityToggleOn]}><View style={[styles.toggleKnob, isAvailable && styles.toggleKnobOn]} /></Pressable>
+          <Pressable accessibilityLabel="Available for voice calls" accessibilityRole="switch" hitSlop={6} accessibilityState={{ checked: isAvailable, disabled: isAvailabilityBusy }} disabled={isAvailabilityBusy} onPress={() => void setAvailable(!isAvailable)} style={[styles.availabilityToggle, isAvailable && styles.availabilityToggleOn]}><View style={[styles.toggleKnob, isAvailable && styles.toggleKnobOn]} /></Pressable>
         </View>
         {callersLoading ? <ActivityIndicator color={colors.accent} style={styles.loading} /> : null}
         {!callersLoading && availableCallers.length ? (

@@ -280,13 +280,13 @@ export default function FeedScreen() {
                   <Text style={styles.postBody}>{post.body}</Text>
                 </Pressable>
                 <View style={styles.actions}>
-                  <Pressable accessibilityRole="button" accessibilityState={{ selected: post.liked_by_me }} accessibilityLabel={post.liked_by_me ? 'Unlike post' : 'Like post'} onPress={() => void toggleLike(post)} style={({ pressed }) => [styles.actionButton, pressed && styles.actionPressed]}>
+                  <Pressable accessibilityRole="button" hitSlop={3} accessibilityState={{ selected: post.liked_by_me }} accessibilityLabel={post.liked_by_me ? 'Unlike post' : 'Like post'} onPress={() => void toggleLike(post)} style={({ pressed }) => [styles.actionButton, pressed && styles.actionPressed]}>
                     <InkDrawing motif="heart" size={25} color={post.liked_by_me ? colors.accent : colors.textMuted} /><Text style={[styles.actionText, post.liked_by_me && styles.actionLiked]}>{post.like_count}</Text>
                   </Pressable>
-                  <Pressable accessibilityRole="button" accessibilityLabel="View replies" onPress={() => openPost(post, authorName)} style={styles.actionButton}>
+                  <Pressable accessibilityRole="button" accessibilityLabel="View replies" hitSlop={3} onPress={() => openPost(post, authorName)} style={styles.actionButton}>
                     <InkDrawing motif="letter" size={26} color={colors.textMuted} /><Text style={styles.actionText}>{post.reply_count}</Text>
                   </Pressable>
-                  <Pressable accessibilityRole="button" accessibilityLabel="Share post" onPress={() => void sharePost(post, authorName)} style={styles.shareButton}><InkDrawing motif="arrow" size={26} color={colors.textMuted} /></Pressable>
+                  <Pressable accessibilityRole="button" accessibilityLabel="Share post" hitSlop={3} onPress={() => void sharePost(post, authorName)} style={styles.shareButton}><InkDrawing motif="arrow" size={26} color={colors.textMuted} /></Pressable>
                 </View>
               </View>
             </View>

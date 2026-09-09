@@ -58,7 +58,7 @@ export default function ProfileScreen() {
   return (
     <Screen>
       <RetroHeader compact
-        action={<Pressable accessibilityLabel="Account settings" onPress={() => router.push('/settings/account')}><RetroGlyph glyph="⚙" tone="neutral" /></Pressable>}
+        action={<Pressable accessibilityLabel="Account settings" accessibilityRole="button" onPress={() => router.push('/settings/account')}><RetroGlyph glyph="⚙" tone="neutral" /></Pressable>}
         eyebrow="A LITTLE MORE YOU"
         title="Your profile"
         tone="accent"
@@ -74,11 +74,11 @@ export default function ProfileScreen() {
       </View>
 
       <View style={styles.stats}><PaperSurface variant="ticket" color={colors.surfaceSoft} />
-        <Pressable onPress={() => user && router.push({ pathname: '/people/connections', params: { userId: user.id, mode: 'following', name: profile.displayName } })} style={styles.stat}>
+        <Pressable accessibilityRole="button" onPress={() => user && router.push({ pathname: '/people/connections', params: { userId: user.id, mode: 'following', name: profile.displayName } })} style={styles.stat}>
           <Text style={styles.statNumber}>{stats?.following ?? '—'}</Text><Text style={styles.statLabel}>Following</Text>
         </Pressable>
         <View style={styles.statDivider} />
-        <Pressable onPress={() => user && router.push({ pathname: '/people/connections', params: { userId: user.id, mode: 'followers', name: profile.displayName } })} style={styles.stat}>
+        <Pressable accessibilityRole="button" onPress={() => user && router.push({ pathname: '/people/connections', params: { userId: user.id, mode: 'followers', name: profile.displayName } })} style={styles.stat}>
           <Text style={styles.statNumber}>{stats?.followers ?? '—'}</Text><Text style={styles.statLabel}>Followers</Text>
         </Pressable>
         <View style={styles.statDivider} />
@@ -134,10 +134,10 @@ export default function ProfileScreen() {
       </View>
 
       <View style={styles.utilityRow}>
-        <Pressable onPress={() => router.push('/settings/safety')} style={styles.utilityButton}><PaperSurface variant="oval" color={colors.signalSoft} ink={colors.signal} />
+        <Pressable accessibilityRole="button" onPress={() => router.push('/settings/safety')} style={styles.utilityButton}><PaperSurface variant="oval" color={colors.signalSoft} ink={colors.signal} />
           <InkDrawing motif="shield" size={40} color={colors.signal} /><View style={styles.utilityCopy}><Text style={styles.utilityTitle}>Safety</Text><Text style={styles.utilityMeta}>Privacy & blocks</Text></View>
         </Pressable>
-        <Pressable onPress={() => router.push({ pathname: '/legal/[document]', params: { document: 'community-guidelines' } })} style={styles.utilityButton}><PaperSurface variant="oval" color={colors.cobaltSoft} ink={colors.cobalt} />
+        <Pressable accessibilityRole="button" onPress={() => router.push({ pathname: '/legal/[document]', params: { document: 'community-guidelines' } })} style={styles.utilityButton}><PaperSurface variant="oval" color={colors.cobaltSoft} ink={colors.cobalt} />
           <InkDrawing motif="book" size={40} color={colors.cobalt} /><View style={styles.utilityCopy}><Text style={styles.utilityTitle}>Guidelines</Text><Text style={styles.utilityMeta}>How YAPPIE works</Text></View>
         </Pressable>
       </View>

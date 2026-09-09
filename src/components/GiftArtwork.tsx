@@ -1,6 +1,6 @@
 import { InkDrawing, PaperSurface, type InkMotif } from './InkArtwork';
-import { useEffect, useRef } from 'react';
-import { Animated, Easing, View } from 'react-native';
+import { useEffect, useRef, useState } from 'react';
+import { AccessibilityInfo, Animated, Easing, View } from 'react-native';
 
 import { giftPresentation } from '@/features/gifts/presentation';
 
@@ -9,9 +9,19 @@ export function GiftArtwork({ animated = false, slug, size = 72 }: { animated?: 
   const motion = useRef(new Animated.Value(0)).current;
   const pulse = useRef(new Animated.Value(0)).current;
   const unit = size / 72;
+  const [reduceMotion, setReduceMotion] = useState(true);
 
   useEffect(() => {
-    if (!animated) {
+    let active = true;
+    void AccessibilityInfo.isReduceMotionEnabled().then((enabled) => {
+      if (active) setReduceMotion(enabled);
+    }).catch(() => {});
+    const subscription = AccessibilityInfo.addEventListener('reduceMotionChanged', setReduceMotion);
+    return () => { active = false; subscription.remove(); };
+  }, []);
+
+  useEffect(() => {
+    if (!animated || reduceMotion) {
       motion.setValue(0);
       pulse.setValue(0);
       return;
@@ -28,7 +38,7 @@ export function GiftArtwork({ animated = false, slug, size = 72 }: { animated?: 
     ]));
     loop.start();
     return () => loop.stop();
-  }, [animated, motion, pulse]);
+  }, [animated, motion, pulse, reduceMotion]);
   const floatY = motion.interpolate({ inputRange: [0, 1], outputRange: [2 * unit, -4 * unit] });
   const rotate = motion.interpolate({ inputRange: [0, 1], outputRange: ['-4deg', '5deg'] });
   const scale = pulse.interpolate({ inputRange: [0, 1], outputRange: [1, 1.1] });

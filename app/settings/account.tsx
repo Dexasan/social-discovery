@@ -2,7 +2,8 @@ import { InkDrawing } from '@/components/InkArtwork';
 import { Text, TextInput } from '@/components/Typography';
 import { useState } from 'react';
 import { router } from 'expo-router';
-import { Alert, Pressable, StyleSheet, View } from 'react-native';
+import { Alert, Platform, Pressable, StyleSheet, View } from 'react-native';
+import Constants from 'expo-constants';
 
 import { Card, Muted, Pill, PrimaryButton, Screen, SectionHeader } from '@/components/ui';
 import { useSession } from '@/context/SessionContext';
@@ -183,11 +184,13 @@ export default function AccountSettingsScreen() {
           <Text style={styles.deleteLabel}>{deleting ? 'Deleting…' : 'Delete my account'}</Text>
         </Pressable>
       </Card>
+      <Text style={styles.buildLabel}>YAPPIE · {Constants.expoConfig?.version ?? '0.1.4'}{Platform.OS === 'android' ? ` · build ${Constants.expoConfig?.android?.versionCode ?? 9}` : ''}</Text>
     </Screen>
   );
 }
 
 const styles = StyleSheet.create({
+  buildLabel: { color: colors.textSubtle, fontSize: 12, lineHeight: 18, textAlign: 'center', marginTop: 24 },
   topRow: { alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between' },
   backButton: { alignItems: 'center', backgroundColor: colors.surfaceRaised, borderColor: colors.border, borderRadius: radius.pill, borderWidth: 1, height: 50, justifyContent: 'center', width: 50 },
   backGlyph: { color: colors.text, fontSize: 30, fontWeight: '500', lineHeight: 32 },
