@@ -683,6 +683,7 @@ export type Database = {
           deleted_at: string | null
           id: string
           post_id: string
+          parent_reply_id: string | null
           updated_at: string
         }
         Insert: {
@@ -692,6 +693,7 @@ export type Database = {
           deleted_at?: string | null
           id?: string
           post_id: string
+          parent_reply_id?: string | null
           updated_at?: string
         }
         Update: {
@@ -701,6 +703,7 @@ export type Database = {
           deleted_at?: string | null
           id?: string
           post_id?: string
+          parent_reply_id?: string | null
           updated_at?: string
         }
         Relationships: [
@@ -709,6 +712,13 @@ export type Database = {
             columns: ["author_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "replies_parent_reply_id_fkey"
+            columns: ["parent_reply_id"]
+            isOneToOne: false
+            referencedRelation: "replies"
             referencedColumns: ["id"]
           },
           {
@@ -1080,6 +1090,20 @@ export type Database = {
       get_privacy_settings: {
         Args: never
         Returns: { message_permission: string }[]
+      }
+      get_post_replies_v2: {
+        Args: { target_post_id: string }
+        Returns: {
+          author_display_name: string | null
+          author_handle: string | null
+          author_id: string
+          body: string
+          created_at: string
+          reply_id: string
+          parent_reply_id: string | null
+          parent_author_name: string | null
+          parent_body_preview: string | null
+        }[]
       }
       get_post_replies: {
         Args: { target_post_id: string }

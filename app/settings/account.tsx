@@ -184,7 +184,7 @@ export default function AccountSettingsScreen() {
           <Text style={styles.deleteLabel}>{deleting ? 'Deleting…' : 'Delete my account'}</Text>
         </Pressable>
       </Card>
-      <Text style={styles.buildLabel}>YAPPIE · {Constants.expoConfig?.version ?? '0.1.4'}{Platform.OS === 'android' ? ` · build ${Constants.expoConfig?.android?.versionCode ?? 9}` : ''}</Text>
+      <Text style={styles.buildLabel}>YAPPIE · {Constants.expoConfig?.version ?? '0.1.5'}{Platform.OS === 'android' ? ` · build ${Constants.expoConfig?.android?.versionCode ?? 10}` : ''}</Text>
     </Screen>
   );
 }

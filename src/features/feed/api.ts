@@ -24,6 +24,9 @@ export type FeedReply = {
   body: string;
   created_at: string;
   reply_id: string;
+  parent_reply_id: string | null;
+  parent_author_name: string | null;
+  parent_body_preview: string | null;
 };
 
 function client() {
@@ -75,17 +78,17 @@ export async function setPostLiked(postId: string, userId: string, liked: boolea
 }
 
 export async function loadPostReplies(postId: string) {
-  const { data, error } = await client().rpc('get_post_replies', { target_post_id: postId });
+  const { data, error } = await client().rpc('get_post_replies_v2', { target_post_id: postId });
   if (error) throw error;
   const rows = data as Omit<FeedReply, 'author_avatar_path'>[];
   const avatars = await loadAvatarPathMap(rows.map((reply) => reply.author_id));
   return rows.map((reply) => ({ ...reply, author_avatar_path: avatars.get(reply.author_id) ?? null }));
 }
 
-export async function createReply(postId: string, authorId: string, body: string) {
+export async function createReply(postId: string, authorId: string, body: string, parentReplyId: string | null = null) {
   const { data, error } = await client()
     .from('replies')
-    .insert({ post_id: postId, author_id: authorId, body: body.trim() })
+    .insert({ post_id: postId, author_id: authorId, body: body.trim(), parent_reply_id: parentReplyId })
     .select()
     .single();
   if (error) throw error;

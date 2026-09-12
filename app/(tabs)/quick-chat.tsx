@@ -1,4 +1,5 @@
-import { InkDrawing, PaperSurface, type InkMotif } from '@/components/InkArtwork';
+import { InkDrawing, PaperSurface } from '@/components/InkArtwork';
+import { TopicArtwork } from '@/components/TopicArtwork';
 import { Text, TextInput } from '@/components/Typography';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { router } from 'expo-router';
@@ -40,17 +41,6 @@ function readableMatchError(error: unknown) {
   const message = error instanceof Error ? error.message : 'Matching failed. Please try again.';
   if (message.toLowerCase().includes('network')) return 'No connection. Try again.';
   return message;
-}
-
-function interestMotif(label: string): InkMotif {
-  const value = label.toLowerCase();
-  if (/music|sing|podcast/.test(value)) return 'sound';
-  if (/book|read|writ/.test(value)) return 'book';
-  if (/film|cinema|movie|anime/.test(value)) return 'eye';
-  if (/travel|space|adventure/.test(value)) return 'planet';
-  if (/art|fashion|design/.test(value)) return 'flower';
-  if (/talk|meme|chat/.test(value)) return 'lips';
-  return 'spark';
 }
 
 export default function QuickChatScreen() {
@@ -307,7 +297,7 @@ export default function QuickChatScreen() {
             const selected = selectedInterests.some((interest) => interestSearchKey(interest) === interestSearchKey(label));
             return (
               <Pressable key={label} accessibilityRole="button" accessibilityState={{ selected, disabled: searching }} disabled={searching} onPress={() => toggleInterest(label)} style={({ pressed }) => [styles.interestChip, {transform:[{rotate:index % 2 ? '2deg' : '-2deg'}]}, selected && styles.interestChipSelected, pressed && styles.pressed]}>
-                <InkDrawing motif={interestMotif(label)} size={30} color={selected ? colors.primaryInk : colors.accent} /><Text style={[styles.interestChipText, selected && styles.interestChipTextSelected]}>{label}{selected ? ' ✓' : ''}</Text>
+                <TopicArtwork label={label} size={30} color={selected ? colors.primaryInk : colors.accent} /><Text style={[styles.interestChipText, selected && styles.interestChipTextSelected]}>{label}{selected ? ' ✓' : ''}</Text>
               </Pressable>
             );
           })}
@@ -321,16 +311,16 @@ export default function QuickChatScreen() {
         {interestInput.trim() ? (
           <View style={styles.suggestionList}>
             {interestSuggestions.map((label) => (
-              <Pressable key={label} accessibilityRole="button" disabled={searching} onPress={() => addInterest(label)} style={({ pressed }) => [styles.suggestionRow, pressed && styles.pressed]}><Text style={styles.suggestionText}>{label}</Text><Text style={styles.suggestionAction}>Add +</Text></Pressable>
+              <Pressable key={label} accessibilityRole="button" disabled={searching} onPress={() => addInterest(label)} style={({ pressed }) => [styles.suggestionRow, pressed && styles.pressed]}><TopicArtwork label={label} size={24} /><Text style={styles.suggestionText}>{label}</Text><Text style={styles.suggestionAction}>Add +</Text></Pressable>
             ))}
-            {!canonicalTypedInterest && typedInterest.length >= 2 ? <Pressable accessibilityRole="button" disabled={searching} onPress={useTypedInterest} style={styles.suggestionRow}><Text numberOfLines={1} style={styles.suggestionText}>Use “{typedInterest}”</Text><Text style={styles.suggestionAction}>Add +</Text></Pressable> : null}
+            {!canonicalTypedInterest && typedInterest.length >= 2 ? <Pressable accessibilityRole="button" disabled={searching} onPress={useTypedInterest} style={styles.suggestionRow}><TopicArtwork label={typedInterest} size={24} /><Text numberOfLines={1} style={styles.suggestionText}>Use “{typedInterest}”</Text><Text style={styles.suggestionAction}>Add +</Text></Pressable> : null}
           </View>
         ) : null}
 
         {selectedInterests.filter((interest) => !quickPicks.some((pick) => interestSearchKey(pick) === interestSearchKey(interest))).length ? (
           <View style={styles.selectedChips}>
             {selectedInterests.filter((interest) => !quickPicks.some((pick) => interestSearchKey(pick) === interestSearchKey(interest))).map((interest) => (
-              <Pressable key={interest} accessibilityRole="button" accessibilityLabel={'Remove ' + interest} disabled={searching} onPress={() => toggleInterest(interest)} style={styles.selectedChip}><Text style={styles.interestChipTextSelected}>{interest}  ×</Text></Pressable>
+              <Pressable key={interest} accessibilityRole="button" accessibilityLabel={'Remove ' + interest} disabled={searching} onPress={() => toggleInterest(interest)} style={styles.selectedChip}><TopicArtwork label={interest} size={24} color={colors.primaryInk} /><Text style={styles.selectedChipText}>{interest}  ×</Text></Pressable>
             ))}
           </View>
         ) : null}
@@ -399,7 +389,8 @@ const styles = StyleSheet.create({
   suggestionText: { color: colors.text, flex: 1, fontSize: 14 },
   suggestionAction: { color: colors.cobalt, fontSize: 12, fontWeight: '700' },
   selectedChips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 12 },
-  selectedChip: { backgroundColor: colors.primary, borderColor: colors.primary, borderRadius: 4, borderWidth: 1, justifyContent: 'center', minHeight: 44, paddingHorizontal: 12 },
+  selectedChip: { backgroundColor: colors.primary, borderColor: colors.primary, borderRadius: 4, borderWidth: 1, alignItems: 'center', flexDirection: 'row', gap: 6, maxWidth: '100%', minHeight: 44, paddingHorizontal: 10, paddingVertical: 5 },
+  selectedChipText: { color: colors.primaryInk, fontSize: 12, fontWeight: '700', flexShrink: 1 },
   selectionMeta: { alignItems: 'center', flexDirection: 'row', flexWrap: 'wrap', gap: 8, justifyContent: 'space-between', marginBottom: 8, marginTop: 8 },
   selectionCopy: { color: colors.textSubtle, fontSize: 11 },
   privateLabel: { color: colors.textSubtle, fontSize: 11 },

@@ -22,7 +22,7 @@ export async function chooseClubAvatar() {
   if (!permission.granted) throw new Error('Allow photo access to choose a Club picture.');
   const result = await ImagePicker.launchImageLibraryAsync({
     allowsEditing: true,
-    aspect: [1, 1],
+    aspect: [4, 3],
     mediaTypes: ['images'],
     quality: 0.82,
     selectionLimit: 1,

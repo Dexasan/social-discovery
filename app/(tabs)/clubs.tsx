@@ -4,7 +4,8 @@ import { useCallback, useState } from 'react';
 import { router, useFocusEffect } from 'expo-router';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
-import { Avatar, EmptyState, RetroGlyph, RetroHeader, Screen, SkeletonRows } from '@/components/ui';
+import { EmptyState, RetroGlyph, RetroHeader, Screen, SkeletonRows } from '@/components/ui';
+import { ClubCover } from '@/components/ClubCover';
 import { joinClub, leaveClub, loadClubs, startClubRoom, type ClubSummary } from '@/features/clubs/api';
 import { clubAvatarPublicUrl } from '@/features/clubs/avatar';
 import { colors, fonts, spacing } from '@/theme/tokens';
@@ -117,14 +118,16 @@ export default function ClubsScreen() {
       <View style={styles.clubGrid}>
         {visibleClubs.map((club, index) => (
           <View key={club.club_id} style={styles.clubTile}>
-            <PaperSurface variant={index % 2 ? "note" : "ticket"} color={index % 3 === 1 ? colors.cobaltSoft : index % 3 === 2 ? colors.accentSoft : colors.warningSoft} ink={index % 3 === 1 ? colors.cobalt : colors.warning} />
+            <View style={[styles.coverShell, { transform: [{ rotate: index % 2 ? '1.5deg' : '-1.5deg' }] }]}>
+              <ClubCover height={88} label={club.name} uri={clubAvatarPublicUrl(club.avatar_path)} width={88} />
+            </View>
             <Pressable accessibilityRole="button" onPress={() => router.push({ pathname: '/clubs/[clubId]', params: { clubId: club.club_id } })} style={styles.clubLink}>
-              <View style={styles.clubHeading}>{club.avatar_path ? <Avatar imageUrl={clubAvatarPublicUrl(club.avatar_path)} label={club.name} size={28} /> : null}<Text numberOfLines={2} style={styles.clubName}>{club.name}</Text></View>
+              <View style={styles.clubHeading}><Text numberOfLines={2} style={styles.clubName}>{club.name}</Text></View>
               <Text numberOfLines={1} style={styles.clubTopic}>{club.topic}</Text>
               <Text style={styles.memberCount}>{club.member_count} {club.member_count === 1 ? 'member' : 'members'}</Text>
             </Pressable>
             <View style={styles.tileActions}>
-              {club.is_member && !club.live_room_id ? <Pressable accessibilityRole="button" accessibilityLabel={"Start a room in " + club.name} onPress={() => { setHostingClubId(club.club_id); setRoomTitle(''); }} style={styles.micButton}><InkDrawing motif="sound" size={30} color={colors.cobalt} /></Pressable> : <InkDrawing motif={index % 3 === 0 ? "planet" : index % 3 === 1 ? "flower" : "eye"} size={36} color={index % 3 === 1 ? colors.cobalt : colors.warning} />}
+              {club.is_member && !club.live_room_id ? <Pressable accessibilityRole="button" accessibilityLabel={"Start a room in " + club.name} onPress={() => { setHostingClubId(club.club_id); setRoomTitle(''); }} style={styles.micButton}><InkDrawing motif="sound" size={30} color={colors.cobalt} /></Pressable> : null}
               <Pressable accessibilityRole="button" accessibilityLabel={(club.is_member ? 'Leave ' : 'Join ') + club.name} disabled={Boolean(busyClubId)} onPress={() => void toggleMembership(club)} style={[styles.joinButton, club.is_member && styles.joinedButton]}>
                 <Text style={[styles.joinLabel, club.is_member && styles.joinedLabel]}>{busyClubId === club.club_id ? '…' : club.is_member ? 'Joined' : 'Join'}</Text>
               </Pressable>
@@ -181,9 +184,10 @@ const styles = StyleSheet.create({
   enterArrow: { color: colors.white, fontSize: 22, marginLeft: 'auto' },
   pressed: { opacity: 0.75, transform: [{ scale: 0.985 }] },
   clubGrid: { gap: 8 },
-  clubTile: { flexDirection: 'row', alignItems: 'center', gap: 10, minHeight: 112, paddingHorizontal: 20, paddingVertical: 12 },
+  clubTile: { flexDirection: 'row', alignItems: 'center', gap: 12, minHeight: 112, borderBottomColor: colors.border, borderBottomWidth: StyleSheet.hairlineWidth, paddingHorizontal: 2, paddingVertical: 11 },
+  coverShell: { marginLeft: 2 },
   clubLink: { flex: 1, minHeight: 64, justifyContent: 'center' },
-  clubName: { color: colors.text, fontFamily: fonts.display, fontSize: 27, lineHeight: 28, textTransform: 'uppercase', flex: 1 },
+  clubName: { color: colors.text, fontFamily: fonts.display, fontSize: 25, lineHeight: 26, textTransform: 'uppercase', flex: 1 },
   clubTopic: { color: colors.textMuted, fontFamily: fonts.italic, fontSize: 19, lineHeight: 22, marginTop: 2 },
   memberCount: { color: colors.textSubtle, fontSize: 11, marginTop: 4 },
   tileActions: { alignItems: 'center', gap: 2, width: 76 },

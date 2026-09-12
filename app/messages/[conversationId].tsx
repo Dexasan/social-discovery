@@ -47,6 +47,9 @@ export default function DirectConversationScreen() {
   useEffect(() => {
     if (!conversationId) return;
     let active = true;
+    setMessages([]);
+    setPartnerAvatarPath(null);
+    setError('');
     void loadConversationMessages(conversationId)
       .then((data) => {
         if (!active) return;
@@ -60,6 +63,7 @@ export default function DirectConversationScreen() {
       }).catch(() => undefined);
     }
     const unsubscribe = subscribeToConversationMessages(conversationId, (message) => {
+      if (!active) return;
       addMessage(message);
       void markConversationRead(conversationId).catch(() => undefined);
     });

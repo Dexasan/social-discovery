@@ -5,6 +5,7 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { ActivityIndicator, Alert, Pressable, RefreshControl, StyleSheet, View } from 'react-native';
 
 import { Avatar, Card, EmptyState, Heading, Muted, Pill, PrimaryButton, Screen, SectionHeader } from '@/components/ui';
+import { ClubCover } from '@/components/ClubCover';
 import { useSession } from '@/context/SessionContext';
 import {
   createClubPost,
@@ -78,7 +79,7 @@ export default function ClubDetailScreen() {
   const canHost = useMemo(() => Boolean(
     club?.is_member && (club.allow_member_rooms || club.member_role === 'owner' || club.member_role === 'moderator'),
   ), [club]);
-  const canEditImage = club?.member_role === 'owner' || club?.member_role === 'moderator';
+  const canEditImage = Boolean(user && club?.owner_id === user.id);
 
   const changeClubImage = async () => {
     if (!clubId || !club || !canEditImage || imageBusy) return;
@@ -208,10 +209,10 @@ export default function ClubDetailScreen() {
         <Pill label={club.topic} tone="accent" />
       </View>
 
-      <View style={{marginTop:20,padding:28}}><PaperSurface variant="ticket" color={colors.warningSoft} ink={colors.warning} /><View pointerEvents="none" style={{position:"absolute",right:18,top:24}}><InkDrawing motif="planet" size={92} color={colors.warning} /></View>
-      <Pressable accessibilityLabel={canEditImage ? 'Change Club picture' : `${club.name} picture`} disabled={!canEditImage || imageBusy} onPress={() => void changeClubImage()} style={styles.heroImageAction}>
-        <Avatar imageUrl={clubAvatarPublicUrl(club.avatar_path)} label={club.name} size={76} />
-        {canEditImage ? <View style={styles.imageEditBadge}>{imageBusy ? <ActivityIndicator color={colors.primary} size="small" /> : <Text style={styles.imageEditGlyph}>+</Text>}</View> : null}
+      <View style={styles.clubHero}>
+      <Pressable accessibilityLabel={canEditImage ? 'Change Club cover' : `${club.name} cover`} disabled={!canEditImage || imageBusy} onPress={() => void changeClubImage()} style={styles.heroImageAction}>
+        <ClubCover height={226} label={club.name} uri={clubAvatarPublicUrl(club.avatar_path)} width="100%" />
+        {canEditImage ? <View style={styles.imageEditBadge}>{imageBusy ? <ActivityIndicator color={colors.primaryInk} size="small" /> : <><Text style={styles.imageEditGlyph}>＋</Text><Text style={styles.imageEditText}>EDIT COVER</Text></>}</View> : null}
       </Pressable>
       <Heading compact>{club.name}</Heading>
       <Muted style={styles.description}>{club.description}</Muted>
@@ -352,9 +353,11 @@ const styles = StyleSheet.create({
   backButton: { alignItems: 'center', flexDirection: 'row', gap: 4, paddingVertical: spacing.sm },
   backGlyph: { color: colors.text, fontSize: 28, lineHeight: 28 },
   backLabel: { color: colors.text, fontSize: 14, fontWeight: '800' },
-  heroImageAction: { alignSelf: 'flex-start', marginBottom: spacing.md, marginTop: spacing.xl, position: 'relative' },
-  imageEditBadge: { alignItems: 'center', backgroundColor: colors.signal, borderColor: colors.background, borderRadius: 16, borderWidth: 3, bottom: -3, height: 32, justifyContent: 'center', position: 'absolute', right: -3, width: 32 },
-  imageEditGlyph: { color: colors.black, fontSize: 21, fontWeight: '900', lineHeight: 23 },
+  clubHero: { gap: spacing.md, marginTop: spacing.xl },
+  heroImageAction: { marginBottom: spacing.sm, position: 'relative', transform: [{ rotate: '-1deg' }], width: '100%' },
+  imageEditBadge: { alignItems: 'center', backgroundColor: colors.signal, borderColor: colors.background, borderRadius: 4, borderWidth: 3, bottom: 10, flexDirection: 'row', gap: 5, minHeight: 38, paddingHorizontal: 11, position: 'absolute', right: 10 },
+  imageEditGlyph: { color: colors.black, fontSize: 17, fontWeight: '900', lineHeight: 20 },
+  imageEditText: { color: colors.black, fontFamily: fonts.display, fontSize: 13, letterSpacing: 0.8 },
   description: { fontSize: 15, lineHeight: 23, marginTop: spacing.md },
   statsRow: { alignItems: 'center', flexDirection: 'row', flexWrap: 'wrap', marginTop: spacing.lg },
   memberCount: { color: colors.text, fontSize: 13, fontWeight: '900' },

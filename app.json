@@ -2,7 +2,7 @@
   "expo": {
     "name": "YAPPIE",
     "slug": "social-discovery",
-    "version": "0.1.4",
+    "version": "0.1.5",
     "orientation": "portrait",
     "userInterfaceStyle": "dark",
     "icon": "./assets/brand/yappie-icon.png",
@@ -27,7 +27,7 @@
         "expo-image-picker",
         {
           "cameraPermission": false,
-          "photosPermission": "Allow YAPPIE to choose one profile picture."
+          "photosPermission": "Allow YAPPIE to choose profile and Club cover images."
         }
       ],
       [
@@ -51,7 +51,7 @@
     ],
     "android": {
       "package": "com.socialdiscovery.app",
-      "versionCode": 9,
+      "versionCode": 10,
       "allowBackup": false,
       "softwareKeyboardLayoutMode": "resize",
       "adaptiveIcon": {

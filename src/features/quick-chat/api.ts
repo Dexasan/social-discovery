@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/supabase';
+import { uniqueRealtimeTopic } from '@/lib/realtime-topic';
 import type { Tables } from '@/types/database';
 
 export type Message = Tables<'messages'>;
@@ -125,7 +126,7 @@ export async function reportProfile(reporterId: string, targetUserId: string, de
 export function subscribeToConversationMessages(conversationId: string, onMessage: (message: Message) => void) {
   const activeClient = client();
   const channel = activeClient
-    .channel(`conversation:${conversationId}:messages`)
+    .channel(uniqueRealtimeTopic(`conversation:${conversationId}:messages`))
     .on(
       'postgres_changes',
       { event: 'INSERT', schema: 'public', table: 'messages', filter: `conversation_id=eq.${conversationId}` },

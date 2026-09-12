@@ -2,7 +2,7 @@ import { Text } from '@/components/Typography';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { router } from 'expo-router';
 import { PropsWithChildren, createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
-import { ActivityIndicator, AppState, Modal, Pressable, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, Alert, AppState, Modal, Pressable, StyleSheet, View } from 'react-native';
 
 import { Avatar } from '@/components/ui';
 import { useSession } from '@/context/SessionContext';
@@ -105,7 +105,7 @@ export function CallProvider({ children }: PropsWithChildren) {
       if (!active) return;
       setDesiredAvailability(stored === 'true');
       setIsAvailabilityBusy(false);
-    });
+    }).catch(() => { if (active) setIsAvailabilityBusy(false); });
     return () => { active = false; };
   }, []);
 
@@ -159,8 +159,10 @@ export function CallProvider({ children }: PropsWithChildren) {
     };
     void loadPendingIncomingCall(user.id).then(present).catch(() => undefined);
     const unsubscribe = subscribeToIncomingCalls(user.id, (call) => void present(call));
+    const poll = setInterval(() => { void loadPendingIncomingCall(user.id).then(present).catch(() => undefined); }, 5_000);
     return () => {
       active = false;
+      clearInterval(poll);
       if (expiryTimer) clearTimeout(expiryTimer);
       unsubscribe();
     };
@@ -169,10 +171,14 @@ export function CallProvider({ children }: PropsWithChildren) {
   const setAvailable = async (available: boolean) => {
     setIsAvailabilityBusy(true);
     setDesiredAvailability(available);
-    await AsyncStorage.setItem(availabilityPreferenceKey, String(available));
     try {
+      await AsyncStorage.setItem(availabilityPreferenceKey, String(available));
       const result = await setCallAvailability(available && AppState.currentState === 'active');
       setIsAvailableState(result);
+    } catch (error) {
+      setDesiredAvailability(!available);
+      setIsAvailableState(false);
+      Alert.alert('Could not update calls', error instanceof Error ? error.message : 'Please try again.');
     } finally {
       setIsAvailabilityBusy(false);
     }
@@ -198,6 +204,8 @@ export function CallProvider({ children }: PropsWithChildren) {
       setIncomingCall(null);
       setIncomingPartner(null);
       router.push(`/calls/${callId}` as never);
+    } catch (error) {
+      Alert.alert('Could not answer', error instanceof Error ? error.message : 'Please try again.');
     } finally {
       setIncomingBusy(false);
     }
@@ -210,6 +218,8 @@ export function CallProvider({ children }: PropsWithChildren) {
       await respondDirectCall(incomingCall.id, false).catch(() => endDirectCall(incomingCall.id, 'Declined'));
       setIncomingCall(null);
       setIncomingPartner(null);
+    } catch (error) {
+      Alert.alert('Could not decline', error instanceof Error ? error.message : 'Please try again.');
     } finally {
       setIncomingBusy(false);
     }

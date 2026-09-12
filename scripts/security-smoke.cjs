@@ -27,6 +27,7 @@ async function createTestAccount(admin, anonymous, label) {
   const password = `Secure-${suffix}!9`;
   const { data, error } = await admin.auth.admin.createUser({
     email, password, email_confirm: true, user_metadata: { display_name: `Security ${label}` },
+    app_metadata: { is_test_account: true },
   });
   if (error) throw error;
   const userId = data.user.id;
@@ -55,10 +56,31 @@ async function main() {
   const { anonymous, serviceRole } = loadProjectKeys();
   const admin = createClient(supabaseUrl, serviceRole, { auth: { autoRefreshToken: false, persistSession: false } });
   const accounts = [];
+  let testClubId;
   try {
     const alice = await createTestAccount(admin, anonymous, 'alice'); accounts.push(alice);
     const bob = await createTestAccount(admin, anonymous, 'bob'); accounts.push(bob);
     const mallory = await createTestAccount(admin, anonymous, 'mallory'); accounts.push(mallory);
+
+    const { data: createdClubId, error: clubCreateError } = await alice.client.rpc('create_club', {
+      club_name: 'Security Photo Club', club_description: 'Temporary club for creator-only cover checks.',
+      club_topic: 'Security testing', member_rooms: true,
+    });
+    if (clubCreateError || typeof createdClubId !== 'string') throw clubCreateError ?? new Error('Cover-test Club was not created.');
+    testClubId = createdClubId;
+    const { error: moderatorError } = await admin.from('club_memberships').insert({
+      club_id: testClubId, user_id: bob.userId, role: 'moderator', status: 'active',
+    });
+    if (moderatorError) throw moderatorError;
+    const uploadClubCover = (account) => fetch(`${supabaseUrl}/functions/v1/upload-avatar?kind=club&club_id=${testClubId}`, {
+      method: 'POST',
+      headers: { apikey: anonymous, Authorization: `Bearer ${account.accessToken}`, 'Content-Type': 'image/jpeg' },
+      body: validJpeg,
+    });
+    const moderatorCover = await uploadClubCover(bob);
+    if (moderatorCover.status !== 403) throw new Error('A Club moderator could change the creator-only cover.');
+    const creatorCover = await uploadClubCover(alice);
+    if (!creatorCover.ok || !(await creatorCover.json())?.path) throw new Error('The Club creator could not upload its cover.');
 
     const avatarResponse = await fetch(`${supabaseUrl}/functions/v1/upload-avatar?kind=profile`, {
       method: 'POST',
@@ -204,6 +226,9 @@ async function main() {
 
     console.log('Security authorization, multi-interest matching, paused gifts, presence, throttling, and deletion smoke tests passed.');
   } finally {
+    if (testClubId) {
+      try { await admin.from('clubs').delete().eq('id', testClubId); } catch { /* best-effort fixture cleanup */ }
+    }
     for (const account of accounts) await admin.auth.admin.deleteUser(account.userId).catch(() => undefined);
   }
 }

@@ -23,6 +23,7 @@ export default function PostDetailScreen() {
   const { profile, user } = useSession();
   const [replies, setReplies] = useState<FeedReply[]>([]);
   const [draft, setDraft] = useState('');
+  const [replyTarget, setReplyTarget] = useState<FeedReply | null>(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
@@ -53,8 +54,9 @@ export default function PostDetailScreen() {
     setSubmitting(true);
     setError('');
     try {
-      await createReply(postId, user.id, draft);
+      await createReply(postId, user.id, draft, replyTarget?.reply_id ?? null);
       setDraft('');
+      setReplyTarget(null);
       await refresh();
     } catch (nextError) {
       setError(nextError instanceof Error ? nextError.message : 'Could not publish this reply.');
@@ -62,6 +64,19 @@ export default function PostDetailScreen() {
       setSubmitting(false);
     }
   };
+
+  const composer = (targetName: string, inline = false) => (
+    <View style={styles.composerWrap}>
+      {inline ? <View style={styles.replyingBar}><Text style={styles.replyingText}>Replying to {targetName}</Text><Pressable accessibilityRole="button" accessibilityLabel="Cancel reply to comment" disabled={submitting} onPress={() => setReplyTarget(null)} style={styles.cancelReply}><Text style={styles.replyingText}>×</Text></Pressable></View> : null}
+      <View style={styles.composer}>
+        <Avatar label={profile?.displayName || 'You'} path={profile?.avatarPath} size={32} />
+        <TextInput accessibilityLabel={inline ? `Reply to ${targetName}'s comment` : 'Reply'} autoFocus={inline} editable={!submitting} maxLength={500} multiline onChangeText={setDraft} placeholder={`Reply to ${targetName}`} placeholderTextColor={colors.textMuted} style={styles.input} value={draft} />
+        <Pressable accessibilityLabel="Send reply" accessibilityRole="button" accessibilityState={{disabled: !draft.trim() || submitting}} disabled={!draft.trim() || submitting} onPress={() => void reply()} style={[styles.sendButton, (!draft.trim() || submitting) && styles.sendButtonDisabled]}>
+          {submitting ? <ActivityIndicator color={colors.primaryInk} size="small" /> : <Text style={styles.sendGlyph}>↑</Text>}
+        </Pressable>
+      </View>
+    </View>
+  );
 
   return (
     <Screen>
@@ -92,28 +107,7 @@ export default function PostDetailScreen() {
         <View style={styles.threadStem} />
       </View>
 
-      <View style={styles.composer}>
-        <Avatar label={profile?.displayName || 'You'} path={profile?.avatarPath} size={36} />
-        <TextInput
-          accessibilityLabel="Reply"
-          maxLength={500}
-          multiline
-          onChangeText={setDraft}
-          placeholder={`Reply to ${author}`}
-          placeholderTextColor={colors.textMuted}
-          style={styles.input}
-          value={draft}
-        />
-        <Pressable
-          accessibilityLabel="Send reply"
-          accessibilityRole="button"
-          disabled={!draft.trim() || submitting}
-          onPress={() => void reply()}
-          style={[styles.sendButton, (!draft.trim() || submitting) && styles.sendButtonDisabled]}
-        >
-          {submitting ? <ActivityIndicator color={colors.primary} size="small" /> : <Text style={styles.sendGlyph}>↑</Text>}
-        </Pressable>
-      </View>
+      {!replyTarget ? composer(author) : null}
 
       {error ? <Text style={styles.error}>{error}</Text> : null}
       {loading ? <ActivityIndicator color={colors.primary} style={styles.loading} /> : null}
@@ -123,7 +117,7 @@ export default function PostDetailScreen() {
         {replies.map((item, index) => {
           const name = item.author_display_name || (item.author_handle ? `@${item.author_handle}` : 'Community member');
           return (
-            <View key={item.reply_id} style={styles.replyCard}><PaperSurface variant="note" />
+            <View key={item.reply_id}><View style={styles.replyCard}><PaperSurface variant="note" />
               <Text style={styles.replySerial}>R/{String(index + 1).padStart(2, '0')}</Text>
               <Pressable
                 accessibilityLabel={`Open ${name}'s profile`}
@@ -136,8 +130,12 @@ export default function PostDetailScreen() {
                 <Pressable accessibilityRole="button" onPress={() => router.push({ pathname: '/people/[userId]', params: { userId: item.author_id } })}>
                   <Text style={styles.author}>{name}</Text>
                 </Pressable>
+                {item.parent_reply_id ? <View style={styles.parentQuote}><Text style={styles.replyingText}>↳ {item.parent_author_name ? `Reply to ${item.parent_author_name}` : 'Reply to a comment'}</Text><Text numberOfLines={2} style={styles.quoteText}>{item.parent_body_preview ?? 'Comment no longer available'}</Text></View> : null}
                 <Text style={styles.replyBody}>{item.body}</Text>
+                <Pressable accessibilityRole="button" accessibilityLabel={`Reply to ${name}'s comment`} disabled={submitting} onPress={() => { setError(''); setReplyTarget(item); }} style={styles.replyAction}><InkDrawing motif="arrow" size={20} color={colors.accent} /><Text style={styles.replyActionText}>Reply</Text></Pressable>
               </View>
+            </View>
+            {replyTarget?.reply_id === item.reply_id ? composer(name, true) : null}
             </View>
           );
         })}
@@ -147,6 +145,14 @@ export default function PostDetailScreen() {
 }
 
 const styles = StyleSheet.create({
+  composerWrap: { marginTop: 12 },
+  replyingBar: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingLeft: 12 },
+  replyingText: { color: colors.cobalt, fontSize: 12 },
+  cancelReply: { minWidth: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center' },
+  replyAction: { flexDirection: 'row', alignItems: 'center', gap: 6, minHeight: 44, alignSelf: 'flex-start' },
+  replyActionText: { color: colors.accent, fontSize: 12, fontWeight: '700' },
+  parentQuote: { borderLeftWidth: 2, borderLeftColor: colors.cobalt, paddingLeft: 10, gap: 4 },
+  quoteText: { color: colors.textSubtle, fontSize: 12, lineHeight: 17 },
   replyBadge: { backgroundColor: colors.cobaltSoft, borderColor: colors.border, borderRadius: 7, borderWidth: 1, paddingHorizontal: 9, paddingVertical: 7 },
   replyBadgeText: { color: colors.cobalt, fontSize: 10, fontWeight: '900', letterSpacing: 1 },
   backStrip: { alignItems: 'center', flexDirection: 'row', gap: spacing.sm, marginTop: spacing.md },

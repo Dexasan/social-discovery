@@ -109,6 +109,7 @@ export default function LegalScreen() {
         ))}
       </View>
       <Text style={styles.footer}>These beta policies will be reviewed and expanded before public store distribution.</Text>
+      <Pressable accessibilityRole="link" onPress={() => router.push('/legal/artwork')} style={{ minHeight: 44, justifyContent: 'center', alignSelf: 'center' }}><Text style={{ color: colors.link, fontSize: 13 }}>Artwork credits & licenses</Text></Pressable>
     </Screen>
   );
 }

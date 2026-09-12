@@ -1,6 +1,6 @@
 import { InkDrawing, PaperSurface } from '@/components/InkArtwork';
 import { Text } from '@/components/Typography';
-import { useCallback, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { ActivityIndicator, Alert, Pressable, StyleSheet, View } from 'react-native';
 
@@ -54,6 +54,7 @@ export default function PublicProfileScreen() {
   const [giftError, setGiftError] = useState('');
   const [loading, setLoading] = useState(true);
   const [busyAction, setBusyAction] = useState<'follow' | 'message' | null>(null);
+  const openingMessage = useRef(false);
   const [reported, setReported] = useState(false);
   const [error, setError] = useState('');
   const isOwnProfile = Boolean(user && profileId === user.id);
@@ -120,18 +121,20 @@ export default function PublicProfileScreen() {
   };
 
   const openMessage = async () => {
-    if (!profileId || isOwnProfile || working) return;
+    if (!profileId || isOwnProfile || working || openingMessage.current) return;
+    openingMessage.current = true;
     setBusyAction('message');
     setError('');
     try {
       const conversationId = await getOrCreateDirectConversation(profileId);
-      router.push({
+      router.navigate({
         pathname: '/messages/[conversationId]',
         params: { conversationId, partnerId: profileId, partnerName: profileName },
       });
     } catch (nextError) {
       setError(nextError instanceof Error ? nextError.message : 'Could not start a conversation.');
     } finally {
+      openingMessage.current = false;
       setBusyAction(null);
     }
   };

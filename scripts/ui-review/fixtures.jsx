@@ -26,14 +26,16 @@ conversations.push(
   {...conversations[1],conversation_id:'5',partner_id:'eli',partner_display_name:'Eli',partner_handle:'elioutside',last_message_body:'That is exactly what I meant.'},
   {...conversations[1],conversation_id:'6',partner_id:'leo',partner_display_name:'Leo',partner_handle:'almostawake',last_message_body:'We should absolutely try that.'}
 );
+let replies = [{reply_id:'r1',author_id:'review-other',author_display_name:'Jules',body:'Especially when you’re still singing the encore.',created_at:now}];
 let messages = [
   {id:'1',sender_id:'review-other',body:'Important question: what’s your walking-home song?',created_at:now},
   {id:'2',sender_id:'review-me',body:'Depends. Main character walk or missed-the-last-train walk?',created_at:now},
   {id:'3',sender_id:'review-other',body:'Both. Definitely both.',created_at:now},
 ];
 export function fixture(name,...args) {
-  if (name === 'useDirectCallAudio' || name === 'useClubRoomAudio') return { isConfigured:true, status:'connected', isMuted:false, isConnected:true, isConnecting:false, error:null, toggleMute:async()=>{}, connect:async()=>{}, disconnect:async()=>{} };
+  if (name === 'useDirectCallAudio' || name === 'useClubRoomAudio') return { isConfigured:true, status:state === 'audio-error' ? 'error' : 'connected', isMuted:false, isSpeaker:false, retry:()=>{}, toggleSpeaker:()=>{}, isConnected:state !== 'audio-error', isConnecting:false, error:state === 'audio-error' ? 'No audio is arriving. Check your connection, then tap Retry audio.' : null, toggleMute:async()=>{}, connect:async()=>{}, disconnect:async()=>{} };
   if (name.startsWith('subscribe')) return () => {};
+  if (name === 'clubAvatarPublicUrl') return '/assets/conversation-night-print.png';
   if (name.toLowerCase().includes('avatarpublicurl')) return null;
   if (name === 'giftCheckoutEnabled') return false;
   if (name === 'formatUsd') return '$' + (args[0]/100).toFixed(2);
@@ -41,7 +43,7 @@ export function fixture(name,...args) {
   if (state === 'error' && name === 'loadFeed') return Promise.reject(new Error('Could not load the feed. Check your connection.'));
   const values = {
     loadFeed:posts,loadFollowingFeed:posts.slice(0,1),loadClubs:clubs,listDirectConversations:conversations,
-    loadTrendingMatchInterests:['Music','Cinema','Art','Deep talks','Travel','Books'].map(label=>({label})),
+    loadTrendingMatchInterests:(state === 'topics' ? ['Football','Photography','Gaming','AI','Basketball','Cooking'] : ['Music','Cinema','Art','Deep talks','Travel','Books']).map(label=>({label})),
     loadQuickChatMatchingCount:12,listAvailableCallers:[],joinQuickChat:{match_status:'queued'},
     loadOwnSocialStats:{following:38,followers:124,posts:16},loadProfileGifts:[],loadEarningsWallet:null,
     loadGiftCatalog:['rose','coffee','heart','crown'].map((slug,i)=>({slug,name:['First bloom','Coffee on me','Big feelings','Your majesty'][i],price_usd_cents:[199,299,499,999][i],is_active:true,season:null})),
@@ -53,8 +55,11 @@ export function fixture(name,...args) {
     loadClubPosts:posts,loadClubMembers:[{user_id:'review-other',display_name:'Jules',handle:'jules.wav',role:'owner',country_code:'DE'}],
     loadClubRoom:{id:'room',club_id:'1',title:'What keeps you up?',status:'live',host_id:'review-other',clubs:{name:'After Hours',topic:'Late-night talks'}},
     loadRoomParticipants:[{user_id:'review-other',display_name:'Jules',role:'host',is_host:true},{user_id:'review-me',display_name:'Alex Morgan',role:'listener',is_host:false}],loadOwnClubRole:'member',
-    loadSocialStats:{following:18,followers:96,posts:8},loadProfilePosts:posts,isFollowingProfile:false,loadPostReplies:[{reply_id:'r1',author_id:'review-me',author_display_name:'Alex',body:'Especially when you’re still singing the encore.',created_at:now}],
+    loadSocialStats:{following:18,followers:96,posts:8},loadProfilePosts:posts,isFollowingProfile:false,loadPostReplies:replies,
   };
+  if (name === 'createReply') { const parent=replies.find(r=>r.reply_id===args[3]); replies.push({reply_id:String(Date.now()),author_id:'review-me',author_display_name:'Alex',body:args[2],created_at:now,parent_reply_id:args[3],parent_author_name:parent?.author_display_name,parent_body_preview:parent?.body}); }
+  if (name === 'searchMessageProfiles') return Promise.resolve(state === 'empty' ? [] : [{user_id:'review-other',display_name:'Jules',handle:'jules.wav',is_following:true,languages:['English']}]);
+  if (name === 'getOrCreateDirectConversation') return Promise.resolve('review-chat');
   if (name === 'createPost') posts = [{...posts[0],post_id:String(Date.now()),author_display_name:'Alex Morgan',author_handle:'alexafterhours',body:args[1],like_count:0,reply_count:0},...posts];
   if (name === 'joinClub' || name === 'leaveClub') clubs = clubs.map(c=>c.club_id===args[0]?{...c,is_member:name==='joinClub'}:c);
   if (state === 'empty' && ['loadFeed','loadClubs','listDirectConversations'].includes(name)) return Promise.resolve([]);

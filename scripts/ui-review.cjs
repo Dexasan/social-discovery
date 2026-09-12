@@ -6,6 +6,7 @@ const http = require('node:http');
 const root = path.resolve(__dirname, '..');
 const out = path.join(root, 'dist/ui-review');
 fs.mkdirSync(path.join(out, 'assets'), { recursive: true });
+fs.copyFileSync(path.join(root, 'assets/art/conversation-night-print.png'), path.join(out, 'assets/conversation-night-print.png'));
 const fontFiles = [
   ['DMSans_400Regular', '@expo-google-fonts/dm-sans/400Regular/DM Sans_400Regular.ttf'],
   ['DMSans_500Medium', '@expo-google-fonts/dm-sans/500Medium/DM Sans_500Medium.ttf'],

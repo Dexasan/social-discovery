@@ -10,6 +10,7 @@ type RequestBody = {
   session_description?: SessionDescription;
   session_kind?: 'publisher' | 'subscriber';
   target_user_id?: string;
+  inspect_only?: boolean;
 };
 
 const headers = {
@@ -89,7 +90,7 @@ Deno.serve(async (request) => {
       } catch {
         data = { errorDescription: text || 'Cloudflare returned an unreadable response.' };
       }
-      if (!providerResponse.ok) {
+      if (!providerResponse.ok || data.errorCode) {
         const description = typeof data.errorDescription === 'string' ? data.errorDescription : 'Cloudflare request failed.';
         throw new Error(description);
       }
@@ -283,13 +284,14 @@ Deno.serve(async (request) => {
       const tracks = Array.isArray(provider.tracks) ? provider.tracks as Array<Record<string, unknown>> : [];
       const audioTrack = tracks.find((track) => track.kind === 'audio') ?? tracks[0];
       if (!audioTrack || typeof audioTrack.trackName !== 'string') throw new Error('Cloudflare did not create an audio track.');
-      await admin
+      const { error: publishError } = await admin
         .from('room_audio_sessions')
         .update({
           provider_track_mid: typeof audioTrack.mid === 'string' ? audioTrack.mid : null,
           published_track_name: audioTrack.trackName,
         })
         .eq('id', mediaSession.id);
+      if (publishError) throw publishError;
       return response({ provider });
     }
 
@@ -339,8 +341,12 @@ Deno.serve(async (request) => {
         .eq('user_id', userData.user.id)
         .maybeSingle();
       if (!ownedSession) return response({ closed: true });
-      if (ownedSession.session_kind === 'publisher') await forceCloseProviderTrack(ownedSession);
-      await admin.from('room_audio_sessions').update({ status: 'closed' }).eq('id', ownedSession.id);
+      try {
+        if (ownedSession.session_kind === 'publisher') await forceCloseProviderTrack(ownedSession);
+      } finally {
+        const { error: closeError } = await admin.from('room_audio_sessions').update({ status: 'closed' }).eq('id', ownedSession.id);
+        if (closeError) throw closeError;
+      }
       return response({ closed: true });
     }
 
@@ -358,16 +364,35 @@ Deno.serve(async (request) => {
       publisherQuery = mediaSession.call_id
         ? publisherQuery.eq('call_id', mediaSession.call_id)
         : publisherQuery.eq('room_id', mediaSession.room_id);
-      const { data: publishers } = await publisherQuery;
+      const { data: publishers, error: publishersError } = await publisherQuery;
+      if (publishersError) throw publishersError;
       if (mediaSession.call_id) {
         const tracks = (publishers ?? []).map((publisher) => ({
           location: 'remote',
           sessionId: publisher.provider_session_id,
           trackName: publisher.published_track_name,
         }));
+        const publisherKey = tracks.map((track) => `${track.sessionId}:${track.trackName}`).sort().join('|');
+        if (body.inspect_only) return response({ publisherKey, trackCount: tracks.length });
         if (tracks.length === 0) return response({ provider: null, trackCount: 0 });
         const provider = await cloudflareRequest(`/sessions/${mediaSession.provider_session_id}/tracks/new`, 'POST', { tracks });
-        return response({ provider, trackCount: tracks.length });
+        const received = Array.isArray(provider.tracks) ? provider.tracks as Array<Record<string, unknown>> : [];
+        const errors = received.filter((track) => track.errorCode);
+        if (errors.length && errors.every((track) => track.errorCode === 'empty_track_error')) {
+          return response({ provider: null, trackCount: 0, publisherKey, pending: true });
+        }
+        if (!received.length || errors.length) {
+          const failure = received.map((track) => ({
+            errorCode: track.errorCode,
+            errorDescription: track.errorDescription,
+            kind: track.kind,
+            location: track.location,
+            mid: track.mid,
+            trackName: track.trackName,
+          }));
+          throw new Error(`Remote track negotiation failed: ${JSON.stringify(failure)}`);
+        }
+        return response({ provider, trackCount: received.length, publisherKey });
       }
       const publisherIds = [...new Set((publishers ?? []).map((publisher) => publisher.user_id))];
       const { data: currentSpeakers } = publisherIds.length
@@ -403,7 +428,8 @@ Deno.serve(async (request) => {
 
     return response({ error: 'Unsupported action.' }, 400);
   } catch (error) {
-    console.error('Audio gateway failure:', error instanceof Error ? error.message : 'unknown error');
+    const message = error instanceof Error ? error.message : 'unknown error';
+    console.error('Audio gateway failure:', message);
     return response({ error: 'The audio request could not be completed.' }, 500);
   }
 });

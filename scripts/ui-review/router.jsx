@@ -1,9 +1,9 @@
 import { useEffect } from 'react';
 import { View, Pressable, Text } from 'react-native';
 export const activeScreen = new URLSearchParams(location.search).get('screen') || 'quick-chat';
-const aliases = { '/legal/[document]':'guidelines', '/auth':'auth', '/wallet':'wallet', '/messages/new':'messages', '/settings/account':'settings', '/settings/safety':'safety', '/clubs/create':'club-create', '/profile/edit':'profile-edit', '/clubs/[clubId]':'club', '/clubs/room/[roomId]':'room', '/people/[userId]':'person', '/post/[postId]':'post' };
+const aliases = { '/legal/[document]':'guidelines', '/auth':'auth', '/wallet':'wallet', '/messages/new':'new-message', '/settings/account':'settings', '/settings/safety':'safety', '/clubs/create':'club-create', '/profile/edit':'profile-edit', '/clubs/[clubId]':'club', '/clubs/room/[roomId]':'room', '/people/[userId]':'person', '/post/[postId]':'post' };
 function go(target) { const p = typeof target === 'string' ? target : target.pathname; location.assign('/?screen=' + (aliases[p] || (p.includes('[conversationId]') || p.includes('[sessionId]') ? 'chat' : p.split('/').pop()))); }
-export const router = { push:go, replace:go, back:() => history.back() };
+export const router = { navigate:go, push:go, replace:go, back:() => history.back() };
 export function useFocusEffect(effect) { useEffect(effect, [effect]); }
 export function useLocalSearchParams() { return { document:'community-guidelines', conversationId:'review-chat', partnerId:'review-other', partnerName:'Jules', topic:'Music', sessionId:'review-match', userId:'review-other', callId:'review-call', clubId:'1', roomId:'room', postId:'1', body:'Unpopular opinion: the walk home after a concert is part of the concert.', author:'Jules', authorId:'review-other' }; }
 export function Redirect() { return null; }

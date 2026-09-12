@@ -89,10 +89,11 @@ Deno.serve(async (request) => {
       const { data: profile } = await admin.from('profiles').select('avatar_path').eq('id', userData.user.id).single();
       previousPath = profile?.avatar_path ?? null;
     } else if (kind === 'club' && isUuid(clubId)) {
-      const { data: membership } = await admin.from('club_memberships').select('role, status')
-        .eq('club_id', clubId).eq('user_id', userData.user.id).maybeSingle();
-      if (!membership || membership.status !== 'active' || !['owner', 'moderator'].includes(membership.role)) {
-        return response({ error: 'Only Club owners and moderators can change this picture.' }, 403);
+      const { data: clubOwner, error: clubOwnerError } = await admin.from('clubs').select('created_by')
+        .eq('id', clubId).maybeSingle();
+      if (clubOwnerError) throw clubOwnerError;
+      if (!clubOwner || clubOwner.created_by !== userData.user.id) {
+        return response({ error: 'Only the person who created this Club can change its cover.' }, 403);
       }
       bucket = 'club-avatars';
       folder = clubId;
